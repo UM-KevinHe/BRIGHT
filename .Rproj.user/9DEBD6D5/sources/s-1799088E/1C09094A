@@ -1,0 +1,23 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1669229609997.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "385353714",
+    "id" : "1C09094A",
+    "lastKnownWriteTime" : 1647218459,
+    "last_content_update" : 1647218459,
+    "path" : "~/Desktop/research/Kevin He/Competing_risk_KL/simulation/simulation_high_dim.R",
+    "project_path" : null,
+    "properties" : {
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 4,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}
