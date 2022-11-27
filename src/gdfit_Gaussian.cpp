@@ -97,8 +97,8 @@ void gd_gaussian(Eigen::MatrixXd & a, Eigen::MatrixXd & b, Eigen::SparseMatrix<d
   
   int Kg = K1(g+1,0) - K1(g,0);
   // Calculate z
-  Eigen::MatrixXd z(Kg,0);
-  z.setZero(Kg,0);
+  Eigen::MatrixXd z(Kg,1);
+  z.setZero(Kg,1);
   for (int j=K1(g,0); j<K1(g+1,0); j++) z(j-K1(g,0),0) = (XtY(j,0)+eta*Xtbt(j,0))/(1+eta)-(Sig.col(j).transpose()*b.block(0,l,P,1))(0,0)+b(j,l);
   double z_norm = norm(z, Kg);
   
@@ -142,8 +142,8 @@ double MaxLambda(Eigen::MatrixXd XtY, Eigen::MatrixXd tilde_beta, Eigen::MatrixX
   int N = X.rows();
   
   //Outcome
-  Eigen::MatrixXd Lamb(G,0);
-  Lamb.setZero(G,0);
+  Eigen::MatrixXd Lamb(G,1);
+  Lamb.setZero(G,1);
   
   // Intermediate quantities
   Eigen::SparseMatrix<double> Sig(P,P);
@@ -162,6 +162,7 @@ double MaxLambda(Eigen::MatrixXd XtY, Eigen::MatrixXd tilde_beta, Eigen::MatrixX
   Xtbt=Sig*tilde_beta;
   
   while (tot_iter < max_iter) {
+      
     tot_iter++;
     maxChange=0;
     
@@ -178,13 +179,18 @@ double MaxLambda(Eigen::MatrixXd XtY, Eigen::MatrixXd tilde_beta, Eigen::MatrixX
   }
   
   for (int g=0; g<G; g++){
+    
     int Kg = K1(g+1,0) - K1(g,0);
     // Calculate z
-    Eigen::MatrixXd z(Kg,0);
-    z.setZero(Kg,0);
-    for (int j=K1(g,0); j<K1(g+1,0); j++) z(j-K1(g,0),0) = (XtY(j,0)+eta*Xtbt(j,0))/(1+eta)-(Sig.col(j).transpose()*b)(0,0)+b(j,0);
+    Eigen::MatrixXd z(Kg,1);
+    z.setZero(Kg,1);
+    
+    for (int j=K1(g,0); j<K1(g+1,0); j++) {
+      z(j-K1(g,0),0) = (XtY(j,0)+eta*Xtbt(j,0))/(1+eta)-(Sig.col(j).transpose()*b)(0,0)+b(j,0);
+    }
     Lamb(g,0) = norm(z, Kg)*(1+eta)/alpha/m(g,0);
   }
+  
   return(Lamb.maxCoeff());
 }
 

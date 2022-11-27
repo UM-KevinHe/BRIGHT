@@ -56,6 +56,15 @@
                 "usr" : "c:@F@gd_gaussian#&I#S0_#S0_#S0_#S0_#S0_#S0_#S0_#S0_#S0_#S0_#&d#S1_#S1_#S1_#S1_#"
             },
             {
+                "column" : 8,
+                "file" : "/Users/qinmenggeli/Desktop/research/Kevin He/PRS/Rewrite_Lassosum/BRIGHT/src/gdfit_Gaussian.cpp",
+                "kind" : 6,
+                "line" : 136,
+                "name" : "MaxLambda(Eigen::MatrixXd, Eigen::MatrixXd, Eigen::MatrixXd &, Eigen::MatrixXd, Eigen::MatrixXd, int, double, double, double, double, int)",
+                "parent_name" : "",
+                "usr" : "c:@F@MaxLambda#I#I#&I#I#I#I#d#d#d#d#I#"
+            },
+            {
                 "column" : 6,
                 "file" : "/Users/qinmenggeli/Desktop/research/Kevin He/PRS/Rewrite_Lassosum/BRIGHT/src/gdfit_Gaussian.cpp",
                 "kind" : 6,
@@ -66,7 +75,7 @@
             }
         ],
         "file" : "/Users/qinmenggeli/Desktop/research/Kevin He/PRS/Rewrite_Lassosum/BRIGHT/src/gdfit_Gaussian.cpp",
-        "file_last_write" : 1669537641.000000
+        "file_last_write" : 1669538051.000000
     },
     {
         "definitions" : [
