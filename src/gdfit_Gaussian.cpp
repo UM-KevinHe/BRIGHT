@@ -90,7 +90,7 @@ int Sigma(Eigen::MatrixXd& X, Eigen::SparseMatrix<double>& Sig, double tau, int 
 }
 
 // [[Rcpp::export]]
-void gd_gaussian(Eigen::MatrixXd & a, Eigen::MatrixXd & b, Eigen::MatrixXd & Sig, Eigen::MatrixXd & K1,
+void gd_gaussian(Eigen::MatrixXd & a, Eigen::MatrixXd & b, Eigen::SparseMatrix<double> & Sig, Eigen::MatrixXd & K1,
                  Eigen::MatrixXd & Xtbt, Eigen::MatrixXd & XtY, Eigen::MatrixXd & df,
                  int & l, int & P, int & g, int & penalty, double & lam1, double & lam2,
                  double & gamma, double & eta, double & maxChange) {
@@ -99,7 +99,7 @@ void gd_gaussian(Eigen::MatrixXd & a, Eigen::MatrixXd & b, Eigen::MatrixXd & Sig
   // Calculate z
   Eigen::MatrixXd z(Kg,0);
   z.setZero(Kg,0);
-  for (int j=K1(g,0); j<K1(g+1,0); j++) z(j-K1(g,0),0) = (XtY(j,0)+eta*Xtbt(j,0))/(1+eta)-(Sig.col(j).transpose()*b.block(0,l,P,1))(0,0)+b(j,0);
+  for (int j=K1(g,0); j<K1(g+1,0); j++) z(j-K1(g,0),0) = (XtY(j,0)+eta*Xtbt(j,0))/(1+eta)-(Sig.col(j).transpose()*b.block(0,l,P,1))(0,0)+b(j,l);
   double z_norm = norm(z, Kg);
   
   // Update b
@@ -117,7 +117,7 @@ void gd_gaussian(Eigen::MatrixXd & a, Eigen::MatrixXd & b, Eigen::MatrixXd & Sig
   }
   // Update df
   if (len > 0) df(l,0) += Kg * len / z_norm;
-  Free(z);
+
 }
 
 
@@ -130,12 +130,68 @@ Eigen::SparseMatrix<double> Sigma_test(Eigen::MatrixXd& X, double tau, int P, in
   return(Sig.col(1));
 }
 */
- 
+
+
 // [[Rcpp::export]]
-List gdfit_gaussian(Eigen::MatrixXd XtY, Eigen::MatrixXd tilde_beta, Eigen::MatrixXd &X, Eigen::MatrixXd lambda, double eta,Eigen::MatrixXd K1, int K0, 
-                    double lam_max, double alpha, double eps, 
-                    int max_iter, double group_multiplier, 
-                    int dfmax, int gmax, bool user) {
+double MaxLambda(Eigen::MatrixXd XtY, Eigen::MatrixXd tilde_beta, Eigen::MatrixXd &X,
+                 Eigen::MatrixXd K1, Eigen::MatrixXd m, int K0, double tau,
+                 double eta, double alpha, double eps,int max_iter){
+  // Lengths/dimensions
+  int G = K1.rows() - 1;
+  int P = X.cols();
+  int N = X.rows();
+  
+  //Outcome
+  Eigen::MatrixXd Lamb(G,0);
+  Lamb.setZero(G,0);
+  
+  // Intermediate quantities
+  Eigen::SparseMatrix<double> Sig(P,P);
+  Sig.reserve(Eigen::VectorXi::Constant(P,1000));
+  Eigen::MatrixXd Xtbt(P,1);
+  Xtbt.setZero(P,1);
+  Eigen::MatrixXd a(P,1);
+  a.setZero(P,1);
+  Eigen::MatrixXd b(P,1);
+  b.setZero(P,1);
+  int tot_iter = 0;
+  double shift=0, maxChange=0, len=0;
+  
+  // Initialization
+  Sigma(X, Sig, tau, P, N);
+  Xtbt=Sig*tilde_beta;
+  
+  while (tot_iter < max_iter) {
+    tot_iter++;
+    maxChange=0;
+    
+    // Update unpenalized covariates
+    for (int j=0; j<K0; j++) {
+      shift = (XtY(j,0)+eta*Xtbt(j,0))/(1+eta)-(Sig.col(j).transpose()*b)(0,0);
+      if (fabs(shift) > maxChange) maxChange = fabs(shift);
+      b(j,0) = shift + a(j,0);
+    }
+    
+    // Check convergence
+    a=b;
+    if (maxChange <= eps) break;
+  }
+  
+  for (int g=0; g<G; g++){
+    int Kg = K1(g+1,0) - K1(g,0);
+    // Calculate z
+    Eigen::MatrixXd z(Kg,0);
+    z.setZero(Kg,0);
+    for (int j=K1(g,0); j<K1(g+1,0); j++) z(j-K1(g,0),0) = (XtY(j,0)+eta*Xtbt(j,0))/(1+eta)-(Sig.col(j).transpose()*b)(0,0)+b(j,0);
+    Lamb(g,0) = norm(z, Kg)*(1+eta)/alpha/m(g,0);
+  }
+  return(Lamb.maxCoeff());
+}
+
+// [[Rcpp::export]]
+List gdfit_gaussian(Eigen::MatrixXd XtY, Eigen::MatrixXd tilde_beta, Eigen::MatrixXd &X, Eigen::MatrixXd lambda, 
+                    Eigen::MatrixXd K1, Eigen::MatrixXd m, int K0, int penalty, double tau,double eta, double alpha, double gamma,
+                    double eps,int max_iter, int dfmax, int gmax, bool user) {
   
   // Lengths/dimensions
   int L = lambda.rows();
@@ -145,15 +201,12 @@ List gdfit_gaussian(Eigen::MatrixXd XtY, Eigen::MatrixXd tilde_beta, Eigen::Matr
   
   //Outcome
   List result;
-  Eigen::MatrixXd beta(P,L);
-  beta.setZero(P,L);
+  Eigen::MatrixXd b(P,L);
+  b.setZero(P,L);
   Eigen::MatrixXd iter(L,1);
   iter.setZero(L,1);
   Eigen::MatrixXd df(L,1);
   df.setZero(L,1);
-  Eigen::MatrixXd Dev(L,1);
-  Dev.setZero(L,1);
-  Eigen::MatrixXd b = beta;
   
   // Intermediate quantities
   Eigen::SparseMatrix<double> Sig(P,P);
@@ -165,11 +218,10 @@ List gdfit_gaussian(Eigen::MatrixXd XtY, Eigen::MatrixXd tilde_beta, Eigen::Matr
   Eigen::MatrixXd e(G,1);
   e.setZero(G,1);
   int lstart=0, ng=0, nv=0, violations=0, tot_iter = 0;
-  double shift=0, l1=0, l2=0, v=0, si=0, maxChange=0, z_norm=0, len=0;
+  double shift=0, l1=0, l2=0, maxChange=0;
   
   // Initialization
-  
-  Xtr=XtY;
+
   Sigma(X, Sig, tau, P, N);
   Xtbt=Sig*tilde_beta;
   
@@ -232,7 +284,7 @@ List gdfit_gaussian(Eigen::MatrixXd XtY, Eigen::MatrixXd tilde_beta, Eigen::Matr
           l1 = lambda(l,0) * m(g,0) * alpha/(1+eta);
           l2 = lambda(l,0) * m(g,0) * (1-alpha)/(1+eta);
           if(e(g,0)==1){
-            gd_gaussian(a, b, Sig, K1, Xtbt, XtY, df, l, P, g, penalty, l1, l2, gamma=0, eta, maxChange);
+            gd_gaussian(a, b, Sig, K1, Xtbt, XtY, df, l, P, g, penalty, l1, l2, gamma, eta, maxChange);
           }
         }
         
@@ -249,7 +301,7 @@ List gdfit_gaussian(Eigen::MatrixXd XtY, Eigen::MatrixXd tilde_beta, Eigen::Matr
         if (e(g,0)==0) {
           l1 = lambda(l,0) * m(g,0) * alpha/(1+eta);
           l2 = lambda(l,0) * m(g,0) * (1-alpha)/(1+eta);
-          gd_gaussian(a, b, Sig, K1, Xtbt, XtY, df, l, P, g, penalty, l1, l2, gamma=0, eta, maxChange);
+          gd_gaussian(a, b, Sig, K1, Xtbt, XtY, df, l, P, g, penalty, l1, l2, gamma, eta, maxChange);
           
           if (b(K1(g,0),l) != 0) {
             e(g,0) = 1;
@@ -263,12 +315,8 @@ List gdfit_gaussian(Eigen::MatrixXd XtY, Eigen::MatrixXd tilde_beta, Eigen::Matr
     }
     
   }
-  result["Betat"]=b0;
-  result["Betav"]=b;
+  result["Beta"]=b;
   result["iter"]=iter;
   result["df"]=df;
-  result["Dev"]=Dev;
-  result["eta"]=eta;
-  result["residual"]=r;
   return(result);
 }

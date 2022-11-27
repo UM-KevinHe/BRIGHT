@@ -1,8 +1,8 @@
 {
-    "path" : "~/Desktop/research/Kevin He/PRS/Rewrite_Lassosum/BRIGHT",
+    "path" : "~/Desktop/research/Kevin He/PRS/Rewrite_Lassosum/BRIGHT/src",
     "sortOrder" : [
         {
-            "ascending" : true,
+            "ascending" : false,
             "columnIndex" : 2
         }
     ]

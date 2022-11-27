@@ -38,17 +38,35 @@
                 "usr" : "c:@F@Fs#d#d#d#d#"
             },
             {
-                "column" : 29,
+                "column" : 5,
                 "file" : "/Users/qinmenggeli/Desktop/research/Kevin He/PRS/Rewrite_Lassosum/BRIGHT/src/gdfit_Gaussian.cpp",
                 "kind" : 6,
                 "line" : 77,
-                "name" : "Sigma(Eigen::MatrixXd &, double, int, int)",
+                "name" : "Sigma(Eigen::MatrixXd &, int &, double, int, int)",
                 "parent_name" : "",
-                "usr" : "c:@F@Sigma#&I#d#I#I#"
+                "usr" : "c:@F@Sigma#&I#S0_#d#I#I#"
+            },
+            {
+                "column" : 6,
+                "file" : "/Users/qinmenggeli/Desktop/research/Kevin He/PRS/Rewrite_Lassosum/BRIGHT/src/gdfit_Gaussian.cpp",
+                "kind" : 6,
+                "line" : 93,
+                "name" : "gd_gaussian(Eigen::MatrixXd &, Eigen::MatrixXd &, int &, Eigen::MatrixXd &, Eigen::MatrixXd &, Eigen::MatrixXd &, Eigen::MatrixXd &, int &, int &, int &, int &, double &, double &, double &, double &, double &)",
+                "parent_name" : "",
+                "usr" : "c:@F@gd_gaussian#&I#S0_#S0_#S0_#S0_#S0_#S0_#S0_#S0_#S0_#S0_#&d#S1_#S1_#S1_#S1_#"
+            },
+            {
+                "column" : 6,
+                "file" : "/Users/qinmenggeli/Desktop/research/Kevin He/PRS/Rewrite_Lassosum/BRIGHT/src/gdfit_Gaussian.cpp",
+                "kind" : 6,
+                "line" : 192,
+                "name" : "gdfit_gaussian(Eigen::MatrixXd, Eigen::MatrixXd, Eigen::MatrixXd &, Eigen::MatrixXd, Eigen::MatrixXd, Eigen::MatrixXd, int, int, double, double, double, double, double, int, int, int, bool)",
+                "parent_name" : "",
+                "usr" : "c:@F@gdfit_gaussian#I#I#&I#I#I#I#I#I#d#d#d#d#d#I#I#I#b#"
             }
         ],
         "file" : "/Users/qinmenggeli/Desktop/research/Kevin He/PRS/Rewrite_Lassosum/BRIGHT/src/gdfit_Gaussian.cpp",
-        "file_last_write" : 1669263248.000000
+        "file_last_write" : 1669537641.000000
     },
     {
         "definitions" : [

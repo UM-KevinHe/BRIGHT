@@ -53,8 +53,16 @@ Sigma <- function(X, Sig, tau, P, N) {
     .Call(`_BRIGHT_Sigma`, X, Sig, tau, P, N)
 }
 
-Sigma_test <- function(X, tau, P, N) {
-    .Call(`_BRIGHT_Sigma_test`, X, tau, P, N)
+gd_gaussian <- function(a, b, Sig, K1, Xtbt, XtY, df, l, P, g, penalty, lam1, lam2, gamma, eta, maxChange) {
+    invisible(.Call(`_BRIGHT_gd_gaussian`, a, b, Sig, K1, Xtbt, XtY, df, l, P, g, penalty, lam1, lam2, gamma, eta, maxChange))
+}
+
+MaxLambda <- function(XtY, tilde_beta, X, K1, m, K0, tau, eta, alpha, eps, max_iter) {
+    .Call(`_BRIGHT_MaxLambda`, XtY, tilde_beta, X, K1, m, K0, tau, eta, alpha, eps, max_iter)
+}
+
+gdfit_gaussian <- function(XtY, tilde_beta, X, lambda, K1, m, K0, penalty, tau, eta, alpha, gamma, eps, max_iter, dfmax, gmax, user) {
+    .Call(`_BRIGHT_gdfit_gaussian`, XtY, tilde_beta, X, lambda, K1, m, K0, penalty, tau, eta, alpha, gamma, eps, max_iter, dfmax, gmax, user)
 }
 
 rcpp_hello_world <- function() {
