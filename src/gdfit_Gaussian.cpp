@@ -43,7 +43,7 @@ double S(double z, double l) {
 //'@param gamma a numeric scalar for the third Firm-thresholding parameter
 //'@return F(z,l1,l2)
 // [[Rcpp::export]]
-double F(double z, double l1, double l2, double gamma) {
+double Ff(double z, double l1, double l2, double gamma) {
   double s=0;
   if (z > 0) s = 1;
   else if (z < 0) s = -1;
@@ -74,10 +74,144 @@ double Fs(double z, double l1, double l2, double gamma) {
 
 
 // [[Rcpp::export]]
-int Sigma(Eigen::MatrixXd& X, Eigen::SparseMatrix<double>& Sig, double tau, int P, int N){
+Eigen::MatrixXd LD(Eigen::MatrixXd chr,Eigen::MatrixXd pos,Eigen::MatrixXd LDB){
+  int j=-1;
+  int p=pos.rows();
+  int chr_mark=1;
+  Eigen::MatrixXd blk(1,1);
+  blk.setZero(1,1);
+  while(1==1){
+    j++;
+    if(pos(0,0)<LDB(j,2)){
+      break;
+    }
+  }
+
+  for(int i=0;i<p;i++){
+    if(chr(i,0)!=chr_mark){
+      Eigen::MatrixXd blk_tmp=blk;
+      blk.resize(blk.rows()+1,1);
+      blk.block(0,0,blk.rows()-1,1)=blk_tmp;
+      blk(blk.rows()-1,0)=i;
+      chr_mark=chr(i,0);
+      while(1==1){
+        j++;
+        if( (chr(i,0)==LDB(j,0)) and (pos(i,0)<LDB(j,2)) ){
+          break;
+        }
+      }
+    }
+    if(pos(i,0)>=LDB(j,2)){
+      Eigen::MatrixXd blk_tmp=blk;
+      blk.resize(blk.rows()+1,1);
+      blk.block(0,0,blk.rows()-1,1)=blk_tmp;
+      blk(blk.rows()-1,0)=i;
+      while(1==1){
+        j++;
+        if(pos(i,0)<LDB(j,2)){
+          break;
+        }
+      }
+    }
+  }
+  return(blk);
+}
+
+/*
+// [[Rcpp::export]]
+int Sigma_LD(Eigen::MatrixXd& X, Eigen::SparseMatrix<double>& Sig, Eigen::MatrixXd& blk, double tau, int P, int N){
+  int lblk=blk.rows();
+  for(int k=0;k<lblk-1;k++){
+    for(int i=blk(k,0);i<blk(k+1,0);i++){
+      Rcout << i;
+      Rcout << "\n";
+      Sig.insert(i,i) = 1.0;
+      for(int j=i+1;j<blk(k+1,0);j++){
+        double tmp=S((X.block(0,i,N,1).transpose()*X.block(0,j,N,1))(0,0)/N,tau);
+        if(tmp!=0){
+          Sig.insert(i,j) = tmp;
+          Sig.insert(j,i) = tmp;
+        }
+      }
+    }
+  }
+  Sig.makeCompressed();
+  return(0);
+}
+
+// [[Rcpp::export]]
+int Sigma_LD(Eigen::MatrixXd& X, Eigen::SparseMatrix<double>& Sig, Eigen::MatrixXd& blk, double tau, int P, int N){
+  int lblk=blk.rows();
+  for(int k=0;k<lblk-1;k++){
+    Eigen::MatrixXd mat=(X.block(0,blk(k,0),N,blk(k+1,0)-blk(k,0)).transpose()*X.block(0,blk(k,0),N,blk(k+1,0)-blk(k,0)))/N;
+    for(int i=blk(k,0);i<blk(k+1,0);i++){
+      Rcout << i;
+      Rcout << "\n";
+      Sig.insert(i,i) = 1.0;
+      for(int j=i+1;j<blk(k+1,0);j++){
+        double tmp=S(mat(i-blk(k,0),j-blk(k,0)),tau);
+        if(tmp!=0){
+          Sig.insert(i,j) = tmp;
+          Sig.insert(j,i) = tmp;
+        }
+      }
+    }
+  }
+  Sig.makeCompressed();
+  return(0);
+}
+
+// [[Rcpp::export]]
+int Sigma_LD(Eigen::MatrixXd& X, Eigen::SparseMatrix<double>& Sig, Eigen::MatrixXi& blk, double tau, int P, int N){
+  int lblk=blk.rows();
+  for(int k=0;k<lblk-1;k++){
+    Eigen::MatrixXd mat(P,blk(k+1,0)-blk(k,0));
+    //mat.setZero(P,blk(k+1,0)-blk(k,0));
+    //mat.block(0,0,blk(k+1,0)-blk(k,0),blk(k+1,0)-blk(k,0))=(X.block(0,blk(k,0),N,blk(k+1,0)-blk(k,0)).transpose()*X.block(0,blk(k,0),N,blk(k+1,0)-blk(k,0)))/N;
+    Sig.middleCols(blk(k,0),blk(k+1,0)-blk(k,0))=mat.block(0,0,P,blk(k+1,0)-blk(k,0));
+  }
+  Sig.makeCompressed();
+  return(0);
+}
+*/
+
+// [[Rcpp::export]]
+int Sigma_LD(Eigen::MatrixXd& X, Eigen::SparseMatrix<double>& Sig, Eigen::MatrixXi& blk, double tau, int P, int N){
+  int lblk=blk.rows();
+  
+  
+  typedef Eigen::Triplet<double> T;
+  std::vector< T > TL;
+  TL.reserve(10000000);
+  
+  for(int k=0;k<lblk-1;k++){
+    Eigen::MatrixXd mat=(X.block(0,blk(k,0),N,blk(k+1,0)-blk(k,0)).transpose()*X.block(0,blk(k,0),N,blk(k+1,0)-blk(k,0)))/N;
+      for(int i=blk(k,0);i<blk(k+1,0);i++){
+      //Rcout << i;
+      //Rcout << "\n";
+      TL.push_back(T(i,i,1.0));
+      for(int j=i+1;j<blk(k+1,0);j++){
+        double tmp=S(mat(i-blk(k,0),j-blk(k,0)),tau);
+        if(tmp!=0){
+          TL.push_back(T(i,j,tmp));
+          TL.push_back(T(j,i,tmp));
+        }
+      }
+    }
+  }
+  Sig.setFromTriplets(TL.begin(), TL.end());
+  return(0);
+}
+
+
+/*
+// [[Rcpp::export]]
+int Sigma_ST(Eigen::MatrixXd& X, Eigen::SparseMatrix<double>& Sig, Eigen::MatrixXi& blk, double tau, int P, int N){
   for(int i=0;i<P;i++){
+    Rcout << i;
+    Rcout << "\n";
     Sig.insert(i,i) = 1.0;
-    for(int j=i+1;j<P;j++){
+    for(int j=i+1;j<std::min(P,P);j++){
       double tmp=S((X.block(0,i,N,1).transpose()*X.block(0,j,N,1))(0,0)/N,tau);
       if(tmp!=0){
         Sig.insert(i,j) = tmp;
@@ -88,6 +222,33 @@ int Sigma(Eigen::MatrixXd& X, Eigen::SparseMatrix<double>& Sig, double tau, int 
   Sig.makeCompressed(); 
   return(0);
 }
+*/
+
+// [[Rcpp::export]]
+int Sigma_ST(Eigen::MatrixXd& X, Eigen::SparseMatrix<double>& Sig, Eigen::MatrixXi& blk, double tau, int P, int N){
+  typedef Eigen::Triplet<double> T;
+  std::vector< T > TL;
+  TL.reserve(10000000);
+
+  for(int i=0;i<P;i++){
+    Rcout << i;
+    Rcout << "\n";
+    TL.push_back(T(i,i,1.0));
+    Eigen::MatrixXd mat(1,P);
+    mat.setZero(1,P);
+    mat.block(0,i+1,1,P-i-1)=(X.block(0,i,N,1).transpose()*X.block(0,i+1,N,P-i-1))/N;
+    for(int j=i+1;j<P;j++){
+      double tmp=S(mat(0,j),tau);
+      if(tmp!=0){
+          TL.push_back(T(i,j,tmp));
+          TL.push_back(T(j,i,tmp));
+      }
+    }
+  }
+  Sig.setFromTriplets(TL.begin(), TL.end()); 
+  return(0);
+}
+
 
 // [[Rcpp::export]]
 void gd_gaussian(Eigen::MatrixXd & a, Eigen::MatrixXd & b, Eigen::SparseMatrix<double> & Sig, Eigen::MatrixXd & K1,
@@ -99,19 +260,63 @@ void gd_gaussian(Eigen::MatrixXd & a, Eigen::MatrixXd & b, Eigen::SparseMatrix<d
   // Calculate z
   Eigen::MatrixXd z(Kg,1);
   z.setZero(Kg,1);
-  for (int j=K1(g,0); j<K1(g+1,0); j++) z(j-K1(g,0),0) = (XtY(j,0)+eta*Xtbt(j,0))/(1+eta)-(Sig.col(j).transpose()*b.block(0,l,P,1))(0,0)+b(j,l);
+  //for (int j=K1(g,0); j<K1(g+1,0); j++) {
+  //  z(j-K1(g,0),0) = (XtY(j,0)+eta*Xtbt(j,0))/(1+eta)-(Sig.col(j).transpose()*b.block(0,l,P,1))(0,0)+b(j,l);
+
+  /*
+  double tmp=(Sig.col(K1(g,0)).transpose()*b.block(0,l,P,1))(0,0)+b(K1(g,0),l);
+  if (NumericVector::is_na(tmp)){
+      Rcout << j;
+      Rcout << "j\n";
+      Rcout << "first part\n";
+      Rcout << Sig.col(j).transpose();
+      Rcout << "\nfirst part end\n";
+      Rcout << "Second part\n";
+      Rcout << b.block(0,l,P,1).transpose();
+      Rcout << "\nSecond part end\n";
+      Rcout << "Third part\n";
+      Rcout << b(j,l);
+      Rcout << "\nThird part end\n";
+  }
+  */
+    
+  //}
+
+  z = (XtY.block(K1(g,0),0,Kg,1)+eta*Xtbt.block(K1(g,0),0,Kg,1))/(1+eta)-(Sig.middleCols(K1(g,0),Kg).transpose()*b.block(0,l,P,1))+b.block(K1(g,0),l,Kg,1);
+
   double z_norm = norm(z, Kg);
   
+  if (NumericVector::is_na(z_norm)){
+      Rcout << K1(g,0);
+      Rcout << "K1(g,0)\n";
+  }
+
+
   // Update b
   double len;
   if (penalty==1) len = S(z_norm, lam1) / (1+lam2);
-  if (penalty==2) len = F(z_norm, lam1, lam2, gamma);
+  if (penalty==2) len = Ff(z_norm, lam1, lam2, gamma);
   if (penalty==3) len = Fs(z_norm, lam1, lam2, gamma);
   if (len != 0 || a(K1(g,0),0) != 0) {
     // If necessary, update beta and r
     for (int j=K1(g,0); j<K1(g+1,0); j++) {
       b(j,l) = len * z(j-K1(g,0),0) / z_norm;
       double shift = b(j,l)-a(j,0);
+      /*Rcout << "shift\n";
+      Rcout << shift;
+      Rcout << "shift_end\n";
+      if(fabs(shift)>10){
+      Rcout << "len\n";
+      Rcout << len;
+      Rcout << "len_end\n";
+      Rcout << "z\n";
+      Rcout << z(j-K1(g,0),0);
+      Rcout << "z_end\n";
+      Rcout << "z_norm\n";
+      Rcout << z_norm;
+      Rcout << "z_norm_end\n";
+}*/
+
       if (fabs(shift) > maxChange) maxChange = fabs(shift);
     }
   }
@@ -119,7 +324,6 @@ void gd_gaussian(Eigen::MatrixXd & a, Eigen::MatrixXd & b, Eigen::SparseMatrix<d
   if (len > 0) df(l,0) += Kg * len / z_norm;
 
 }
-
 
 /*
 // [[Rcpp::export]]
@@ -133,8 +337,8 @@ Eigen::SparseMatrix<double> Sigma_test(Eigen::MatrixXd& X, double tau, int P, in
 
 
 // [[Rcpp::export]]
-double MaxLambda(Eigen::MatrixXd XtY, Eigen::MatrixXd tilde_beta, Eigen::MatrixXd &X,
-                 Eigen::MatrixXd K1, Eigen::MatrixXd m, int K0, double tau,
+List MaxLambda(Eigen::MatrixXd XtY, Eigen::MatrixXd tilde_beta, Eigen::MatrixXd &X,
+                 Eigen::MatrixXd K1, Eigen::MatrixXd m, Eigen::MatrixXi& blk,int K0, double tau,
                  double eta, double alpha, double eps,int max_iter){
   // Lengths/dimensions
   int G = K1.rows() - 1;
@@ -146,8 +350,8 @@ double MaxLambda(Eigen::MatrixXd XtY, Eigen::MatrixXd tilde_beta, Eigen::MatrixX
   Lamb.setZero(G,1);
   
   // Intermediate quantities
-  Eigen::SparseMatrix<double> Sig(P,P);
-  Sig.reserve(Eigen::VectorXi::Constant(P,1000));
+  Eigen::SparseMatrix<double, 0> Sig(P,P);
+  Sig.reserve(Eigen::VectorXi::Constant(P,3000));
   Eigen::MatrixXd Xtbt(P,1);
   Xtbt.setZero(P,1);
   Eigen::MatrixXd a(P,1);
@@ -158,7 +362,7 @@ double MaxLambda(Eigen::MatrixXd XtY, Eigen::MatrixXd tilde_beta, Eigen::MatrixX
   double shift=0, maxChange=0, len=0;
   
   // Initialization
-  Sigma(X, Sig, tau, P, N);
+  Sigma_LD(X, Sig, blk, tau, P, N);
   Xtbt=Sig*tilde_beta;
   
   while (tot_iter < max_iter) {
@@ -190,14 +394,16 @@ double MaxLambda(Eigen::MatrixXd XtY, Eigen::MatrixXd tilde_beta, Eigen::MatrixX
     }
     Lamb(g,0) = norm(z, Kg)*(1+eta)/alpha/m(g,0);
   }
-  
-  return(Lamb.maxCoeff());
+  List result;
+  result["Sig"]=Sig;
+  result["lambda.max"]=Lamb.maxCoeff();
+  return(result);
 }
 
 // [[Rcpp::export]]
 List gdfit_gaussian(Eigen::MatrixXd XtY, Eigen::MatrixXd tilde_beta, Eigen::MatrixXd &X, Eigen::MatrixXd lambda, 
-                    Eigen::MatrixXd K1, Eigen::MatrixXd m, int K0, int penalty, double tau,double eta, double alpha, double gamma,
-                    double eps,int max_iter, int dfmax, int gmax, bool user) {
+                    Eigen::MatrixXd K1, Eigen::MatrixXd m, Eigen::MatrixXi& blk, int K0, int penalty, double tau,
+                    double eta, double alpha, double gamma, double eps,int max_iter, int dfmax, int gmax, bool user) {
   
   // Lengths/dimensions
   int L = lambda.rows();
@@ -213,10 +419,14 @@ List gdfit_gaussian(Eigen::MatrixXd XtY, Eigen::MatrixXd tilde_beta, Eigen::Matr
   iter.setZero(L,1);
   Eigen::MatrixXd df(L,1);
   df.setZero(L,1);
-  
+  Eigen::MatrixXd dev(L,1);
+  dev.setZero(L,1);
+  Eigen::MatrixXd dev2(L,1);
+  dev2.setZero(L,1);
+ 
   // Intermediate quantities
-  Eigen::SparseMatrix<double> Sig(P,P);
-  Sig.reserve(Eigen::VectorXi::Constant(P,1000));
+  Eigen::SparseMatrix<double, 0> Sig(P,P);
+  Sig.reserve(Eigen::VectorXi::Constant(P,3000));
   Eigen::MatrixXd Xtbt(P,1);
   Xtbt.setZero(P,1);
   Eigen::MatrixXd a(P,1);
@@ -224,11 +434,11 @@ List gdfit_gaussian(Eigen::MatrixXd XtY, Eigen::MatrixXd tilde_beta, Eigen::Matr
   Eigen::MatrixXd e(G,1);
   e.setZero(G,1);
   int lstart=0, ng=0, nv=0, violations=0, tot_iter = 0;
-  double shift=0, l1=0, l2=0, maxChange=0;
+  double shift=0, l1=0, l2=0, maxChange=0, maxChange2=0;
   
   // Initialization
 
-  Sigma(X, Sig, tau, P, N);
+  Sigma_LD(X, Sig, blk, tau, P, N);
   Xtbt=Sig*tilde_beta;
   
   if (user) {
@@ -238,6 +448,8 @@ List gdfit_gaussian(Eigen::MatrixXd XtY, Eigen::MatrixXd tilde_beta, Eigen::Matr
   }
   
   for (int l=lstart; l<L; l++) {
+    //Rcout << l;
+    //Rcout << "l\n";
     R_CheckUserInterrupt();
     if (l != 0) {
       a=b.block(0,l-1,P,1);
@@ -287,15 +499,18 @@ List gdfit_gaussian(Eigen::MatrixXd XtY, Eigen::MatrixXd tilde_beta, Eigen::Matr
         
         // Update penalized groups
         for (int g=0; g<G; g++) {
-          l1 = lambda(l,0) * m(g,0) * alpha/(1+eta);
-          l2 = lambda(l,0) * m(g,0) * (1-alpha)/(1+eta);
           if(e(g,0)==1){
+            l1 = lambda(l,0) * m(g,0) * alpha/(1+eta);
+            l2 = lambda(l,0) * m(g,0) * (1-alpha)/(1+eta);
             gd_gaussian(a, b, Sig, K1, Xtbt, XtY, df, l, P, g, penalty, l1, l2, gamma, eta, maxChange);
           }
         }
         
         // Check convergence
         a=b.block(0,l,P,1);
+        if(maxChange==maxChange2) break;
+        maxChange2=maxChange;
+        //dev(l,0)=(1+eta)/2*(a.transpose()*Sig*a)(0,0)-(a.transpose()*(XtY+eta*Xtbt))(0,0);
         if (maxChange <= eps) break;
         
       }
@@ -310,19 +525,36 @@ List gdfit_gaussian(Eigen::MatrixXd XtY, Eigen::MatrixXd tilde_beta, Eigen::Matr
           gd_gaussian(a, b, Sig, K1, Xtbt, XtY, df, l, P, g, penalty, l1, l2, gamma, eta, maxChange);
           
           if (b(K1(g,0),l) != 0) {
+	    //Rcout << g;
+	    //Rcout << "added to active set\n";
             e(g,0) = 1;
             violations++;
           }
         }
       }
       
-      if (violations==0) break;
+      if (violations==0){
+        a=b.block(0,l,P,1);
+        dev(l,0)=(1+eta)/2*(a.transpose()*Sig*a)(0,0)-(a.transpose()*(XtY+eta*Xtbt))(0,0);
+	dev2(l,0)=(a.transpose()*Sig*a)(0,0)/2-(a.transpose()*(XtY))(0,0);
+	//Rcout << (1+eta)/2*(a.transpose()*Sig*a)(0,0);
+	//Rcout << "\n";
+        //Rcout<<"active set done\n";
+        //Rcout<<dev(l,0);
+        //Rcout<<"Done\n";
+        break;
+      }
       a=b.block(0,l,P,1);
+      //dev(l,0)=(1+eta)/2*(a.transpose()*Sig*a)(0,0)-(a.transpose()*(XtY+eta*Xtbt))(0,0);
+      //Rcout<<"active set done\n";
     }
     
   }
   result["Beta"]=b;
   result["iter"]=iter;
   result["df"]=df;
+  //result["Sig"]=Sig;
+  result["dev"]=dev;
+  result["dev2"]=dev2;
   return(result);
 }
