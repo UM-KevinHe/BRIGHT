@@ -187,8 +187,8 @@ int Sigma_LD(Eigen::MatrixXd& X, Eigen::SparseMatrix<double>& Sig, Eigen::Matrix
   for(int k=0;k<lblk-1;k++){
     Eigen::MatrixXd mat=(X.block(0,blk(k,0),N,blk(k+1,0)-blk(k,0)).transpose()*X.block(0,blk(k,0),N,blk(k+1,0)-blk(k,0)))/N;
       for(int i=blk(k,0);i<blk(k+1,0);i++){
-      //Rcout << i;
-      //Rcout << "\n";
+      Rcout << i;
+      Rcout << "\n";
       TL.push_back(T(i,i,1.0));
       for(int j=i+1;j<blk(k+1,0);j++){
         double tmp=S(mat(i-blk(k,0),j-blk(k,0)),tau);
@@ -334,7 +334,6 @@ Eigen::SparseMatrix<double> Sigma_test(Eigen::MatrixXd& X, double tau, int P, in
   return(Sig.col(1));
 }
 */
-
 
 // [[Rcpp::export]]
 List MaxLambda(Eigen::MatrixXd XtY, Eigen::MatrixXd tilde_beta, Eigen::MatrixXd &X,
