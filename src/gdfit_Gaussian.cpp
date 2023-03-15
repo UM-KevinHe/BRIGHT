@@ -394,7 +394,7 @@ List MaxLambda(Eigen::MatrixXd XtY, Eigen::MatrixXd tilde_beta, Eigen::MatrixXd 
     Lamb(g,0) = norm(z, Kg)*(1+eta)/alpha/m(g,0);
   }
   List result;
-  result["Sig"]=Sig;
+  //result["Sig"]=Sig;
   result["lambda.max"]=Lamb.maxCoeff();
   return(result);
 }
