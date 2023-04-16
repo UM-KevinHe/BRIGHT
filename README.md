@@ -12,34 +12,34 @@ Li, Q., Patrick, M. T., Zhang, H., Khunsriraksakul, C., Stuart, P. E., Gudjonsso
 
 ### Installation
 
-`lassosum` requires the following R packages: `RcppArmadillo`, `data.table`, `Matrix`. Install them by: 
+`BRIGHT` requires the following R packages: `Rcpp`, `Matrix`, `mvtnorm`, `BEDMatrix`, `grpreg`. Install them by: 
 
 ```r
-install.packages(c("RcppArmadillo", "data.table", "Matrix"), dependencies=TRUE)
+install.packages(c("Rcpp", "Matrix", "mvtnorm", "BEDMatrix", "grpreg"), dependencies=TRUE)
 ```
-For Windows and Mac users, it would be easiest to download the following binaries ([Windows](https://github.com/tshmak/lassosum/releases/download/v0.4.5/lassosum_0.4.5.zip), [Mac](https://github.com/tshmak/lassosum/releases/download/v0.4.5/lassosum_0.4.5.tgz)) and install using: 
+For Windows and Mac users, it would be easiest to download the following binaries ([Windows](To be determined), [Mac](To be determined)) and install using: 
 ```r
 install.packages("/path/to/downloaded_binary_file", repos=NULL)
 ```
 
-If you are on Linux or you would like to compile from source, you can download the source codes [lassosum_0.4.5.tar.gz](https://github.com/tshmak/lassosum/releases/download/v0.4.5/lassosum_0.4.5.tar.gz). Mac users should refer to [this page](https://cran.r-project.org/bin/macosx/tools/) for the various dependencies required. Install then via: 
+If you are on Linux or you would like to compile from source, you can download the source codes [BRIGHT_0.0.1.tar.gz](To be determined). Mac users should refer to [this page](https://cran.r-project.org/bin/macosx/tools/) for the various dependencies required. Install then via: 
 ```r
 install.packages("/path/to/downloaded_source.tar.gz", repos=NULL, type="source")
 ```
 
 If you have `devtools`, you can also type: 
 ```r
-install_github("tshmak/lassosum@v0.4.5")
+install_github("To be determined")
 ```
 or
 ```r
-install_github("tshmak/lassosum")
+install_github("To be determined")
 ```
 for the latest development version. Or you can clone the latest development version here and install yourself using `devtools`. 
 
 ### Warning!
 
-Most functions in `lassosum` impute missing genotypes in PLINK bfiles with a homozygous A2 genotype, which is the same as using the `--fill-missing-a2` option in PLINK. It is the user's responsibility to filter out individuals and SNPs with too many missing genotypes beforehand. 
+Most functions in `BRIGHT` impute missing genotypes in PLINK bfiles with a homozygous A2 genotype, which is the same as using the `--fill-missing-a2` option in PLINK. It is the user's responsibility to filter out individuals and SNPs with too many missing genotypes beforehand. 
 
 ### Tutorial
 
