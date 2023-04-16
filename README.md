@@ -54,28 +54,27 @@ First we read the minority summary statistics and majority summary statistics in
 ```r
 library(data.table)
 
-### Read summary statistics file ###
-ss <- fread("summarystats.txt")
+### Read minority summary statistics file ###
+ss <- fread("GWAS.txt")
 head(ss)
 
-### Specify the PLINK file stub of the reference panel ###
+### Specify the PLINK file stub of the reference panel or "EUR", "AFR", "EAS", "SAS" ,or "AMR" ###
 ref.bfile <- "refpanel"
 
-### Specify the PLINK file stub of the test data ###
-test.bfile <- "testsample"
-
-### Read LD region file ###
+### Read LD region file, only required if ref.bfile is provided as PLINK1 format ###
 LDblocks <- "EUR.hg19" # This will use LD regions as defined in Berisa and Pickrell (2015) for the European population and the hg19 genome.
 # Other alternatives available. Type ?lassosum.pipeline for more details. 
 ```
 Reference: [Berisa and Pickrell (2015)](https://academic.oup.com/bioinformatics/article/32/2/283/1743626/Approximately-independent-linkage-disequilibrium)
 
-To run `lassosum`, we need to input SNP-wise correlations. This can be converted from p-values via the `p2cor` function. 
+To run `BRIGHT`, we need to input marginal SNP-genotype correlations. This can be converted from p-values via the `p2cor` function. 
 ```r
-library(lassosum)
-cor <- p2cor(p = ss$P_val, n = 60000, sign=log(ss$OR_A1))
+library(BRIGHT)
+cor <- p2cor(p = ss$P_val, n = ss$n, sign=log(ss$OR_A1))
 # n is the sample size
 ```
+
+Preprocessing
 
 Running lassosum using standard pipeline: 
 ```r
