@@ -43,15 +43,12 @@ Most functions in `BRIGHT` impute missing genotypes in PLINK bfiles with a homoz
 
 ### Tutorial
 
-_If you are using lassosum for __cross prediction__, please refer to the manual [here](https://github.com/tshmak/crosspred)_
-
-Otherwise, run the following: 
 ```r
-library(lassosum)
-setwd(system.file("data", package="lassosum")) # Directory where data and LD region files are stored
+library(BRIGHT)
+setwd(system.file("data", package="BRIGHT")) # Directory where data and LD region files are stored
 ```
 
-First we read the summary statistics into R, and provide the `bfile` names of the reference panel and the test data. If only the reference panel is provided then only the beta coefficients (no polygenic scores) are calculated. You can then apply these subsequently to a test dataset using `validate` or `pseudovalidate`. If no reference panel is provided, then the test data is taken as the reference panel. 
+First we read the minority summary statistics and majority summary statistics into R, and provide the `ref` names of the reference panel. If `ref` names are provided as "EUR", "AFR", "EAS", "SAS" ,or "AMR", then the default 1000 genome project reference panels will be used; otherwise `ref` needs to be provided as a directory to the plink1 format files (.bim, .bed, .fam). 
 
 
 ```r
