@@ -1,15 +1,14 @@
-lassosum [![Build Status](https://travis-ci.org/tshmak/lassosum.svg?branch=master)](https://travis-ci.org/tshmak/lassosum)
+BRIGHT
 =======================
-*New!! A standalone version of `lassosum` is now available. Please see [here](https://github.com/tshmak/lassosum/blob/master/lassosum_standalone.md#lassosum-standalone-version-for-linux) for details.*
 
 ### Description
 
-`lassosum` is a method for computing LASSO/Elastic Net estimates of a linear regression problem given summary statistics from GWAS and Genome-wide meta-analyses, accounting for Linkage Disequilibrium (LD), via a reference panel.
+`BRIGHT` is a method for using published genotype-trait summary statistics (GWAS) from different ethnic populations to improve the recalibration, discrimination, and prediction accuracy on the target minority cohort. We implemented group LASSO, Elastic Net, MCP and SCAD penalties for marker fine mapping and accounted for Linkage Disequilibrium (LD), via a reference panel (1000 genome project as default).
 The reference panel is assumed to be in PLINK 1 [format](https://www.cog-genomics.org/plink/1.9/input#bed).
 Summary statistics are expected to be loaded into memory as a data.frame/data.table. 
 
 ### Reference
-[Mak _et al_ (2017) Polygenic scores via penalized regression on summary statistics. _Genetic Epidemiology_ 41(6) 469-480](https://onlinelibrary.wiley.com/doi/abs/10.1002/gepi.22050)
+Li, Q., Patrick, M. T., Zhang, H., Khunsriraksakul, C., Stuart, P. E., Gudjonsson, J. E., ... & He, K. (2022). Bregman Divergence-Based Data Integration with Application to Polygenic Risk Score (PRS) Heterogeneity Adjustment. arXiv preprint arXiv:2210.06025 (https://arxiv.org/abs/2210.06025)
 
 ### Installation
 
