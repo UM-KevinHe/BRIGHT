@@ -160,6 +160,51 @@ out <- BRIGHTs(data = dat, type.trait="binary", penalty="LASSO")
 ```
 This procedure requires additional and quite stringent summary statistics from both target and prior data, in genetics studies its quite common to treat binary outcome as continuous and perform continuous models on the data; therefore, in the case where the above additonal summary statistics are not available, the BRIGHTS with quantitative traits procedure can also be used to analyze the binary data.
 
+# BRIGHTi tutorial
+BRIGHTi group of methods utilize individual-level data from target minority populations and a wide variety of summary-level data from prior majority population to carry out transfer-learning.
+Summary statistics are expected to be loaded into memory as a data.frame/data.table for the prior majority population. 
+
+Below we discuss the required data and implementation tutorials.
+
+BRIGHTi requires the individual-level genotype and phenotype from the target minority population, while from the prior majority populations either GWAS summary statistics, marginal genotype-trait inner product, or coefficients estimated from joint models (e.g. PRS or LASSO regression) can be used for model fitting. We note that more than 1 prior majority data can be incorporated in the BRIGHTi model.
+
+First we read the minority genotype data from plink1 files and phenotype data from text files and majority summary statistics into R.
+
+
+```r
+library(BRIGHT)
+library(data.table)
+
+### Read target minority GWAS summary statistics file or marginal genotype-trait inner product file###
+
+# Read in target GWAS
+Tgeno <- "/path/to/plink"
+Tpheno <- fread("Target_phenotype.txt")
+head(Tpheno)
+
+
+### Read prior majority GWAS summary statistics file, marginal genotype-trait inner product, or joint coefficient estimates, more than 1 prior majority data can be read in###
+
+Pind=c("GWAS","IProd","Coef")
+Pss1 <- fread("Prior_GWAS1.txt")
+head(Pss1)
+Pss2 <- fread("Prior_IProd2.txt")
+head(Pss2)
+Pss3 <- fread("Prior_Coef3.txt")
+head(Pss3)
+Pss=list("1"=Pss1,"2"=Pss2,"3"=Pss3) # The order of list Pss need to be matched with Pind
+```
+
+Then, a preprocessing step is required to remove the SNPs that are not in the target minority genotype files from prior majority data, convert prior data into joint coefficient estimates, and match the effect alleles between the minority genotype and prior data.
+
+```r
+dat <- PreprocessI(Tpheno = Tpheno, Tgeno = Tgeno, Pss = Pss, Pind = Pind)
+```
+
+Running BRIGHTi using standard pipeline with LASSO penalty on different types of traits including "quantitative", "binary", "count": 
+```r
+out <- BRIGHTi(data = dat, type.trait="quantitative", penalty="LASSO")
+```
 
 #### Parallel processing with the `parallel` package
 Note that parallel processing is done by `LDblocks`. 
