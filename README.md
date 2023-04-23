@@ -99,6 +99,59 @@ Running BRIGHTs using standard pipeline with LASSO penalty on quantitative trait
 out <- BRIGHTs(data = dat,type.trait="quantitative",penalty="LASSO")
 ```
 
+## BRIGHTs with binary traits
+For binary traits, in addition to the GWAS summary statistics or marginal genotype-trait inner product, $\frac{\boldsymbol X^\top\boldsymbol y}{n}$, BRIGHTs requires an estimate based on logistic LASSO regression, $\boldsymbol{\hat b}$, and the marginal genotype-predicted traits inner product, $\frac{\boldsymbol X^\top expit(\boldsymbol X \boldsymbol{\hat b})}{n}$, from the target minority population, while from the prior majority populations either GWAS summary statistics, marginal genotype-trait inner product, or coefficients estimated from joint models (e.g. PRS or LASSO regression) can be used for model fitting. We note that more than 1 prior majority data can be incorporated in the BRIGHTs model.
+
+First we read the minority summary statistics and majority summary statistics into R, and provide the `ref` names of the reference panel. If `ref` names are provided as "EUR", "AFR", "EAS", "SAS" ,or "AMR", then the default 1000 genome project reference panels will be used; otherwise `ref` needs to be provided as a directory to the plink1 format files (.bim, .bed, .fam). 
+
+
+```r
+library(BRIGHT)
+library(data.table)
+
+### Read target minority GWAS summary statistics file or marginal genotype-trait inner product file###
+
+# Read in target GWAS
+Tind="GWAS"
+Tss <- fread("Target_GWAS.txt")
+head(Tss)
+
+# Alternatively read in target marginal genotype-trait inner product
+Tind="IProd"
+Tss <- fread("Target_IProd.txt")
+head(Tss)
+
+### Read prior majority GWAS summary statistics file, marginal genotype-trait inner product, or joint coefficient estimates, more than 1 prior majority data can be read in###
+
+Pind=c("GWAS","IProd","Coef")
+Pss1 <- fread("Prior_GWAS1.txt")
+head(Pss1)
+Pss2 <- fread("Prior_IProd2.txt")
+head(Pss2)
+Pss3 <- fread("Prior_Coef3.txt")
+head(Pss3)
+Pss=list("1"=Pss1,"2"=Pss2,"3"=Pss3) # The order of list Pss need to be matched with Pind
+
+### Specify the PLINK file stub of the reference panel or "EUR", "AFR", "EAS", "SAS" ,or "AMR" ###
+ref.bfile <- "refpanel"
+
+### Read LD region file, only required if ref.bfile is provided as PLINK1 format ###
+LDblocks <- "AFR.hg19" # This will use LD regions as defined in Berisa and Pickrell (2015) for the African population and the hg19 genome build.
+# Other alternatives available. Type ?BRIGHTs for more details. 
+```
+Reference: [Berisa and Pickrell (2015)](https://academic.oup.com/bioinformatics/article/32/2/283/1743626/Approximately-independent-linkage-disequilibrium)
+
+Then, a preprocessing step is required to remove the SNPs that are not in the reference panel from all data, convert target data into marginal SNPs-trait inner product, convert prior data into joint coefficient estimates, and match the effect alleles between the reference panel and data.
+
+```r
+dat <- PreprocessS(Tss = Tss, Tind = Tind, Pss = Pss, Pind = Pind, ref.bfile=ref.bfile, LDblocks=LDblocks)
+```
+
+Running BRIGHTs using standard pipeline with LASSO penalty on quantitative traits: 
+```r
+out <- BRIGHTs(data = dat,type.trait="quantitative",penalty="LASSO")
+```
+
 #### Parallel processing with the `parallel` package
 Note that parallel processing is done by `LDblocks`. 
 ```r
