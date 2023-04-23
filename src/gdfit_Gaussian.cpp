@@ -4,13 +4,16 @@
 #include <string.h>
 using namespace Rcpp;
 
-//' Second norm
+//' Second Norm
 //'
-//' Calculate second norm of a vertical vector
+//' Calculate second norm (Euclidean distance) of a vertical vector.
 //'
-//'@param x a numeric column vector to calculate the second norm
-//'@param p a integer represents the dimension of x
-//'@return ||x||_2
+//'@param x a numeric column vector to calculate the second norm.
+//'@param p an integer represents the dimension of x.
+//'@return A scalar of the computed second norm of x.
+//'@examples
+//' x <- t(t(rnorm(100)))
+//' norm(x,length(x))
 // [[Rcpp::export]]
 double norm(Eigen::MatrixXd x, int p) {
   double x_norm = 0;
@@ -21,11 +24,15 @@ double norm(Eigen::MatrixXd x, int p) {
 
 //' Soft-thresholding
 //'
-//' Calculate the soft-thresholding result
+//' Calculate the soft-thresholding result corresponding to the LASSO penalty.
 //'
-//'@param z a numeric scalar to be soft-thresholded
-//'@param l a numeric scalar for the soft-thresholding parameter
-//'@return S(z,l)
+//'@param z a numeric scalar to be soft-thresholded.
+//'@param l a numeric scalar for the soft-thresholding parameter.
+//'@return If z <= l, 0 is outputted.
+//'@return If z > l, z-l is outputted.
+//'@examples 
+//' S(5,1)
+//' S(0.5,1)
 // [[Rcpp::export]]
 double S(double z, double l) {
   if (z > l) return(z-l);
@@ -35,13 +42,16 @@ double S(double z, double l) {
 
 //' Firm-thresholding
 //'
-//' Calculate the Firm-thresholding result
+//' Calculate the Firm-thresholding result corresponding to the MCP penalty.
 //'
-//'@param z a numeric scalar to be Firm-thresholded
-//'@param l1 a numeric scalar for the first Firm-thresholding parameter
-//'@param l2 a numeric scalar for the second Firm-thresholding parameter
-//'@param gamma a numeric scalar for the third Firm-thresholding parameter
-//'@return F(z,l1,l2)
+//'@param z a numeric scalar to be firm-thresholded.
+//'@param l1 a numeric scalar for the first firm-thresholding parameter.
+//'@param l2 a numeric scalar for the second firm-thresholding parameter.
+//'@param gamma a numeric scalar for the third firm-thresholding parameter.
+//'@return A firm-thresholded scalar of z.
+//'@examples
+//' Ff(5,1,1,1)
+//' Ff(0.5,1,1,1)
 // [[Rcpp::export]]
 double Ff(double z, double l1, double l2, double gamma) {
   double s=0;
@@ -54,13 +64,16 @@ double Ff(double z, double l1, double l2, double gamma) {
 
 //' SCAD-thresholding
 //'
-//' Calculate the SCAD-thresholding result
+//' Calculate the SCAD-thresholding result corresponding to the SCAD penalty.
 //'
-//'@param z a numeric scalar to be SCAD-thresholded
-//'@param l1 a numeric scalar for the first SCAD-thresholding parameter
-//'@param l2 a numeric scalar for the second SCAD-thresholding parameter
-//'@param gamma a numeric scalar for the third SCAD-thresholding parameter
-//'@return Fs(z,l1,l2)
+//'@param z a numeric scalar to be SCAD-thresholded.
+//'@param l1 a numeric scalar for the first SCAD-thresholding parameter.
+//'@param l2 a numeric scalar for the second SCAD-thresholding parameter.
+//'@param gamma a numeric scalar for the third SCAD-thresholding parameter.
+//'@return A SCAD-thresholded scalar of z.
+//'@examples
+//' Fs(5,1,1,1)
+//' Fs(0.5,1,1,1)
 // [[Rcpp::export]]
 double Fs(double z, double l1, double l2, double gamma) {
   double s=0;
@@ -72,7 +85,20 @@ double Fs(double z, double l1, double l2, double gamma) {
   else return(z/(1+l2));
 }
 
-
+//' LD Block Structured SNPs grouping
+//'
+//' Calculate the LD grouping of input SNPs based on existing block structures (Berisa et. al.). The chr and pos must be matched and sorted.
+//'
+//'@param chr a numeric verticle vector of the chromosomes each SNP belong to.
+//'@param pos a numeric verticle vector of the position in base pair (BP) of each SNP.
+//'@param LDB a numeric matrix for the block structure information directly read in from Berisa's bed file.
+//'@return A numeric verticle vector, representing the block structured grouping of the current SNP list; SNP with (LD[i],LD[i+1]) are to be within one group.
+//'@examples
+//' chr=t(t(c(1,1,1,2,2,3,3)))
+//' pos=t(t(c(10,20,30,1,20,9,20)))
+//' LDB=data.frame(chr=c(1,1,1,2,2,2,3,3,3),start=c(1,15,40,1,30,60,1,50,100),stop=c(15,40,80,30,60,100,50,100,150))
+//' LDB=as.matrix(LDB)
+//' LD(chr,pos,LDB)
 // [[Rcpp::export]]
 Eigen::MatrixXd LD(Eigen::MatrixXd chr,Eigen::MatrixXd pos,Eigen::MatrixXd LDB){
   int j=-1;
@@ -175,6 +201,17 @@ int Sigma_LD(Eigen::MatrixXd& X, Eigen::SparseMatrix<double>& Sig, Eigen::Matrix
 }
 */
 
+//' Block Structured LD Calculation
+//'
+//' Calculate the LD based on existing block structures.
+//'
+//'@param X a numeric matrix of the standardized genotypes outputted through newXG() function.
+//'@param Sig a numeric sparse matrix pointer, indicating the memory location where the output sparse LD matrix should be stored.
+//'@param blk a numeric verticle vector indicating the grouping of SNPs in each block, can be generated through LD() function.
+//'@param tau a numeric scalar represents the element-wise soft-thresholding parameter for generating the LD.
+//'@param P an integer scalar for the column dimension (genotype dimension) of X.
+//'@param N an integer scalar for the row dimension (sample size) of X.
+//'@return Write the calculated sparse LD matrix to the memory location provided in Sig.
 // [[Rcpp::export]]
 int Sigma_LD(Eigen::MatrixXd& X, Eigen::SparseMatrix<double>& Sig, Eigen::MatrixXi& blk, double tau, int P, int N){
   int lblk=blk.rows();
@@ -223,7 +260,7 @@ int Sigma_ST(Eigen::MatrixXd& X, Eigen::SparseMatrix<double>& Sig, Eigen::Matrix
   return(0);
 }
 */
-
+/*
 // [[Rcpp::export]]
 int Sigma_ST(Eigen::MatrixXd& X, Eigen::SparseMatrix<double>& Sig, Eigen::MatrixXi& blk, double tau, int P, int N){
   typedef Eigen::Triplet<double> T;
@@ -248,7 +285,7 @@ int Sigma_ST(Eigen::MatrixXd& X, Eigen::SparseMatrix<double>& Sig, Eigen::Matrix
   Sig.setFromTriplets(TL.begin(), TL.end()); 
   return(0);
 }
-
+*/
 
 // [[Rcpp::export]]
 void gd_gaussian(Eigen::MatrixXd & a, Eigen::MatrixXd & b, Eigen::SparseMatrix<double> & Sig, Eigen::MatrixXd & K1,
@@ -335,6 +372,23 @@ Eigen::SparseMatrix<double> Sigma_test(Eigen::MatrixXd& X, double tau, int P, in
 }
 */
 
+//' Maximum Lambda selection
+//'
+//' Calculate the maximum lambda, which corresponding to penalizing all coefficients to be zero
+//'
+//'@param XtY a numeric verticle vector of the marginal correlation between genotype and outcome, can be recovered from GWAS summary statistics by function p2cor().
+//'@param tilde_beta a numeric verticle vector of the prior information; in the case where prior information is a subspace of XtY, set the complement set to be zero.
+//'@param X a numeric matrix of reference genotypes, default is from 1000 genome project.
+//'@param lambda a numeric verticle vector of the LASSO penalty weights; it must be sorted with a decreasing order.
+//'@param K1 a numeric verticle vector of the grouping of SNPs for group penalties; SNPs within K1[i,i+1] are grouped together.
+//'@param m a numeric verticle vector of the multiplicative factor to adjust for the number of SNPs in each group, the default is the square root of number of elements in each group.
+//'@param blk a numeric verticle vector indicating the grouping of SNPs in each block, can be generated through LD() function.
+//'@param K0 a integer scalar for the number of SNPs/covariates that is not penalized.
+//'@param tau a numeric scalar represents the element-wise soft-thresholding parameter for generating the LD.
+//'@param eta a numeric scalar of the weights for incorporating prior information.
+//'@param alpha a numeric scalar of the ridge penalty weights; alpha=1 corresponds to no ridge penalty.
+//'@param eps a numeric scalar for the convergence criteria.
+//'@param max_iter an integer scalar for the maximum iterations before the algorithm stops.
 // [[Rcpp::export]]
 List MaxLambda(Eigen::MatrixXd XtY, Eigen::MatrixXd tilde_beta, Eigen::MatrixXd &X,
                  Eigen::MatrixXd K1, Eigen::MatrixXd m, Eigen::MatrixXi& blk,int K0, double tau,
@@ -399,6 +453,32 @@ List MaxLambda(Eigen::MatrixXd XtY, Eigen::MatrixXd tilde_beta, Eigen::MatrixXd 
   return(result);
 }
 
+//' BRIGHT estimation procedure
+//'
+//' Gradient-descent algorithm for optimizing the BRIGHT estimation procedure
+//'
+//'@param XtY a numeric verticle vector of the marginal correlation between genotype and outcome, can be recovered from GWAS summary statistics by function p2cor().
+//'@param tilde_beta a numeric verticle vector of the prior information; in the case where prior information is a subspace of XtY, set the complement set to be zero.
+//'@param X a numeric matrix of reference genotypes, default is from 1000 genome project.
+//'@param lambda a numeric verticle vector of the LASSO penalty weights; it must be sorted with a decreasing order.
+//'@param K1 a numeric verticle vector of the grouping of SNPs for group penalties; SNPs within K1[i,i+1] are grouped together.
+//'@param m a numeric verticle vector of the multiplicative factor to adjust for the number of SNPs in each group, the default is the square root of number of elements in each group.
+//'@param blk a numeric verticle vector indicating the grouping of SNPs in each block, can be generated through LD() function.
+//'@param K0 a integer scalar for the number of SNPs/covariates that is not penalized.
+//'@param penalty a integer scalar for chosing the penalties; 1 corresponds to LASSO, 2 corresponds to MCP, 3 corresponds to SCAD.
+//'@param tau a numeric scalar represents the element-wise soft-thresholding parameter for generating the LD.
+//'@param eta a numeric scalar of the weights for incorporating prior information.
+//'@param alpha a numeric scalar of the ridge penalty weights; alpha=1 corresponds to no ridge penalty.
+//'@param gamma a numeric scalar of the third parameter in firm and SCAD thresholding functions.
+//'@param eps a numeric scalar for the convergence criteria.
+//'@param max_iter an integer scalar for the maximum iterations before the algorithm stops.
+//'@param dfmax an integer scalar for the maximum number of SNPs been selected before the algorithm stops.
+//'@param gmax an integer scalar for the maximum number of groups been selected before the algorithm stops.
+//'@param user a logical scalar for indicating whether lambda is user specified; if user=TRUE, then the iteration will start from the largest lambda, otherwise the iteration will start from the second largest lambda.
+//'@return Write a list of results; beta, the coefficient estimate from BRIGHT; 
+//'@return iter, the number of total iterations needed for the model to converge with each lambda; 
+//'@return df total degree of freedom of the converged model with each lambda;
+//'@return dev, the approximated deviance associated with each lambda.
 // [[Rcpp::export]]
 List gdfit_gaussian(Eigen::MatrixXd XtY, Eigen::MatrixXd tilde_beta, Eigen::MatrixXd &X, Eigen::MatrixXd lambda, 
                     Eigen::MatrixXd K1, Eigen::MatrixXd m, Eigen::MatrixXi& blk, int K0, int penalty, double tau,

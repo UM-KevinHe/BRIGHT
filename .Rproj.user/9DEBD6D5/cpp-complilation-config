@@ -8,7 +8,7 @@
         "-I/Library/Developer/CommandLineTools/usr/lib/clang/11.0.3/include",
         "-I/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include",
         "-I/Library/Developer/CommandLineTools/usr/include",
-        "-I/Library/Frameworks/R.framework/Versions/3.6/Resources/library/Rcpp/include",
+        "-I/Users/qinmenggeli/Library/R/3.6/library/Rcpp/include",
         "-I/Library/Frameworks/R.framework/Versions/3.6/Resources/library/RcppEigen/include",
         "-std=gnu++11",
         "-I/Library/Frameworks/R.framework/Resources/include",
@@ -18,7 +18,7 @@
         "-I/usr/local/include",
         "-fPIC"
     ],
-    "hash" : "1669584655",
+    "hash" : "1680298389",
     "is_cpp" : true,
     "pch" : "Rcpp"
 }
