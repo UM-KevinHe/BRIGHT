@@ -3,7 +3,7 @@ BRIGHT
 
 ### Description
 
-`BRIGHT` is a method for using published genotype-trait summary statistics (GWAS) from different ethnic populations to improve the recalibration, discrimination, and prediction accuracy on the target minority cohort. We implemented group LASSO, Elastic Net, MCP and SCAD penalties for marker fine mapping and accounted for Linkage Disequilibrium (LD), via a reference panel (1000 genome project as default).
+`BRIGHT` is a group of methods for using individual-level data, published genotype-trait summary statistics (GWAS), or combined data types from different ethnic populations to improve the recalibration, discrimination, and prediction accuracy on the target minority cohort. We implemented group LASSO, Elastic Net, MCP and SCAD penalties for marker fine mapping and accounted for Linkage Disequilibrium (LD) via a reference panel (1000 genome project as default).
 The reference panel is assumed to be in PLINK 1 [format](https://www.cog-genomics.org/plink/1.9/input#bed).
 Summary statistics are expected to be loaded into memory as a data.frame/data.table. 
 
@@ -41,7 +41,8 @@ for the latest development version. Or you can clone the latest development vers
 
 Most functions in `BRIGHT` impute missing genotypes in PLINK bfiles with a homozygous A2 genotype, which is the same as using the `--fill-missing-a2` option in PLINK. It is the user's responsibility to filter out individuals and SNPs with too many missing genotypes beforehand. 
 
-### Tutorial
+### BRIGHTs tutorial
+BRIGHTs group of methods
 
 ```r
 library(BRIGHT)
