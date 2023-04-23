@@ -1,14 +1,14 @@
 BRIGHT
 =======================
 
-### Description
+# Description
 
 `BRIGHT` is a group of methods for using individual-level data, published genotype-trait summary statistics (GWAS), or combined data types from different ethnic populations to improve the recalibration, discrimination, and prediction accuracy on the target minority cohort. We implemented group LASSO, Elastic Net, MCP and SCAD penalties for marker fine mapping.
 
-### Reference
+# Reference
 Li, Q., Patrick, M. T., Zhang, H., Khunsriraksakul, C., Stuart, P. E., Gudjonsson, J. E., ... & He, K. (2022). Bregman Divergence-Based Data Integration with Application to Polygenic Risk Score (PRS) Heterogeneity Adjustment. arXiv preprint arXiv:2210.06025 (https://arxiv.org/abs/2210.06025)
 
-### Installation
+# Installation
 
 `BRIGHT` requires the following R packages: `Rcpp`, `Matrix`, `mvtnorm`, `BEDMatrix`, `grpreg`. Install them by: 
 
@@ -35,19 +35,19 @@ install_github("To be determined")
 ```
 for the latest development version. Or you can clone the latest development version here and install yourself using `devtools`. 
 
-### Warning!
+# Warning!
 
 Most functions in `BRIGHT` impute missing genotypes in PLINK bfiles with a homozygous A2 genotype, which is the same as using the `--fill-missing-a2` option in PLINK. It is the user's responsibility to filter out individuals and SNPs with too many missing genotypes beforehand. 
 
-### BRIGHTs tutorial
+# BRIGHTs tutorial
 BRIGHTs group of methods utilize a wide variety of summary-level data from different populations to carry out transfer-learning. We accounted for Linkage Disequilibrium (LD) via a reference panel (1000 genome project as default).
 The reference panel is assumed to be in PLINK 1 [format](https://www.cog-genomics.org/plink/1.9/input#bed).
 Summary statistics are expected to be loaded into memory as a data.frame/data.table. 
 
 Below we discuss the required data and implementation tutorials separately for quantitative traits and binary traits.
 
-#### BRIGHTs with quantitative traits
-For quantitative traits, BRIGHTs requires the GWAS summary statistics from the target minority population, while from the prior majority populations either GWAS summary statistics or coefficients estimated from joint models (e.g. PRS or LASSO regression) can be used for model fitting.
+## BRIGHTs with quantitative traits
+For quantitative traits, BRIGHTs requires the GWAS summary statistics from the target minority population, while from the prior majority populations either GWAS summary statistics or coefficients estimated from joint models (e.g. PRS or LASSO regression) can be used for model fitting. We note that more than 1 prior majority data can be incorporated in the BRIGHTs model.
 
 First we read the minority summary statistics and majority summary statistics into R, and provide the `ref` names of the reference panel. If `ref` names are provided as "EUR", "AFR", "EAS", "SAS" ,or "AMR", then the default 1000 genome project reference panels will be used; otherwise `ref` needs to be provided as a directory to the plink1 format files (.bim, .bed, .fam). 
 
@@ -60,20 +60,26 @@ library(data.table)
 Tss <- fread("Target_GWAS.txt")
 head(Tss)
 
-### Read prior majority GWAS summary statistics file or joint coefficient estimates###
-Tss <- fread("Target_GWAS.txt")
-head(Tss)
-Tss <- fread("Target_coef.txt")
-head(Tss)
+### Read prior majority GWAS summary statistics file or joint coefficient estimates, more than 1 prior majority data can be read in###
+Tss1 <- fread("Target_GWAS1.txt")
+head(Tss1)
+Tss_coef1 <- fread("Target_coef1.txt")
+head(Tss_coef1)
+Tss2 <- fread("Target_GWAS2.txt")
+head(Tss2)
+Tss_coef2 <- fread("Target_coef2.txt")
+head(Tss_coef2)
 
 ### Specify the PLINK file stub of the reference panel or "EUR", "AFR", "EAS", "SAS" ,or "AMR" ###
 ref.bfile <- "refpanel"
 
 ### Read LD region file, only required if ref.bfile is provided as PLINK1 format ###
 LDblocks <- "AFR.hg19" # This will use LD regions as defined in Berisa and Pickrell (2015) for the African population and the hg19 genome build.
-# Other alternatives available. Type ?lassosum.pipeline for more details. 
+# Other alternatives available. Type ?BRIGHTs for more details. 
 ```
 Reference: [Berisa and Pickrell (2015)](https://academic.oup.com/bioinformatics/article/32/2/283/1743626/Approximately-independent-linkage-disequilibrium)
+
+
 
 To run `BRIGHT`, we need to input marginal SNP-genotype correlations. This can be converted from p-values via the `p2cor` function. 
 ```r
