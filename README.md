@@ -47,7 +47,7 @@ Summary statistics are expected to be loaded into memory as a data.frame/data.ta
 Below we discuss the required data and implementation tutorials separately for quantitative traits and binary traits.
 
 ## BRIGHTs with quantitative traits
-For quantitative traits, BRIGHTs requires the GWAS summary statistics or marginal genotype-trait inner product $X^\top$ from the target minority population, while from the prior majority populations either GWAS summary statistics or coefficients estimated from joint models (e.g. PRS or LASSO regression) can be used for model fitting. We note that more than 1 prior majority data can be incorporated in the BRIGHTs model.
+For quantitative traits, BRIGHTs requires the GWAS summary statistics or marginal genotype-trait inner product $\frac{\boldsymbol X^\top\boldsymbol y}{n}$ from the target minority population, while from the prior majority populations either GWAS summary statistics or coefficients estimated from joint models (e.g. PRS or LASSO regression) can be used for model fitting. We note that more than 1 prior majority data can be incorporated in the BRIGHTs model.
 
 First we read the minority summary statistics and majority summary statistics into R, and provide the `ref` names of the reference panel. If `ref` names are provided as "EUR", "AFR", "EAS", "SAS" ,or "AMR", then the default 1000 genome project reference panels will be used; otherwise `ref` needs to be provided as a directory to the plink1 format files (.bim, .bed, .fam). 
 
