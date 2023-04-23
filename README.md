@@ -96,7 +96,7 @@ dat <- PreprocessS(Tss = Tss, Tind = Tind, Pss = Pss, Pind = Pind, ref.bfile=ref
 
 Running BRIGHTs using standard pipeline with LASSO penalty on quantitative traits: 
 ```r
-out <- BRIGHTs(data = dat,type.trait="quantitative",penalty="LASSO")
+out <- BRIGHTs(data = dat, type.trait="quantitative", penalty="LASSO")
 ```
 
 ## BRIGHTs with binary traits
@@ -156,7 +156,7 @@ dat <- PreprocessS(Tss = Tss, Tind = Tind, Pss = Pss, Pind = Pind, ref.bfile=ref
 
 Running BRIGHTs using standard pipeline with LASSO penalty on quantitative traits: 
 ```r
-out <- BRIGHTs(data = dat,type.trait="binary",penalty="LASSO")
+out <- BRIGHTs(data = dat, type.trait="binary", penalty="LASSO")
 ```
 This procedure requires additional and quite stringent summary statistics from both target and prior data, in genetics studies its quite common to treat binary outcome as continuous and perform continuous models on the data; therefore, in the case where the above additonal summary statistics are not available, the BRIGHTS with quantitative traits procedure can also be used to analyze the binary data.
 
