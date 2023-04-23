@@ -100,7 +100,7 @@ out <- BRIGHTs(data = dat,type.trait="quantitative",penalty="LASSO")
 ```
 
 ## BRIGHTs with binary traits
-For binary traits, in addition to the GWAS summary statistics or marginal genotype-trait inner product, $\frac{\boldsymbol X^\top\boldsymbol y}{n}$, BRIGHTs requires an estimate based on logistic LASSO regression, $\boldsymbol{\hat b}$, and the marginal genotype-predicted traits inner product, $\frac{\boldsymbol X^\top expit(\boldsymbol X \boldsymbol{\hat b})}{n}$, from the target minority population. From the prior majority populations coefficients estimated from joint models (e.g. logistic LASSO regression) is required for model fitting. We note that more than 1 prior majority data can be incorporated in the BRIGHTs model. This procedure requires additional and quite stringent summary statistics from both target and prior data, in genetics studies its quite common to treat binary outcome as continuous and perform continuous models on the data; therefore, in the case where the above additonal summary statistics are not available, the BRIGHTS with quantitative traits procedure can also be used to analyze the binary data.
+For binary traits, in addition to the GWAS summary statistics or marginal genotype-trait inner product, $\frac{\boldsymbol X^\top\boldsymbol y}{n}$, BRIGHTs requires an estimate based on logistic LASSO regression, $\boldsymbol{\hat b}$, and the marginal genotype-predicted traits inner product, $\frac{\boldsymbol X^\top expit(\boldsymbol X \boldsymbol{\hat b})}{n}$, from the target minority population. From the prior majority populations coefficients estimated from joint models (e.g. logistic LASSO regression) is required for model fitting. We note that more than 1 prior majority data can be incorporated in the BRIGHTs model. 
 
 First we read the minority summary statistics and majority summary statistics into R, and provide the `ref` names of the reference panel. If `ref` names are provided as "EUR", "AFR", "EAS", "SAS" ,or "AMR", then the default 1000 genome project reference panels will be used; otherwise `ref` needs to be provided as a directory to the plink1 format files (.bim, .bed, .fam). 
 
@@ -112,21 +112,29 @@ library(data.table)
 ### Read target minority GWAS summary statistics file or marginal genotype-trait inner product file###
 
 # Read in target GWAS
-Tind="GWAS"
-Tss <- fread("Target_GWAS.txt")
-head(Tss)
+Tind=c("GWAS","LASSO","IProdPred")
+Tss1 <- fread("Target_GWAS.txt")
+head(Tss1)
 
 # Alternatively read in target marginal genotype-trait inner product
-Tind="IProd"
+Tind=c("IProd","LASSO","IProdPred")
 Tss <- fread("Target_IProd.txt")
 head(Tss)
 
+### Read target minority LASSO estimates file and marginal genotype-predicted outcome inner product file###
+bhat <- fread("Target_LASSO.txt")
+head(bhat)
+rhat <- fread("Target_IProdPred.txt")
+head(bhat)
+
+Tss <- list("1" = Tss1, "2" = bhat, "3" = rhat) # The order of list Tss need to be matched with Tind
+
 ### Read prior majority GWAS summary statistics file, marginal genotype-trait inner product, or joint coefficient estimates, more than 1 prior majority data can be read in###
 
-Pind=c("GWAS","IProd","Coef")
-Pss1 <- fread("Prior_GWAS1.txt")
+Pind=c("Coef", "Coef", "Coef")
+Pss1 <- fread("Prior_Coef1.txt")
 head(Pss1)
-Pss2 <- fread("Prior_IProd2.txt")
+Pss2 <- fread("Prior_Coef2.txt")
 head(Pss2)
 Pss3 <- fread("Prior_Coef3.txt")
 head(Pss3)
@@ -139,7 +147,6 @@ ref.bfile <- "refpanel"
 LDblocks <- "AFR.hg19" # This will use LD regions as defined in Berisa and Pickrell (2015) for the African population and the hg19 genome build.
 # Other alternatives available. Type ?BRIGHTs for more details. 
 ```
-Reference: [Berisa and Pickrell (2015)](https://academic.oup.com/bioinformatics/article/32/2/283/1743626/Approximately-independent-linkage-disequilibrium)
 
 Then, a preprocessing step is required to remove the SNPs that are not in the reference panel from all data, convert target data into marginal SNPs-trait inner product, convert prior data into joint coefficient estimates, and match the effect alleles between the reference panel and data.
 
@@ -149,8 +156,10 @@ dat <- PreprocessS(Tss = Tss, Tind = Tind, Pss = Pss, Pind = Pind, ref.bfile=ref
 
 Running BRIGHTs using standard pipeline with LASSO penalty on quantitative traits: 
 ```r
-out <- BRIGHTs(data = dat,type.trait="quantitative",penalty="LASSO")
+out <- BRIGHTs(data = dat,type.trait="binary",penalty="LASSO")
 ```
+This procedure requires additional and quite stringent summary statistics from both target and prior data, in genetics studies its quite common to treat binary outcome as continuous and perform continuous models on the data; therefore, in the case where the above additonal summary statistics are not available, the BRIGHTS with quantitative traits procedure can also be used to analyze the binary data.
+
 
 #### Parallel processing with the `parallel` package
 Note that parallel processing is done by `LDblocks`. 
