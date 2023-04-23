@@ -47,27 +47,30 @@ Summary statistics are expected to be loaded into memory as a data.frame/data.ta
 Below we discuss the required data and implementation tutorials separately for quantitative traits and binary traits.
 
 #### BRIGHTs with quantitative traits
-For quantitative traits, BRIGHTs requires the GWAS summary statistics from the target minority population, while from the prior majority populations either GWAS summary statistics or coefficients estimated from joint models (e.g. PRS or LASSO regression) 
-
-```r
-library(BRIGHT)
-```
+For quantitative traits, BRIGHTs requires the GWAS summary statistics from the target minority population, while from the prior majority populations either GWAS summary statistics or coefficients estimated from joint models (e.g. PRS or LASSO regression) can be used for model fitting.
 
 First we read the minority summary statistics and majority summary statistics into R, and provide the `ref` names of the reference panel. If `ref` names are provided as "EUR", "AFR", "EAS", "SAS" ,or "AMR", then the default 1000 genome project reference panels will be used; otherwise `ref` needs to be provided as a directory to the plink1 format files (.bim, .bed, .fam). 
 
 
 ```r
+library(BRIGHT)
 library(data.table)
 
-### Read minority summary statistics file ###
-ss <- fread("GWAS.txt")
-head(ss)
+### Read target minority GWAS summary statistics file ###
+Tss <- fread("Target_GWAS.txt")
+head(Tss)
+
+### Read prior majority GWAS summary statistics file or joint coefficient estimates###
+Tss <- fread("Target_GWAS.txt")
+head(Tss)
+Tss <- fread("Target_coef.txt")
+head(Tss)
 
 ### Specify the PLINK file stub of the reference panel or "EUR", "AFR", "EAS", "SAS" ,or "AMR" ###
 ref.bfile <- "refpanel"
 
 ### Read LD region file, only required if ref.bfile is provided as PLINK1 format ###
-LDblocks <- "EUR.hg19" # This will use LD regions as defined in Berisa and Pickrell (2015) for the European population and the hg19 genome.
+LDblocks <- "AFR.hg19" # This will use LD regions as defined in Berisa and Pickrell (2015) for the African population and the hg19 genome build.
 # Other alternatives available. Type ?lassosum.pipeline for more details. 
 ```
 Reference: [Berisa and Pickrell (2015)](https://academic.oup.com/bioinformatics/article/32/2/283/1743626/Approximately-independent-linkage-disequilibrium)
