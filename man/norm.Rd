@@ -2,18 +2,22 @@
 % Please edit documentation in R/RcppExports.R
 \name{norm}
 \alias{norm}
-\title{Second norm}
+\title{Second Norm}
 \usage{
 norm(x, p)
 }
 \arguments{
-\item{x}{a numeric column vector to calculate the second norm}
+\item{x}{a numeric column vector to calculate the second norm.}
 
-\item{p}{a integer represents the dimension of x}
+\item{p}{an integer represents the dimension of x.}
 }
 \value{
-||x||_2
+A scalar of the computed second norm of x.
 }
 \description{
-Calculate second norm of a vertical vector
+Calculate second norm (Euclidean distance) of a vertical vector.
+}
+\examples{
+x <- t(t(rnorm(100)))
+norm(x,length(x))
 }

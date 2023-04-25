@@ -7,17 +7,21 @@
 Fs(z, l1, l2, gamma)
 }
 \arguments{
-\item{z}{a numeric scalar to be SCAD-thresholded}
+\item{z}{a numeric scalar to be SCAD-thresholded.}
 
-\item{l1}{a numeric scalar for the first SCAD-thresholding parameter}
+\item{l1}{a numeric scalar for the first SCAD-thresholding parameter.}
 
-\item{l2}{a numeric scalar for the second SCAD-thresholding parameter}
+\item{l2}{a numeric scalar for the second SCAD-thresholding parameter.}
 
-\item{gamma}{a numeric scalar for the third SCAD-thresholding parameter}
+\item{gamma}{a numeric scalar for the third SCAD-thresholding parameter.}
 }
 \value{
-Fs(z,l1,l2)
+A SCAD-thresholded scalar of z.
 }
 \description{
-Calculate the SCAD-thresholding result
+Calculate the SCAD-thresholding result corresponding to the SCAD penalty.
+}
+\examples{
+Fs(5,1,1,1)
+Fs(0.5,1,1,1)
 }

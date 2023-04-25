@@ -7,13 +7,19 @@
 S(z, l)
 }
 \arguments{
-\item{z}{a numeric scalar to be soft-thresholded}
+\item{z}{a numeric scalar to be soft-thresholded.}
 
-\item{l}{a numeric scalar for the soft-thresholding parameter}
+\item{l}{a numeric scalar for the soft-thresholding parameter.}
 }
 \value{
-S(z,l)
+If z <= l, 0 is outputted.
+
+If z > l, z-l is outputted.
 }
 \description{
-Calculate the soft-thresholding result
+Calculate the soft-thresholding result corresponding to the LASSO penalty.
+}
+\examples{
+S(5,1)
+S(0.5,1)
 }

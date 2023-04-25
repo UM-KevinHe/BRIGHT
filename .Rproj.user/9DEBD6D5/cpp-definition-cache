@@ -80,16 +80,88 @@
     {
         "definitions" : [
             {
-                "column" : 6,
-                "file" : "/Users/qinmenggeli/Desktop/research/Kevin He/PRS/Rewrite_Lassosum/BRIGHT/src/rcpp_hello_world.cpp",
+                "column" : 8,
+                "file" : "/Users/qinmenggeli/Desktop/research/Kevin He/PRS/Rewrite_Lassosum/new_BRIGHT/BRIGHT/src/gdfit_Gaussian.cpp",
                 "kind" : 6,
-                "line" : 6,
-                "name" : "rcpp_hello_world",
+                "line" : 18,
+                "name" : "norm(Eigen::MatrixXd, int)",
                 "parent_name" : "",
-                "usr" : "c:@F@rcpp_hello_world#"
+                "usr" : "c:@F@norm#I#I#"
+            },
+            {
+                "column" : 8,
+                "file" : "/Users/qinmenggeli/Desktop/research/Kevin He/PRS/Rewrite_Lassosum/new_BRIGHT/BRIGHT/src/gdfit_Gaussian.cpp",
+                "kind" : 6,
+                "line" : 37,
+                "name" : "S(double, double)",
+                "parent_name" : "",
+                "usr" : "c:@F@S#d#d#"
+            },
+            {
+                "column" : 8,
+                "file" : "/Users/qinmenggeli/Desktop/research/Kevin He/PRS/Rewrite_Lassosum/new_BRIGHT/BRIGHT/src/gdfit_Gaussian.cpp",
+                "kind" : 6,
+                "line" : 56,
+                "name" : "Ff(double, double, double, double)",
+                "parent_name" : "",
+                "usr" : "c:@F@Ff#d#d#d#d#"
+            },
+            {
+                "column" : 8,
+                "file" : "/Users/qinmenggeli/Desktop/research/Kevin He/PRS/Rewrite_Lassosum/new_BRIGHT/BRIGHT/src/gdfit_Gaussian.cpp",
+                "kind" : 6,
+                "line" : 78,
+                "name" : "Fs(double, double, double, double)",
+                "parent_name" : "",
+                "usr" : "c:@F@Fs#d#d#d#d#"
+            },
+            {
+                "column" : 17,
+                "file" : "/Users/qinmenggeli/Desktop/research/Kevin He/PRS/Rewrite_Lassosum/new_BRIGHT/BRIGHT/src/gdfit_Gaussian.cpp",
+                "kind" : 6,
+                "line" : 103,
+                "name" : "LD(Eigen::MatrixXd, Eigen::MatrixXd, Eigen::MatrixXd)",
+                "parent_name" : "",
+                "usr" : "c:@F@LD#I#I#I#"
+            },
+            {
+                "column" : 5,
+                "file" : "/Users/qinmenggeli/Desktop/research/Kevin He/PRS/Rewrite_Lassosum/new_BRIGHT/BRIGHT/src/gdfit_Gaussian.cpp",
+                "kind" : 6,
+                "line" : 216,
+                "name" : "Sigma_LD(Eigen::MatrixXd &, int &, Eigen::MatrixXi &, double, int, int)",
+                "parent_name" : "",
+                "usr" : "c:@F@Sigma_LD#&I#S0_#S0_#d#I#I#"
+            },
+            {
+                "column" : 6,
+                "file" : "/Users/qinmenggeli/Desktop/research/Kevin He/PRS/Rewrite_Lassosum/new_BRIGHT/BRIGHT/src/gdfit_Gaussian.cpp",
+                "kind" : 6,
+                "line" : 291,
+                "name" : "gd_gaussian(Eigen::MatrixXd &, Eigen::MatrixXd &, int &, Eigen::MatrixXd &, Eigen::MatrixXd &, Eigen::MatrixXd &, Eigen::MatrixXd &, int &, int &, int &, int &, double &, double &, double &, double &, double &)",
+                "parent_name" : "",
+                "usr" : "c:@F@gd_gaussian#&I#S0_#S0_#S0_#S0_#S0_#S0_#S0_#S0_#S0_#S0_#&d#S1_#S1_#S1_#S1_#"
+            },
+            {
+                "column" : 6,
+                "file" : "/Users/qinmenggeli/Desktop/research/Kevin He/PRS/Rewrite_Lassosum/new_BRIGHT/BRIGHT/src/gdfit_Gaussian.cpp",
+                "kind" : 6,
+                "line" : 393,
+                "name" : "MaxLambda(Eigen::MatrixXd, Eigen::MatrixXd, Eigen::MatrixXd &, Eigen::MatrixXd, Eigen::MatrixXd, Eigen::MatrixXi &, int, double, double, double, double, int)",
+                "parent_name" : "",
+                "usr" : "c:@F@MaxLambda#I#I#&I#I#I#S0_#I#d#d#d#d#I#"
+            },
+            {
+                "column" : 6,
+                "file" : "/Users/qinmenggeli/Desktop/research/Kevin He/PRS/Rewrite_Lassosum/new_BRIGHT/BRIGHT/src/gdfit_Gaussian.cpp",
+                "kind" : 6,
+                "line" : 483,
+                "name" : "gdfit_gaussian(Eigen::MatrixXd, Eigen::MatrixXd, Eigen::MatrixXd &, Eigen::MatrixXd, Eigen::MatrixXd, Eigen::MatrixXd, Eigen::MatrixXi &, int, int, double, double, double, double, double, int, int, int, bool)",
+                "parent_name" : "",
+                "usr" : "c:@F@gdfit_gaussian#I#I#&I#I#I#I#S0_#I#I#d#d#d#d#d#I#I#I#b#"
             }
         ],
-        "file" : "/Users/qinmenggeli/Desktop/research/Kevin He/PRS/Rewrite_Lassosum/BRIGHT/src/rcpp_hello_world.cpp",
-        "file_last_write" : 1669229106.000000
+        "file" : "/Users/qinmenggeli/Desktop/research/Kevin He/PRS/Rewrite_Lassosum/new_BRIGHT/BRIGHT/src/gdfit_Gaussian.cpp",
+        "file_last_write" : 1680285082.000000
     }
 ]
