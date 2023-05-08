@@ -168,6 +168,8 @@ BEGIN_RCPP
 END_RCPP
 }
 
+RcppExport SEXP standardize(SEXP);
+
 static const R_CallMethodDef CallEntries[] = {
     {"_BRIGHT_norm", (DL_FUNC) &_BRIGHT_norm, 2},
     {"_BRIGHT_S", (DL_FUNC) &_BRIGHT_S, 2},
@@ -178,6 +180,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_BRIGHT_gd_gaussian", (DL_FUNC) &_BRIGHT_gd_gaussian, 16},
     {"_BRIGHT_MaxLambda", (DL_FUNC) &_BRIGHT_MaxLambda, 12},
     {"_BRIGHT_gdfit_gaussian", (DL_FUNC) &_BRIGHT_gdfit_gaussian, 18},
+    {"standardize", (DL_FUNC) &standardize, 1},
     {NULL, NULL, 0}
 };
 

@@ -5,17 +5,18 @@
 \title{BRIGHT estimation procedure for summary level data}
 \usage{
 BRIGHTs(
-  XtY,
-  Beta_prior,
-  X,
-  lambda,
-  K1,
-  m,
-  blk,
-  K0,
+  Tss,
+  Tref,
+  LDblocks = "EUR",
+  Pss = NA,
+  m = NA,
+  group = NA,
   penalty = 1,
   tau = 0,
-  eta,
+  eta = 0,
+  lambda = NA,
+  nlambda = 100,
+  lambda.min = 0.001,
   alpha = 1,
   gamma = 0,
   eps = 1e-07,
@@ -26,21 +27,7 @@ BRIGHTs(
 )
 }
 \arguments{
-\item{XtY}{a numeric verticle vector of the marginal correlation between genotype and outcome, can be recovered from GWAS summary statistics by function p2cor().}
-
-\item{Beta_prior}{a numeric verticle vector of the prior information; in the case where prior information is a subspace of XtY, set the complement set to be zero.}
-
-\item{X}{a numeric matrix of reference genotypes, default is from 1000 genome project.}
-
-\item{lambda}{a numeric verticle vector of the LASSO penalty weights; it must be sorted with a decreasing order.}
-
-\item{K1}{a numeric verticle vector of the grouping of SNPs for group penalties; SNPs within K1[i,i+1] are grouped together.}
-
 \item{m}{a numeric verticle vector of the multiplicative factor to adjust for the number of SNPs in each group, the default is the square root of number of elements in each group.}
-
-\item{blk}{a numeric verticle vector indicating the grouping of SNPs in each block, can be generated through LD() function.}
-
-\item{K0}{a integer scalar for the number of SNPs/covariates that is not penalized.}
 
 \item{penalty}{a integer scalar for chosing the penalties; 1 corresponds to LASSO, 2 corresponds to MCP, 3 corresponds to SCAD.}
 
@@ -48,6 +35,8 @@ BRIGHTs(
 1/3.}
 
 \item{eta}{a numeric scalar of the weights for incorporating prior information.}
+
+\item{lambda}{a numeric verticle vector of the LASSO penalty weights; it must be sorted with a decreasing order.}
 
 \item{alpha}{\code{grpreg} allows for both a group penalty and an L2 (ridge)
 penalty; \code{alpha} controls the proportional weight of the regularization
@@ -71,6 +60,18 @@ If this limit is exceeded, the algorithm will exit early from the
 regularization path.}
 
 \item{user}{a logical scalar for indicating whether lambda is user specified; if user=TRUE, then the iteration will start from the largest lambda, otherwise the iteration will start from the second largest lambda.}
+
+\item{XtY}{a numeric verticle vector of the marginal correlation between genotype and outcome, can be recovered from GWAS summary statistics by function p2cor().}
+
+\item{Beta_prior}{a numeric verticle vector of the prior information; in the case where prior information is a subspace of XtY, set the complement set to be zero.}
+
+\item{X}{a numeric matrix of reference genotypes, default is from 1000 genome project.}
+
+\item{K1}{a numeric verticle vector of the grouping of SNPs for group penalties; SNPs within K1[i,i+1] are grouped together.}
+
+\item{blk}{a numeric verticle vector indicating the grouping of SNPs in each block, can be generated through LD() function.}
+
+\item{K0}{a integer scalar for the number of SNPs/covariates that is not penalized.}
 
 \item{max.iter}{maximum number of iterations (total across entire path).
 Default is 10000.  See details.}

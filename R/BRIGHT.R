@@ -22,6 +22,43 @@ p2cor <- function(p, n, sign=rep(1, length(p))) {
   
 }
 
+QC <- function(ss,ind,KG){
+  if(ind=="GWAS"){
+    ss$P[ss$P==0]=10^-100
+    XtY=p2cor(ss$P,ss$N,ss$Sign)
+    outnm="IProd"
+  }else if (ind=="IProd"){
+    XtY=ss$IProd
+    outnm="IProd"
+  }else if (ind=="Coef"){
+    XtY=ss$Coef
+    outnm="Coef"
+  }else{
+    stop('The data type indicator (Tind or Pind) need to be one of "GWAS", "IProd", or "Coef"')
+  }
+  
+  pos_na=is.na(XtY)
+  XtY=XtY[!pos_na]
+  ss=ss[!pos_na,]
+  nm=paste(ss$CHR,ss$BP,ss$A1,ss$A2,sep="_")
+  nm_flp=paste(ss$CHR,ss$BP,ss$A2,ss$A1,sep="_")
+
+  New_ss=cbind(nm,nm_flp,ss[,1:4],XtY)
+  colnames(New_ss)=c("nm","nm_flp","CHR","BP","A1","A2",outnm)
+  
+  pos_ss=as.logical(New_ss$nm%in%KG[,2]+New_ss$nm_flp%in%KG[,2])
+  New_ss=New_ss[pos_ss,]
+  pos_flp=New_ss$nm_flp%in%KG[,2]
+  New_ss[pos_flp,1]=New_ss[pos_flp,2]
+  temp_A1=New_ss[pos_flp,5]
+  New_ss[pos_flp,5]=New_ss[pos_flp,6]
+  New_ss[pos_flp,6]=temp_A1
+  New_ss[pos_flp,7]=-New_ss[pos_flp,7]
+  New_ss=New_ss[,-2]
+  return(New_ss)
+}
+
+
 #' Preprocess
 #'
 #' Preprocess the GWAS and the 1000 genome reference.
@@ -47,72 +84,47 @@ p2cor <- function(p, n, sign=rep(1, length(p))) {
 #' selection methods, and a vector of 1's (i.e., no adjustment for group size)
 #' for bi-level selection.
 #' @return A list of preprocessed XtY and reference genotype matrix.
-Preprocess=function(chr, BP, A1, A2, p, n, sign,ref="EUR",group=1:p,m=NA){
+PreprocessS=function(Tss, Tind, Tref, Pss, Pind, Pref, LDblocks="EUR"){
   
   # read in reference panel
-  if(ref%in%c("EUR","AFR","EAS","AMR","SAS")){
-    KG=read.table(paste("inst/1000G/",ref,"_1000G_2504.bim",sep=""))
-    gene_bed = BEDMatrix(paste("inst/1000G/",ref,"_1000G_2504.bed",sep=""))
-    gene_bed=as.matrix(gene_bed)
+  if(Tref%in%c("EUR","AFR","EAS","AMR","SAS")){
+    writeLines(strwrap(paste("Using ",Tref,"LD from 1000 genome project",sep="")))
+    KG=read.table(paste("inst/1000G/",Tref,"_1000G_2504.bim",sep=""))
+    KG[,2]=paste(KG[,1],KG[,4],KG[,5],KG[,6],sep="_")
+    LD_dir=paste("inst/1000G/",ref,"_1000G_2504.bed",sep="")
+  }else{
+    writeLines(strwrap("Using user specified LD"))
+    KG=read.table(paste(Tref,".bim",sep=""))
+    KG[,2]=paste(KG[,1],KG[,4],KG[,5],KG[,6],sep="_")
+    LD_dir=paste(Tref,".bed",sep="")
   }
-  else{
-    KG=read.table(ref)
-    gene_bed = BEDMatrix(ref)
-    gene_bed=as.matrix(gene_bed)
-  }
+  
+  writeLines(strwrap(paste(length(Pind)," source of prior information identified",sep="")))
   
   #QC
-  p[p==0]=10^-100
-  XtY=p2cor(p,n,sign)
-  pos_na=is.na(XtY)
-  XtY=XtY[!pos_na]
-  chr=chr[!pos_na]
-  BP=BP[!pos_na]
-  A1=A1[!pos_na]
-  A2=A2[!pos_na]
-  group=group[!pos_na]
-  nm=paste(chr,BP,A2,A1,"b37",sep="_")
-  nm_flp=paste(chr,BP,A1,A2,"b37",sep="_")
+  Tss=QC(Tss,Tind,KG)
+  writeLines(strwrap(paste(nrow(Tss)," SNPs passed filtering for target data",sep="")))
   
-  pos_KG=as.logical(KG[,2]%in%nm+KG[,2]%in%nm_flp)
-  KG=KG[pos_KG,]
-  gene_bed=gene_bed[,pos_KG]
-  pos_flp=KG[,2]%in%nm_flp
-  gene_bed[,pos_flp]=2-gene_bed[,pos_flp]
-  KG[pos_flp,2]=paste(KG[,1],KG[,4],KG[,5],KG[,6],"b37",sep="_")
-  colnames(gene_bed)=KG[,2]
-  
-  pos_GWAS=as.logical(nm%in%KG[,2])
-  XtY=XtY[pos_GWAS]
-  chr=chr[pos_GWAS]
-  BP=BP[pos_GWAS]
-  A1=A1[pos_GWAS]
-  A2=A2[pos_GWAS]
-  group=group[pos_GWAS]
+  if(is.data.frame(Pss)){
+    Pss=QC(Pss,Pind,KG)
+    writeLines(strwrap(paste(nrow(Pss)," SNPs passed filtering for prior data 1",sep="")))
+    #Prior_Lassosum=BRIGHTs(Tss=Pss,Tref=Pref,LDblocks="EUR",Pss=NA,m=NA,group=NA,m=NA,penalty=1,tau=0,eta=0,lambda=NA,nlambda=100,lambda.min=0.001,alpha=1, gamma=0,eps=0.0001,max_iter=1000000, dfmax=5000, gmax=5000, user=T)
+  }else if(is.list(Pss)){
+    for (i in 1:nrow(Pind)){
+      Pss[[i]]=QC(Pss[[i]],Pind[i],KG)
+      writeLines(strwrap(paste(nrow(Pss[[i]])," SNPs passed filtering for prior data ",i,sep="")))
+    }
+  }else {
+    stop("Pss must be either a data frame of one prior data or a list containing multiple prior data")
+  }
   rst=list()
   
-  XG <- newXG(gene_bed, group, m, 1, FALSE)
-  K <- as.integer(table(XG$g))
-  K0 <- as.integer(if (min(XG$g)==0) K[1] else 0)
-  K1 <- as.integer(if (min(XG$g)==0) cumsum(K) else c(0, cumsum(K)))
-  XtY <- t(t(cor[XG$nz]))
-  
-  if(is.na(sum(m))){
-    m=sqrt(table(group[group!=0]))
-  }
-  
-  LDB=read.table(paste("inst/data/Berisa.",ref,".hg19.bed",sep=""),header=T)
-  LDB[,1]=as.numeric(sapply(strsplit(LDB[,1],"chr"), function(x){x[2]}))
-  LDB=as.matrix(LDB)
-  blk=t(t(c(LD(t(t(chr)),t(t(BP)),LDB),length(BP))))
-  
-  rst["XtY"]=XtY
-  rst["XG"]=XG
-  rst["m"]=m
-  rst["blk"]=blk
-  rst["K"]=K
-  rst["K0"]=K0
-  rst["K1"]=K1
+  rst[["LD_dir"]]=LD_dir
+  rst[["Tss"]]=Tss
+  rst[["Pss"]]=Pss
+  rst[["Tref"]]=Tref
+  rst[["Pref"]]=Pref
+  rst[["KG"]]=KG
   return(rst)
 }
 
@@ -194,7 +206,44 @@ Preprocess=function(chr, BP, A1, A2, p, n, sign,ref="EUR",group=1:p,m=NA){
 #'@return iter, the number of total iterations needed for the model to converge with each lambda; 
 #'@return df total degree of freedom of the converged model with each lambda;
 #'@return dev, the approximated deviance associated with each lambda.
-BRIGHTs=function(XtY,Beta_prior,X,lambda,K1,m,blk,K0,penalty=1,tau=0,eta,alpha=1, gamma=0,eps=0.0000001,max_iter=1000000, dfmax=5000, gmax=5000, user=T){
+BRIGHTs=function(Tss,Tref,LDblocks="EUR",Pss=NA,m=NA,group=NA,penalty=1,tau=0,eta=0,lambda=NA,nlambda=100,lambda.min=0.001,alpha=1, gamma=0,eps=0.0000001,max_iter=1000000, dfmax=5000, gmax=5000, user=T){
+  p=nrow(Tss)
+  group=1:p
+  
+  if(is.na(Pss)[1]){
+    Beta_prior=rep(0,p)
+    eta=0
+  }else{
+    Beta_prior=Pss$Coef
+  }
+  
+  if(is.na(sum(m))){
+    m=sqrt(table(group[group!=0]))
+  }
+  
+  gene_bed = BEDMatrix(paste(Tref,".bed",sep=""))
+  gene_bed=as.matrix(gene_bed)
+  
+  XG <- newXG(gene_bed, group, m, 1, FALSE)
+  K <- as.integer(table(XG$g))
+  K0 <- as.integer(if (min(XG$g)==0) K[1] else 0)
+  K1 <- as.integer(if (min(XG$g)==0) cumsum(K) else c(0, cumsum(K)))
+  XtY <- t(t(Tss$IProd))
+  
+  LDB=read.table(paste("inst/data/Berisa.",LDblocks,".hg19.bed",sep=""),header=T)
+  LDB[,1]=as.numeric(sapply(strsplit(as.vector(LDB[,1]),"chr"), function(x){x[2]}))
+  LDB=as.matrix(LDB)
+  blk=t(t(c(LD(t(t(Tss$CHR)),t(t(Tss$BP)),LDB),length(Tss$BP))))
+  
+  if(is.na(sum(lambda))){
+    Lmd=MaxLambda(XtY, tilde_beta=t(t(Beta_prior)), XG$X, t(t(K1)), m=t(t(rep(1,p))), blk, K0, tau=tau,
+                  eta=eta, alpha=alpha, eps=eps,max_iter=max_iter)
+    lambda.max=Lmd$lambda.max
+    lambda.min=0.001
+    nlambda=100
+    lambda <- exp(seq(log(lambda.max), log(lambda.min*lambda.max), length=nlambda))
+  }
+
   
   rst_BRIGHTs=gdfit_gaussian(XtY, t(t(Beta_prior)), XG$X, t(t(lambda)), t(t(K1)), m=t(t(m)), blk, K0, penalty, tau,eta, alpha, gamma,eps,max_iter, dfmax, gmax, user)
 
@@ -337,4 +386,218 @@ BRIGHTi=function(X_plink,Y,group=1:ncol(X),Beta_prior,penalty="grLasso",family="
   rst_BRIGHTi=grpreg(X=gene_bed,y=Y,group=group,penalty = penalty,family = family,lambda = lambda,lambda.min = lambda.min,alpha=alpha,eps=eps,max.iter = max_iter,dfmax = dfmax,gmax = gmax,tau = tau,gamma = gamma)
   
   return(rst_BRIGHTi)
+}
+
+Valid.Ind <- function(out, Testpheno, Testgeno){
+  gene_bed = BEDMatrix(paste(Testgeno,".bed",sep=""))
+  gene_bed=as.matrix(gene_bed)
+  XG <- newXG(gene_bed, 1:ncol(gene_bed), rep(1,ncol(gene_bed)), 1, FALSE)
+  XB_Exom=XG$X%*%out[["Prior"]]
+  phe=Testpheno[,3]
+  phe_std=(phe-mean(phe))/sd(phe)
+  LAScor=cor(XB_Exom, phe_std)
+  LASMSE=colMeans((XB_Exom-as.vector(phe_std))^2)
+  eta_vec=out[["eta_vec"]]
+  
+  value=rep(0,6)
+  pos=rep(0,6)
+  eta_best=rep(0,3)
+  ER=c()
+  BRMSE_rst=c()
+  BRCor_rst=c()
+  Vali_MSE_rst=c()
+  Vali_cor_rst=c()
+  AIC_rst=c()
+  Beta=list()
+  Vali_MSE_best=Inf
+  Vali_cor_best=-Inf
+  AIC_best=Inf
+  XB_MSE=c()
+  XB_Cor=c()
+  
+  phe_test_std=(phe-mean(phe))/sd(phe)
+  beta=out[[as.character(0)]]
+  XB_Ind2=XG$X%*%beta
+  Vali_MSE=colMeans((XB_Ind2-as.vector(phe_test_std))^2)
+  Vali_cor=cor(XB_Ind2, phe_test_std)
+  XB_local=XB_Ind2[,which.max(Vali_cor)]
+  
+  for(eta in eta_vec){
+    beta=out[[as.character(eta)]]
+    
+    XB_Ind2=XG$X%*%beta
+    
+    Vali_MSE=colMeans((XB_Ind2-as.vector(phe_test_std))^2)
+    Vali_cor=cor(XB_Ind2, phe_test_std)
+    Vali_MSE_ind=which.min(Vali_MSE)
+    Vali_cor_ind=which.max(Vali_cor)
+    
+    BRcor=cor(XB_Ind2, phe)
+    phe_std=(phe-mean(phe))/sd(phe)
+    BRMSE=colMeans((XB_Ind2-as.vector(phe_std))^2)
+    
+    if(min(Vali_MSE,na.rm=T)<Vali_MSE_best){
+      Vali_MSE_best=min(Vali_MSE,na.rm=T)
+      value[1]=BRcor[Vali_MSE_ind]
+      value[2]=BRMSE[Vali_MSE_ind]
+      eta_best[1]=eta
+      XB_MSE=XB_Ind2[,which.min(Vali_MSE)]
+    }
+    if(max(Vali_cor,na.rm=T)>Vali_cor_best){
+      Vali_cor_best=max(Vali_cor,na.rm=T)
+      value[3]=BRcor[Vali_cor_ind]
+      value[4]=BRMSE[Vali_cor_ind]
+      eta_best[2]=eta
+      XB_Cor=XB_Ind2[,which.max(Vali_cor)]
+    }
+    
+    Vali_MSE_rst=cbind(Vali_MSE_rst,Vali_MSE)
+    Vali_cor_rst=cbind(Vali_cor_rst,Vali_cor)
+    
+    BRMSE_rst=cbind(BRMSE_rst,BRMSE)
+    BRCor_rst=cbind(BRCor_rst,BRcor)
+    
+  }
+  rst=list()
+  rst[["BRMSE_rst"]]=BRMSE_rst
+  rst[["BRCor_rst"]]=BRCor_rst
+  rst[["LAScor"]]=LAScor
+  rst[["LASMSE"]]=LASMSE
+  rst[["XB_Exom"]]=XB_Exom
+  rst[["XB_local"]]=XB_local
+  rst[["XB_MSE"]]=XB_MSE
+  rst[["XB_Cor"]]=XB_Cor
+  rst[["phe"]]=phe
+  rst[["phe_std"]]=phe_std
+  rst[["eta_vec"]]=eta_vec
+  return(rst)
+}
+
+MSE_Cor.plot <- function(Val){
+  eta_vec=Val[["eta_vec"]]
+  dinom=dim(Val[["BRMSE_rst"]])[1]
+  
+  m=matrix(c(1,1,2,3),nrow = 2,ncol = 2,byrow = TRUE)
+  
+  layout(mat = m,heights = c(0.1,0.9))
+  
+  par(mar = c(0, 0, 0, 0))
+  plot(1,type = "n",axes = F,xlab = "",ylab = "",frame.plot = FALSE)
+  legend(x="center", legend=c("BRIGHT","South Asian","Caucasian"),col=c("black", "black","black"),lty=c(1,NA,NA),lwd=c(3,NA,NA),pch = c(NA,15,16),cex = c(1.5,1.5,1.5),bty = "n",horiz = T)
+  
+  BRCor=Val[["BRMSE_rst"]]
+  eta=eta_vec[-22]
+  
+  ind=which.min(BRCor)
+  
+  rw=ind%%dinom
+  cl=ind%/%dinom+1
+  ER=BRCor[,-22]
+  
+  ER_Exom=Val[["LASMSE"]]
+  
+  par(mar = c(5, 5, 0.5, 0.5))
+  plot(1,type = "n",ylim = c(min(ER[rw,]),max(ER[rw,],ER_Exom)),xlim = c(min(eta),max(eta)),xlab = expression(eta),ylab = "MSPE",cex.lab=1.5,cex.axis=1.5)
+  lines(eta,ER[rw,],lwd=3)
+  points(eta[1],ER[rw,1],pch=15,cex=2)
+  points(eta[21],ER_Exom,pch=16,cex=2)
+  
+  BRCor=Val[["BRCor_rst"]]
+  eta=eta_vec[-22]
+  
+  ind=which.max(BRCor)
+  
+  rw=ind%%dinom
+  cl=ind%/%dinom+1
+  ER=BRCor[,-22]^2
+  
+  ER_Exom=Val[["LAScor"]]^2
+  
+  par(mar = c(5, 5, 0.5, 0.5))
+  plot(1,type = "n",ylim = c(min(ER[rw,],ER_Exom),max(ER[rw,],ER_Exom)),xlim = c(min(eta),max(eta)),xlab = expression(eta),ylab = expression(R^2),cex.lab=1.5,cex.axis=1.5)
+  lines(eta,ER[rw,],lwd=3)
+  points(eta[1],ER[rw,1],pch=15,cex=2)
+  points(eta[21],ER_Exom,pch=16,cex=2)
+}
+
+Density.plot <- function(Val,Pct){
+  XB_local=Val[["XB_local"]]
+  XB_prior=Val[["XB_Exom"]]
+  XB_BRIGHT=Val[["XB_Cor"]]
+  phe=Val[["phe"]]
+  
+  ind_local=XB_local>quantile(XB_local,probs = c(0,0.1,0.5,Pct,1))[4]
+  ind_prior=XB_prior>quantile(XB_prior,probs = c(0,0.1,0.5,Pct,1))[4]
+  ind_BRIGHT=XB_BRIGHT>quantile(XB_BRIGHT,probs = c(0,0.1,0.5,Pct,1))[4]
+  
+  high_local=phe[ind_local]
+  low_local=phe[!ind_local]
+  
+  high_prior=phe[ind_prior]
+  low_prior=phe[!ind_prior]
+  
+  high_BRIGHT=phe[ind_BRIGHT]
+  low_BRIGHT=phe[!ind_BRIGHT]
+  
+  m=matrix(c(1,1,1,2,3,4),nrow = 2,ncol = 3,byrow = TRUE)
+  
+  layout(mat = m,heights = c(0.1,0.9))
+  
+  par(mar = c(0, 0, 0, 0))
+  plot(1,type = "n",axes = F,xlab = "",ylab = "",frame.plot = FALSE)
+  legend(x="center", legend=c(paste("Upper ",round(Pct*100)," PRS percentile",sep = ""),paste("Lower ",round(Pct*100)," PRS percentile",sep = "")),col=c("red", "black"),lty=c(2,1),lwd=c(3,3),cex = c(2,2),bty = "n",horiz = T)
+  
+  dist_local=density(high_local)$x[which.max(density(high_local)$y)]-density(low_local)$x[which.max(density(low_local)$y)]
+  par(mar = c(5, 5, 3, 0.5))
+  plot(1,type = "n",ylim = c(0,0.12),xlim = c(min(phe),max(phe)),xlab = "Outcome",ylab = "Density",cex.lab=2,cex.axis=2,main=paste("Local (",round(dist_local,digits = 2),")",sep = ""),cex.main=2,frame.plot=F)
+  box(bty="l")
+  lines(density(high_local),lty=2,lwd=3,col="red")
+  lines(density(low_local),lty=1,lwd=3)
+  abline(v = density(high_local)$x[which.max(density(high_local)$y)], col="red", lwd=3, lty=3)
+  abline(v = density(low_local)$x[which.max(density(low_local)$y)], col="black", lwd=3, lty=3)
+  
+  dist_prior=density(high_prior)$x[which.max(density(high_prior)$y)]-density(low_prior)$x[which.max(density(low_prior)$y)]
+  par(mar = c(5, 5, 3, 0.5))
+  plot(1,type = "n",ylim = c(0,0.12),xlim = c(min(phe),max(phe)),xlab = "Outcome",ylab = "Density",cex.lab=2,cex.axis=2,main=paste("Prior (",round(dist_prior,digits = 2),")",sep = ""),cex.main=2,frame.plot=F)
+  box(bty="l")
+  lines(density(high_prior),lty=2,lwd=3,col="red")
+  lines(density(low_prior),lty=1,lwd=3)
+  abline(v = density(high_prior)$x[which.max(density(high_prior)$y)], col="red", lwd=3, lty=3)
+  abline(v = density(low_prior)$x[which.max(density(low_prior)$y)], col="black", lwd=3, lty=3)
+  
+  dist_BRIGHT=density(high_BRIGHT)$x[which.max(density(high_BRIGHT)$y)]-density(low_BRIGHT)$x[which.max(density(low_BRIGHT)$y)]
+  par(mar = c(5, 5, 3, 0.5))
+  plot(1,type = "n",ylim = c(0,0.12),xlim = c(min(phe),max(phe)),xlab = "Outcome",ylab = "Density",cex.lab=2,cex.axis=2,main=paste("BRIGHT (",round(dist_BRIGHT,digits = 2),")",sep = ""),cex.main=2,frame.plot=F)
+  box(bty="l")
+  lines(density(high_BRIGHT),lty=2,lwd=3,col="red")
+  lines(density(low_BRIGHT),lty=1,lwd=3)
+  abline(v = density(high_BRIGHT)$x[which.max(density(high_BRIGHT)$y)], col="red", lwd=3, lty=3)
+  abline(v = density(low_BRIGHT)$x[which.max(density(low_BRIGHT)$y)], col="black", lwd=3, lty=3)
+}
+
+ROC.plot <- function(Val, Pct=0.5){
+  XB_local=Val[["XB_local"]]
+  XB_prior=Val[["XB_Exom"]]
+  XB_BRIGHT=Val[["XB_Cor"]]
+  phe=Val[["phe"]]
+  
+  phe_bi=phe>quantile(phe,probs = c(Pct))[1]
+  
+  suppressWarnings({
+    ROC_local=pROC::roc(phe_bi~XB_local)
+  })
+  suppressWarnings({
+    ROC_prior=pROC::roc(phe_bi~as.vector(XB_prior))
+  })
+  suppressWarnings({
+    ROC_BRIGHT=pROC::roc(phe_bi~XB_BRIGHT)
+  })
+  
+  par(mar = c(5, 5, 3, 0.5))
+  plot(1,type = "n",ylim = c(0,1),xlim = c(1,0),xlab = "Specificity",ylab = "Sensitivity",cex.lab=2,cex.axis=2,cex.main=2,frame.plot=F)
+  box(bty="l")
+  lines(ROC_BRIGHT,col="black",lty=1,lwd=3)
+  lines(ROC_prior,col="red",lty=2,lwd=2)
+  lines(ROC_local,col="blue",lty=3,lwd=2)
+  legend("bottomright", legend=c(paste("BRIGHT (AUC:",round(as.numeric(ROC_BRIGHT$auc),digits = 3),")",sep = ""),paste("Prior (AUC:",round(as.numeric(ROC_prior$auc),digits = 3),")",sep = ""),paste("Local (AUC:",round(as.numeric(ROC_local$auc),digits = 3),")",sep = "")),col=c("black", "blue", "red"),lty=c(1,3,2), lwd = c(3,2,2), cex=1)
 }

@@ -3,14 +3,15 @@ Type: Package
 Title: Bregman-divergence based transfer-learning with application to trans-ethnic polygenic risk score
 Version: 1.0
 Date: 2022-11-23
-Author: Qinmengge Li
+Author: Qinmengge Li, Matthew Patrick, Jian Kang, Alex Tsoi, Kevin He
 Maintainer: Qinmengge Li <liqinmg@umich.edu>
-Description: Polygenic risk scores (PRS) are a group of methods that solves the genetics risk prediction problem. However, single-ethnic PRS methods have limited performance on minority populations due to their limited sample sizes. Therefore, borrowing information from widely studied Caucasian populations can boost the prediction performance of minority models. In this paper, we efficiently implement the well-known high-dimensional transfer-learning method, prior LASSO, in the context of PRS construction with individual-level minority data and summary-level Caucasian data. We further extend it to a novel BRegman divergence-based Integrational Genetic Hazard Trans-ethnic (BRIGHT) method, which only requires GWAS summary data from both populations in order to preserve patient privacy and facilitate easier data sharing between institutes. In addition, we generalized the original LASSO penalty to a general penalty structure including group LASSO, group SCAD, and group MCP, which enable the group selection of important genetic markers while incorporating the LASSO, SCAD, and MCP penalties as special cases.
+Description: `BRIGHT` is a group of methods for using individual-level data, published genotype-trait summary statistics (GWAS), or combined data types from different ethnic populations to improve the recalibration, discrimination, and prediction accuracy on the target minority cohort. We implemented group LASSO, Elastic Net, MCP and SCAD penalties for marker fine mapping.
 License: GPL (>= 2)
 Imports: Rcpp (>= 1.0.8),
          Matrix,
          mvtnorm,
          BEDMatrix,
-         grpreg
+         grpreg,
+         pROC
 LinkingTo: Rcpp, RcppEigen
 RoxygenNote: 7.1.1

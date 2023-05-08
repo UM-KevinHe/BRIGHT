@@ -1,0 +1,177 @@
+---
+title: "BRIGHTs tutorial"
+author: "Qinmengge Li"
+date: "5/1/2023"
+output: html_document
+---
+
+# Introduction
+
+To integrate summary statistics without using individual-level data, while adjusting for the potential disparities between prior majority and target minority populations, we propose
+the following penalized objective function,
+\begin{align}
+Q_{BRIGHTs}(\boldsymbol\beta) =& B_{\widetilde{\boldsymbol\Sigma}}(\boldsymbol{\hat\beta}||\boldsymbol\beta) + \eta B_{\widetilde{\boldsymbol\Sigma}}(\boldsymbol{\check\beta}||\boldsymbol\beta) + p_{\lambda}(\boldsymbol\beta),\label{eq: BRIGHT}
+\end{align}
+where $\boldsymbol{\hat\beta}$ and $\boldsymbol{\check\beta}$ are the estimated coefficients obtained from published studies based on minority and majority populations; $\widetilde{\boldsymbol\Sigma}$ is the regularized block-structured LD estimation \citep{berisa2016approximately} from publicly available minority genotypes (e.g. 1000 genome project).
+$B_{\widetilde{\boldsymbol\Sigma}}(\boldsymbol{\hat\beta}||\boldsymbol\beta)=(\boldsymbol{\hat\beta}-\boldsymbol{\beta})^\top\widetilde{\boldsymbol\Sigma}(\boldsymbol{\hat\beta}-\boldsymbol{\beta})/n$ is the Bregman-divergence between $\boldsymbol{\hat\beta}$ and $\boldsymbol{\beta}$, serving as an approximation of the negative log-likelihood from the minority data, which is not directly available due to DataSHIELD constraints; $B_{\widetilde{\boldsymbol\Sigma}}(\boldsymbol{\check\beta}||\boldsymbol\beta)=(\boldsymbol{\check\beta}-\boldsymbol{\beta})^\top\widetilde{\boldsymbol\Sigma}(\boldsymbol{\check\beta}-\boldsymbol{\beta})/n$ is the Bregman-divergence between $\boldsymbol{\check\beta}$ and $\boldsymbol{\beta}$, and is an approximation of the Bregman-divergence in (\ref{eq: BRIGHTi}). The latter approximation is achieved by $\widetilde{\boldsymbol\Sigma}\approx\widehat{\boldsymbol\Sigma}$, which is widely deemed to be true in genetics studies \citep{bush2012chapter}. 
+
+Although BRIGHTs can incorporate general $\boldsymbol{\hat\beta}$ for data integration, only specific $\boldsymbol{\hat\beta}$ can ensure $B_{\widetilde{\boldsymbol\Sigma}}(\boldsymbol{\hat\beta}||\boldsymbol\beta)$ to be a valid approximation of the minority data negative log-likelihood. Below we discuss how to construct $\boldsymbol{\hat\beta}$ from summary-level information in the case of quantitative traits and binary traits.
+
+For quantitative traits, $\boldsymbol{\hat\beta}=\widetilde{\boldsymbol\Sigma}^{-1}\boldsymbol r$ ensures $B_{\widetilde{\boldsymbol\Sigma}}(\boldsymbol{\hat\beta}||\boldsymbol\beta)$ to be a valid approximation of the OLS loss through $\widetilde{\boldsymbol\Sigma}\approx\widehat{\boldsymbol\Sigma}$ \citep{li2022bregman}, where $\boldsymbol r=\frac{\boldsymbol y^\top\boldsymbol X}{n}$ is the marginal SNPs-trait inner product and a standardized version, $\boldsymbol r^*=\frac{\boldsymbol y^{*\top}\boldsymbol X^*}{n}$, can be recovered from GWAS summary statistics with $\boldsymbol X^*$ and $\boldsymbol y^*$ being the standardized genotype and phenotype \citep{vilhjalmsson2015modeling}. We note, in this scenario, $\boldsymbol{\hat\beta}$ is only presented for illustration purposes, the actual implementation does not require the inversion or invertibility of $\widetilde{\boldsymbol\Sigma}$; furthermore, the BRIGHTs method will reduce to LASSOsum \citep{mak2017polygenic} when $\eta=0$ and $p_{\lambda}(\boldsymbol\beta)$ is chosen as LASSO penalty. The pipeline of the BRIGHTs estimation procedure with quantitative traits and target minority GWAS summary statistics is presented in Fig\ref{fig:01}.A, and this pipeline is used for the case study in Section \ref{sec:feature}.
+
+For binary traits, a debiased LASSO estimator, $\boldsymbol{\hat\beta}=\boldsymbol{\hat b}+\widehat{\boldsymbol\Theta}(\boldsymbol r - \boldsymbol{\hat r})$, ensures a valid approximation of $B_{\widetilde{\boldsymbol\Sigma}}(\boldsymbol{\hat\beta}||\boldsymbol\beta)$ to the negative log-likelihood of logistic regression \citep{cai2021individual}. $\boldsymbol{\hat b}$ is the published LASSO estimator from the minority study, $\widehat{\boldsymbol\Theta}$ is a regularized inverse of the observed information matrix, and $\boldsymbol{\hat r}=\frac{expit(\boldsymbol X\boldsymbol{\hat b})^\top\boldsymbol X}{n}$ is the marginal marker-predicted outcome inner product, where $expit(\cdot)$ is the inverse of logit function. We note the actual implementation does not require the debiasing of the LASSO estimator or obtaining $\widehat{\boldsymbol\Theta}$, only $\boldsymbol{\hat b}$ and $\boldsymbol{\hat r}$ are required in addition to $\widetilde{\boldsymbol\Sigma}$, $\boldsymbol r$ and $\boldsymbol{\tilde\beta}$.
+
+We note that for BRIGHTs, $\boldsymbol{\hat\beta}$ and $\boldsymbol{\check\beta}$ are only required to contain a subset of markers from the LD reference, $\widetilde{\boldsymbol\Sigma}$, and no further assumptions are made on the covariate space of $\boldsymbol{\hat\beta}$ and $\boldsymbol{\check\beta}$.
+
+BRIGHTs group of methods utilize a wide variety of summary-level data from different populations to carry out transfer-learning. We accounted for Linkage Disequilibrium (LD) via a reference panel (1000 genome project as default).
+The reference panel is assumed to be in PLINK 1 [format](https://www.cog-genomics.org/plink/1.9/input#bed).
+Summary statistics are expected to be loaded into memory as a data.frame/data.table. 
+
+Below we discuss the required data and implementation tutorials separately for quantitative traits and binary traits.
+
+# BRIGHTs with quantitative traits
+For quantitative traits, BRIGHTs requires the GWAS summary statistics or marginal genotype-trait inner product, $\frac{\boldsymbol X^\top\boldsymbol y}{n}$, from the target minority population, while from the prior majority populations either GWAS summary statistics, marginal genotype-trait inner product, or coefficients estimated from joint models (e.g. PRS or LASSO regression) can be used for model fitting. We note that more than 1 prior majority data can be incorporated in the BRIGHTs model.
+
+First we read the minority summary statistics and majority summary statistics into R, and provide the `ref` names of the reference panel. If `ref` names are provided as "EUR", "AFR", "EAS", "SAS" ,or "AMR", then the default 1000 genome project reference panels will be used; otherwise `ref` needs to be provided as a directory to the plink1 format files (.bim, .bed, .fam). 
+
+
+```r
+library(BRIGHT)
+library(data.table)
+
+### Read target minority GWAS summary statistics file or marginal genotype-trait inner product file###
+
+# Read in target GWAS
+Tind="GWAS"
+Tss <- fread("Target_GWAS.txt")
+head(Tss)
+
+# Alternatively read in target marginal genotype-trait inner product
+Tind="IProd"
+Tss <- fread("Target_IProd.txt")
+head(Tss)
+
+### Read prior majority GWAS summary statistics file, marginal genotype-trait inner product, or joint coefficient estimates, more than 1 prior majority data can be read in###
+
+Pind=c("GWAS","IProd","Coef")
+Pss1 <- fread("Prior_GWAS1.txt")
+head(Pss1)
+Pss2 <- fread("Prior_IProd2.txt")
+head(Pss2)
+Pss3 <- fread("Prior_Coef3.txt")
+head(Pss3)
+Pss=list("1"=Pss1,"2"=Pss2,"3"=Pss3) # The order of list Pss need to be matched with Pind
+
+### Specify the PLINK file stub of the reference panel or "EUR", "AFR", "EAS", "SAS" ,or "AMR" ###
+ref.bfile <- "refpanel"
+
+### Read LD region file, only required if ref.bfile is provided as PLINK1 format ###
+LDblocks <- "AFR.hg19" # This will use LD regions as defined in Berisa and Pickrell (2015) for the African population and the hg19 genome build.
+# Other alternatives available. Type ?BRIGHTs for more details. 
+```
+Reference: [Berisa and Pickrell (2015)](https://academic.oup.com/bioinformatics/article/32/2/283/1743626/Approximately-independent-linkage-disequilibrium)
+
+Then, a preprocessing step is required to remove the SNPs that are not in the reference panel from all data, convert target data into marginal SNPs-trait inner product, convert prior data into joint coefficient estimates, and match the effect alleles between the reference panel and data.
+
+```r
+dat <- PreprocessS(Tss = Tss, Tind = Tind, Pss = Pss, Pind = Pind, ref.bfile=ref.bfile, LDblocks=LDblocks)
+```
+
+Running BRIGHTs using standard pipeline with LASSO penalty on quantitative traits: 
+```r
+out <- BRIGHTs(data = dat, type.trait="quantitative", penalty="LASSO")
+```
+
+# BRIGHTs with binary traits
+For binary traits, in addition to the GWAS summary statistics or marginal genotype-trait inner product, $\frac{\boldsymbol X^\top\boldsymbol y}{n}$, BRIGHTs requires an estimate based on logistic LASSO regression, $\boldsymbol{\hat b}$, and the marginal genotype-predicted traits inner product, $\frac{\boldsymbol X^\top expit(\boldsymbol X \boldsymbol{\hat b})}{n}$, from the target minority population. From the prior majority populations coefficients estimated from joint models (e.g. logistic LASSO regression) is required for model fitting. We note that more than 1 prior majority data can be incorporated in the BRIGHTs model. 
+
+First we read the minority summary statistics and majority summary statistics into R, and provide the `ref` names of the reference panel. If `ref` names are provided as "EUR", "AFR", "EAS", "SAS" ,or "AMR", then the default 1000 genome project reference panels will be used; otherwise `ref` needs to be provided as a directory to the plink1 format files (.bim, .bed, .fam). 
+
+
+```r
+library(BRIGHT)
+library(data.table)
+
+### Read target minority GWAS summary statistics file or marginal genotype-trait inner product file###
+
+# Read in target GWAS
+Tind=c("GWAS","LASSO","IProdPred")
+Tss1 <- fread("Target_GWAS.txt")
+head(Tss1)
+
+# Alternatively read in target marginal genotype-trait inner product
+Tind=c("IProd","LASSO","IProdPred")
+Tss <- fread("Target_IProd.txt")
+head(Tss)
+
+### Read target minority LASSO estimates file and marginal genotype-predicted outcome inner product file###
+bhat <- fread("Target_LASSO.txt")
+head(bhat)
+rhat <- fread("Target_IProdPred.txt")
+head(bhat)
+
+Tss <- list("1" = Tss1, "2" = bhat, "3" = rhat) # The order of list Tss need to be matched with Tind
+
+### Read prior majority GWAS summary statistics file, marginal genotype-trait inner product, or joint coefficient estimates, more than 1 prior majority data can be read in###
+
+Pind=c("Coef", "Coef", "Coef")
+Pss1 <- fread("Prior_Coef1.txt")
+head(Pss1)
+Pss2 <- fread("Prior_Coef2.txt")
+head(Pss2)
+Pss3 <- fread("Prior_Coef3.txt")
+head(Pss3)
+Pss=list("1"=Pss1,"2"=Pss2,"3"=Pss3) # The order of list Pss need to be matched with Pind
+
+### Specify the PLINK file stub of the reference panel or "EUR", "AFR", "EAS", "SAS" ,or "AMR" ###
+ref.bfile <- "refpanel"
+
+### Read LD region file, only required if ref.bfile is provided as PLINK1 format ###
+LDblocks <- "AFR.hg19" # This will use LD regions as defined in Berisa and Pickrell (2015) for the African population and the hg19 genome build.
+# Other alternatives available. Type ?BRIGHTs for more details. 
+```
+
+Then, a preprocessing step is required to remove the SNPs that are not in the reference panel from all data, convert target data into marginal SNPs-trait inner product, convert prior data into joint coefficient estimates, and match the effect alleles between the reference panel and data.
+
+```r
+dat <- PreprocessS(Tss = Tss, Tind = Tind, Pss = Pss, Pind = Pind, ref.bfile=ref.bfile, LDblocks=LDblocks)
+```
+
+Running BRIGHTs using standard pipeline with LASSO penalty on quantitative traits: 
+```r
+out <- BRIGHTs(data = dat, type.trait="binary", penalty="LASSO")
+```
+This procedure requires additional and quite stringent summary statistics from both target and prior data, in genetics studies its quite common to treat binary outcome as continuous and perform continuous models on the data; therefore, in the case where the above additonal summary statistics are not available, the BRIGHTS with quantitative traits procedure can also be used to analyze the binary data.
+
+# Model validation with individual-level test data
+When individual-level test data is available, `BRIGHT` package provide automated validation functions and generates evaluation plots:
+
+```r
+# Read in target individual-level data
+Testgeno <- "/path/to/test/plink"
+Testpheno <- fread("Test_phenotype.txt")
+head(Testpheno)
+
+# Perform testing
+Val <- Valid.Ind(out, Testpheno, Testgeno)
+```
+
+# Model validation with summary-level test data
+When summary test data is available, `BRIGHT` package provide automated validation functions for parameter fine-tunning:
+
+```r
+# Read in test GWAS
+Testind="GWAS"
+Testss <- fread("Target_GWAS.txt")
+head(Testss)
+
+# Alternatively read in test marginal genotype-trait inner product
+Testind="IProd"
+Testss <- fread("Target_IProd.txt")
+head(Testss)
+
+# Perform testing
+Val <- Valid.Sum(Testss, Testind, Testpheno, Testgeno)
+```
+
+We note that summary level test data is only supported for quantitative traits

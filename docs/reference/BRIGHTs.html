@@ -23,8 +23,24 @@
 
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav"><li>
+  <a href="../articles/BRIGHT.html">Get started</a>
+</li>
+<li>
   <a href="../reference/index.html">Reference</a>
 </li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Articles
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu"><li>
+      <a href="../articles/BRIGHTi.html">BRIGHTi tutorial</a>
+    </li>
+    <li>
+      <a href="../articles/BRIGHTs.html">BRIGHTs tutorial</a>
+    </li>
+  </ul></li>
       </ul><ul class="nav navbar-nav navbar-right"></ul></div><!--/.nav-collapse -->
   </div><!--/.container -->
 </div><!--/.navbar -->
@@ -45,17 +61,18 @@
 
     <div id="ref-usage">
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">BRIGHTs</span><span class="op">(</span></span>
-<span>  <span class="va">XtY</span>,</span>
-<span>  <span class="va">Beta_prior</span>,</span>
-<span>  <span class="va">X</span>,</span>
-<span>  <span class="va">lambda</span>,</span>
-<span>  <span class="va">K1</span>,</span>
-<span>  <span class="va">m</span>,</span>
-<span>  <span class="va">blk</span>,</span>
-<span>  <span class="va">K0</span>,</span>
+<span>  <span class="va">Tss</span>,</span>
+<span>  <span class="va">Tref</span>,</span>
+<span>  LDblocks <span class="op">=</span> <span class="st">"EUR"</span>,</span>
+<span>  Pss <span class="op">=</span> <span class="cn">NA</span>,</span>
+<span>  m <span class="op">=</span> <span class="cn">NA</span>,</span>
+<span>  group <span class="op">=</span> <span class="cn">NA</span>,</span>
 <span>  penalty <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  tau <span class="op">=</span> <span class="fl">0</span>,</span>
-<span>  <span class="va">eta</span>,</span>
+<span>  eta <span class="op">=</span> <span class="fl">0</span>,</span>
+<span>  lambda <span class="op">=</span> <span class="cn">NA</span>,</span>
+<span>  nlambda <span class="op">=</span> <span class="fl">100</span>,</span>
+<span>  lambda.min <span class="op">=</span> <span class="fl">0.001</span>,</span>
 <span>  alpha <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  gamma <span class="op">=</span> <span class="fl">0</span>,</span>
 <span>  eps <span class="op">=</span> <span class="fl">1e-07</span>,</span>
@@ -68,36 +85,8 @@
 
     <div id="arguments">
     <h2>Arguments</h2>
-    <dl><dt>XtY</dt>
-<dd><p>a numeric verticle vector of the marginal correlation between genotype and outcome, can be recovered from GWAS summary statistics by function p2cor().</p></dd>
-
-
-<dt>Beta_prior</dt>
-<dd><p>a numeric verticle vector of the prior information; in the case where prior information is a subspace of XtY, set the complement set to be zero.</p></dd>
-
-
-<dt>X</dt>
-<dd><p>a numeric matrix of reference genotypes, default is from 1000 genome project.</p></dd>
-
-
-<dt>lambda</dt>
-<dd><p>a numeric verticle vector of the LASSO penalty weights; it must be sorted with a decreasing order.</p></dd>
-
-
-<dt>K1</dt>
-<dd><p>a numeric verticle vector of the grouping of SNPs for group penalties; SNPs within K1[i,i+1] are grouped together.</p></dd>
-
-
-<dt>m</dt>
+    <dl><dt>m</dt>
 <dd><p>a numeric verticle vector of the multiplicative factor to adjust for the number of SNPs in each group, the default is the square root of number of elements in each group.</p></dd>
-
-
-<dt>blk</dt>
-<dd><p>a numeric verticle vector indicating the grouping of SNPs in each block, can be generated through LD() function.</p></dd>
-
-
-<dt>K0</dt>
-<dd><p>a integer scalar for the number of SNPs/covariates that is not penalized.</p></dd>
 
 
 <dt>penalty</dt>
@@ -111,6 +100,10 @@
 
 <dt>eta</dt>
 <dd><p>a numeric scalar of the weights for incorporating prior information.</p></dd>
+
+
+<dt>lambda</dt>
+<dd><p>a numeric verticle vector of the LASSO penalty weights; it must be sorted with a decreasing order.</p></dd>
 
 
 <dt>alpha</dt>
@@ -146,6 +139,30 @@ regularization path.</p></dd>
 
 <dt>user</dt>
 <dd><p>a logical scalar for indicating whether lambda is user specified; if user=TRUE, then the iteration will start from the largest lambda, otherwise the iteration will start from the second largest lambda.</p></dd>
+
+
+<dt>XtY</dt>
+<dd><p>a numeric verticle vector of the marginal correlation between genotype and outcome, can be recovered from GWAS summary statistics by function p2cor().</p></dd>
+
+
+<dt>Beta_prior</dt>
+<dd><p>a numeric verticle vector of the prior information; in the case where prior information is a subspace of XtY, set the complement set to be zero.</p></dd>
+
+
+<dt>X</dt>
+<dd><p>a numeric matrix of reference genotypes, default is from 1000 genome project.</p></dd>
+
+
+<dt>K1</dt>
+<dd><p>a numeric verticle vector of the grouping of SNPs for group penalties; SNPs within K1[i,i+1] are grouped together.</p></dd>
+
+
+<dt>blk</dt>
+<dd><p>a numeric verticle vector indicating the grouping of SNPs in each block, can be generated through LD() function.</p></dd>
+
+
+<dt>K0</dt>
+<dd><p>a integer scalar for the number of SNPs/covariates that is not penalized.</p></dd>
 
 
 <dt>max.iter</dt>

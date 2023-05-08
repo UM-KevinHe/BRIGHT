@@ -1,0 +1,99 @@
+---
+title: "BRIGHTi tutorial"
+author: "Qinmengge Li"
+date: "5/1/2023"
+output: html_document
+---
+
+# Introduction
+
+\subsection{BRIGHTi with individual-level data} \label{sec: BRIGHTi}
+Let genotype, $\boldsymbol X$, and phenotype, $\boldsymbol y$, from the target minority population, and coefficient vector, $\boldsymbol{\check\beta}$, obtained from the published PRS model for the prior majority population are available. To integrate data while adjusting for the potential disparities among different populations, we combine the log-likelihood loss function from the target minority data and a Bregman-divergence-based metric to construct a penalized objective function,
+\begin{align}
+Q_{BRIGHTi}(\boldsymbol\beta) = -\ell(\boldsymbol\beta)+\eta B_{\widehat{\boldsymbol\Sigma}}(\boldsymbol{\check\beta}||\boldsymbol\beta)+p_{\lambda}(\boldsymbol\beta).\label{eq: BRIGHTi}
+\end{align}
+
+For quantitative trait, $\ell(\boldsymbol\beta)=-(\boldsymbol y-\boldsymbol X\boldsymbol{\beta})^\top(\boldsymbol y-\boldsymbol X\boldsymbol{\beta})/n$, is the OLS loss function measuring the discrepancy between the working model, $\boldsymbol\beta$, and the target minority data; $B_{\widehat{\boldsymbol\Sigma}}(\boldsymbol{\check\beta}||\boldsymbol\beta)=(\boldsymbol{\check\beta}-\boldsymbol{\beta})^\top\widehat{\boldsymbol\Sigma}(\boldsymbol{\check\beta}-\boldsymbol{\beta})$, is a special case of the Bregman-divergence (Mahalanobis distance) measuring the discrepancy between the working model, $\boldsymbol\beta$, and the prior information, $\boldsymbol{\check\beta}$, where $\widehat{\boldsymbol\Sigma}=\boldsymbol X^\top \boldsymbol X/n$; we note the $l_2$ penalty is a special case of the proposed Bregman-divergence. 
+
+For qualitative trait, $\ell(\boldsymbol\beta)=\sum_{i=1}^n {y_i\boldsymbol{X}_i^\top \boldsymbol\beta+b(\boldsymbol{X}_i^\top \boldsymbol\beta)}$, is the log-likelihood function measuring the discrepancy between the working model, $\boldsymbol\beta$, and the target minority data; $B_{\widehat{\boldsymbol\Sigma}}(\boldsymbol{\check\beta}||\boldsymbol\beta)=\sum_{i=1}^n {\boldsymbol{X}_i^\top \boldsymbol{\check\beta}\boldsymbol{X}_i^\top \boldsymbol\beta+b(\boldsymbol{X}_i^\top \boldsymbol\beta)}$, is another special case of the Bregman-divergence (Kullback-Leibler distance) measuring the discrepancy between the working model, $\boldsymbol\beta$, and the prior information, $\boldsymbol{\check\beta}$.
+
+In addition, $\eta$ is the weight balancing the importance of the minority data over the prior information to account for the population heterogeneity; when $\eta=0$, BRIGHTi will reduce to the penalized regression on the target data; when $\eta\rightarrow\infty$, BRIGHTi will reduce to the penalized prior information. $p_{\lambda}(\beta)$ is a general penalty including (group) LASSO, (group) SCAD, and (group) MCP to achieve sparsity and fine mapping in the genotype effect size estimation. In the case of quantitative trait, the BRIGHTi estimation procedure includes pLASSO \citep{jiang2016variable} as a special case when outcome $\boldsymbol y$ are assumed to follow Gaussian distribution, which the BRIGHTi method does not require.
+
+BRIGHTi group of methods utilize individual-level data from target minority populations and a wide variety of summary-level data from prior majority population to carry out transfer-learning.
+Summary statistics are expected to be loaded into memory as a data.frame/data.table for the prior majority population. 
+
+Below we discuss the required data and implementation tutorials.
+
+BRIGHTi requires the individual-level genotype and phenotype from the target minority population, while from the prior majority populations either GWAS summary statistics, marginal genotype-trait inner product, or coefficients estimated from joint models (e.g. PRS or LASSO regression) can be used for model fitting. We note that more than 1 prior majority data can be incorporated in the BRIGHTi model.
+
+First we read the minority genotype data from plink1 files and phenotype data from text files and majority summary statistics into R.
+
+
+```r
+library(BRIGHT)
+library(data.table)
+
+### Read target minority GWAS summary statistics file or marginal genotype-trait inner product file###
+
+# Read in target individual-level data
+Tgeno <- "/path/to/plink"
+Tpheno <- fread("Target_phenotype.txt")
+head(Tpheno)
+
+
+### Read prior majority GWAS summary statistics file, marginal genotype-trait inner product, or joint coefficient estimates, more than 1 prior majority data can be read in###
+
+Pind=c("GWAS","IProd","Coef")
+Pss1 <- fread("Prior_GWAS1.txt")
+head(Pss1)
+Pss2 <- fread("Prior_IProd2.txt")
+head(Pss2)
+Pss3 <- fread("Prior_Coef3.txt")
+head(Pss3)
+Pss=list("1"=Pss1,"2"=Pss2,"3"=Pss3) # The order of list Pss need to be matched with Pind
+```
+
+Then, a preprocessing step is required to remove the SNPs that are not in the target minority genotype files from prior majority data, convert prior data into joint coefficient estimates, and match the effect alleles between the minority genotype and prior data.
+
+```r
+dat <- PreprocessI(Tpheno = Tpheno, Tgeno = Tgeno, Pss = Pss, Pind = Pind)
+```
+
+Running BRIGHTi using standard pipeline with LASSO penalty on different types of traits including "quantitative", "binary", "count": 
+```r
+out <- BRIGHTi(data = dat, type.trait="quantitative", penalty="LASSO")
+```
+
+# Model validation
+## Model validation with individual-level test data
+When individual-level test data is available, `BRIGHT` package provide automated validation functions and generates evaluation plots:
+
+```r
+# Read in target individual-level data
+Testgeno <- "/path/to/test/plink"
+Testpheno <- fread("Test_phenotype.txt")
+head(Testpheno)
+
+# Perform testing
+Val <- Valid.Ind(out, Testpheno, Testgeno)
+```
+
+## Model validation with summary-level test data
+When summary test data is available, `BRIGHT` package provide automated validation functions for parameter fine-tunning:
+
+```r
+# Read in test GWAS
+Testind="GWAS"
+Testss <- fread("Target_GWAS.txt")
+head(Testss)
+
+# Alternatively read in test marginal genotype-trait inner product
+Testind="IProd"
+Testss <- fread("Target_IProd.txt")
+head(Testss)
+
+# Perform testing
+Val <- Valid.Sum(Testss, Testind, Testpheno, Testgeno)
+```
+
+We note that summary level test data is only supported for quantitative traits
