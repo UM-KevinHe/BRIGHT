@@ -483,7 +483,7 @@ MSE_Cor.plot <- function(Val){
   
   par(mar = c(0, 0, 0, 0))
   plot(1,type = "n",axes = F,xlab = "",ylab = "",frame.plot = FALSE)
-  legend(x="center", legend=c("BRIGHT","South Asian","Caucasian"),col=c("black", "black","black"),lty=c(1,NA,NA),lwd=c(3,NA,NA),pch = c(NA,15,16),cex = c(1.5,1.5,1.5),bty = "n",horiz = T)
+  legend(x="center", legend=c("BRIGHT","Local","Prior"),col=c("black", "black","black"),lty=c(1,NA,NA),lwd=c(3,NA,NA),pch = c(NA,15,16),cex = c(1.5,1.5,1.5),bty = "n",horiz = T)
   
   BRCor=Val[["BRMSE_rst"]]
   eta=eta_vec[-22]

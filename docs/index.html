@@ -79,12 +79,33 @@
 <div class="section level1">
 <h1 id="description">Description<a class="anchor" aria-label="anchor" href="#description"></a>
 </h1>
-<p><code>BRIGHT</code> is a group of methods for using individual-level data, published genotype-trait summary statistics (GWAS), or combined data types from different ethnic populations to improve the recalibration, discrimination, and prediction accuracy on the target minority cohort. We implemented group LASSO, Elastic Net, MCP and SCAD penalties for marker fine mapping.</p>
+<p><code>BRIGHT</code> is a group of methods for using either published genotype-trait summary statistics (GWAS) or individual-level data from different ethnic populations to improve the recalibration, discrimination, and prediction accuracy on the target minority cohort. We implement (group) LASSO, Elastic Net, MCP and SCAD penalties for marker fine mapping.</p>
+</div>
+<div class="section level1">
+<h1 id="models">Models:<a class="anchor" aria-label="anchor" href="#models"></a>
+</h1>
+<table class="table">
+<tr>
+<th>Method</th>
+<th>Description</th>
+<th>Example</th>
+</tr>
+<tr>
+<td>BRIGHTs</td>
+<td>BRIGHTs utilize summary statistics from both target minority and prior majority data to construct trans-ethnic PRS. Both binary and continuous outcomes are implemented in the package. <a href="#references">[1]</a>.</td>
+<td><a href="https://github.com/UM-KevinHe/BRIGHT/tree/main/docs/articles/BRIGHTs.html#Introduction" class="external-link">tutorial</a></td>
+</tr>
+<tr>
+<td>BRIGHTi</td>
+<td>BRIGHTi utilize individual-level data from target minority population and summery-level data from prior majority population to construct trans-ethnic PRS. Binary, continuous, and count outcomes are implemented in the package. <a href="#references">[2]</a>.</td>
+<td><a href="https://github.com/UM-KevinHe/BRIGHT/tree/main/docs/articles/BRIGHTi.html#Introduction" class="external-link">tutorial</a></td>
+</tr>
+</table>
 </div>
 <div class="section level1">
 <h1 id="reference">Reference<a class="anchor" aria-label="anchor" href="#reference"></a>
 </h1>
-<p>Li, Q., Patrick, M. T., Zhang, H., Khunsriraksakul, C., Stuart, P. E., Gudjonsson, J. E., … &amp; He, K. (2022). Bregman Divergence-Based Data Integration with Application to Polygenic Risk Score (PRS) Heterogeneity Adjustment. arXiv preprint arXiv:2210.06025 (<a href="https://arxiv.org/abs/2210.06025" class="external-link uri">https://arxiv.org/abs/2210.06025</a>)</p>
+<p>Li Q, Patrick MT, Zhang H, Khunsriraksakul C, Stuart PE, Gudjonsson JE, Nair R, Elder JT, Liu DJ, Kang J, Tsoi LC. Bregman Divergence-Based Data Integration with Application to Polygenic Risk Score (PRS) Heterogeneity Adjustment. arXiv preprint arXiv:2210.06025. 2022 Oct 12. (<a href="https://arxiv.org/abs/2210.06025" class="external-link uri">https://arxiv.org/abs/2210.06025</a>)</p>
 </div>
 
   </div>
