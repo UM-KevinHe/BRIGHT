@@ -5,28 +5,35 @@ date: "5/1/2023"
 output: html_document
 ---
 # Introduction
-Polygenic risk scores (PRS) are commonly used tools for genetic risk prediction \citep{chatterjee2013projecting,dudbridge2013power,consortium2009common,shah2015improving,shi2016winner,stahl2012bayesian,vilhjalmsson2015modeling}. However, these scores have been primarily based on European ancestry or East Asian ancestry cohort, with limited prediction power for minority cohorts (e.g. African ancestry), known as the lack of model transferability \citep{martin2019clinical,lam2019comparative,vilhjalmsson2015modeling}. In contrast, PRS constructed directly from minority ethnic data have long suffered small sample size and “the curse of dimensionality” \citep{bustamante2011genomics,popejoy2016genomics,need2009next,mills2020gwas,lewis2020polygenic,wojcik2019genetic,duncan2019analysis}. Hence, it would be desirable to design a procedure to transfer knowledge from the well-studied prior populations to the under-represented target population and optimally balance the information between them to account for the heterogeneity. A unique challenge here is that, due to the DataSHIELD constraint \citep{gaye2014datashield}, individual data are not accessible across studies. Instead, only summary statistics, such as the SNP-trait correlation, are available, which precludes the application of existing transfer learning procedures. In response, we proposed a privacy-preserving technique, BRegman divergence-based Integrational Genetic Hazard Trans-ethnic (BRIGHT), using published summary statistics from different ethnic populations to improve the recalibration, discrimination, and prediction accuracy on the target minority cohort \citep{li2022bregman}.
+PRS is a widely used tool for genetic risk prediction, but its performance is limited in clinically under-represented minority populations. This motivates the development of a transfer learning procedure to leverage knowledge from well-studied majority populations. However, the lack of individual-level data access poses a challenge. To address these, we propose a privacy-preserving technique called BRegman divergence-based Integrational Genetic Hazard Trans-ethnic (BRIGHT).
 
-BRIGHT estimation procedure utilize Bregman-divergence to measure the difference between the populations and optimally balance the information from them. The method enjoys the following properties \citep{li2022bregman}: (1) it controls the relative weight of the external information, identifying the most compatible ones and diminishing the weights of less relevant ones; (2) it is robust to model misspecification and incorporates various types of external risk scores, including risk scores derived from different statistical models or built upon different outcomes; (3) it accommodates that the covariate space may be different between data sources; (4) it requires less sensitive summary statistics to be obtained from both target and prior data sources, with no use of any sensitive individual-level data; (5) it achieves fine-mapping simultaneously in the process of PRS construction; (6) its objective function retains similar forms as the penalized regression and guarantees the computation efficiency; and (7) it incorporates pLASSO \citep{jiang2016variable} and LASSOsum \citep{mak2017polygenic} as special cases. 
+We provide two versions of the BRIGHT model: BRIGHTi and BRIGHTs. BRIGHTi integrates individual-level target minority data with the prior majority information. In comparison, BRIGHTs integrates summary-level target minority data with the prior majority information, which ensures privacy protection. Both versions of BRIGHT support general penalty structures for fine mapping of genetic markers.
 
-This software package \texttt{BRIGHT} implements the above BRIGHT estimation procedure. Within the package, two versions of BRIGHT models are implemented: (1) BRIGHTi, which requires the individual-level target minority data and summary-level prior data; (2) BRIGHTs, which only requires the summary-level information from both target and prior data, therefore preserves patient privacy. Both BRIGHTi and BRIGHTs methods are efficiently implemented with general penalty structures including, group LASSO, group SCAD, and group MCP, which enable the group genetic marker fine mapping and incorporate LASSO, SCAD, and MCP penalties as special cases.
+By using BRIGHT, researchers can overcome the limitations of single-ethnic PRS and improve prediction accuracy for minority populations. The package provides a valuable tool for transferring knowledge and optimizing the integration of information between populations with heterogeneous genetic backgrounds.
 
-This vignette describes the usage of BRIGHT with summary level data and quantitative traits in R. There are additional vignettes that should be useful:
+To summarize, BRIGHT estimation procedure utilize Bregman-divergence to measure the difference between the populations and optimally balance the information from them. The method enjoys the following properties \citep{li2022bregman}: 
 
-* <a href="https://github.com/UM-KevinHe/BRIGHT/tree/main/docs/articles/BRIGHTs.html#Introduction">"BRIGHTs"</a> describes the usage of BRIGHT with summary level target data and both binary and quantitative traits.
-* <a href="https://github.com/UM-KevinHe/BRIGHT/tree/main/docs/articles/BRIGHTi.html#Introduction">"BRIGHTi"</a> describes the usage of BRIGHT with individual level target data and binary, count, and quantitative traits.
+* it controls the relative weight of the prior information, identifying the most compatible ones and diminishing the weights of less relevant ones; 
+* it is robust to model misspecification and incorporates various types of prior risk scores, including risk scores derived from different statistical models or built upon different outcomes;
+* it accommodates that the covariate space may be different between data sources; 
+* less sensitive summary statistics from both prior and target data sources suffice the model fitting of BRIGHTs; 
+* it achieves fine-mapping simultaneously in the process of PRS construction; 
+* its objective function retains similar forms as the penalized regression and guarantees the computation efficiency; 
+* it incorporates pLASSO \citep{jiang2016variable} and LASSOsum \citep{mak2017polygenic} as special cases. 
 
-To integrate summary statistics without using individual-level data, while adjusting for the potential disparities between prior majority and target minority populations, BRIGHTs solves the following penalized objective function,
-\begin{align}
-Q_{BRIGHTs}(\boldsymbol\beta) =& B_{\widetilde{\boldsymbol\Sigma}}(\boldsymbol{\hat\beta}||\boldsymbol\beta) + \eta B_{\widetilde{\boldsymbol\Sigma}}(\boldsymbol{\check\beta}||\boldsymbol\beta) + p_{\lambda}(\boldsymbol\beta),\label{eq: BRIGHT}
-\end{align}
-where $\boldsymbol{\hat\beta}$ and $\boldsymbol{\check\beta}$ are the estimated coefficients obtained from published studies based on target minority and prior majority populations respectively; $\widetilde{\boldsymbol\Sigma}$ is the regularized block-structured LD estimation \citep{berisa2016approximately} from publicly available minority genotypes (e.g. 1000 genome project) or user specified Plink genotype files.
-$B_{\widetilde{\boldsymbol\Sigma}}(\boldsymbol{\hat\beta}||\boldsymbol\beta)=(\boldsymbol{\hat\beta}-\boldsymbol{\beta})^\top\widetilde{\boldsymbol\Sigma}(\boldsymbol{\hat\beta}-\boldsymbol{\beta})/n$ is the Bregman-divergence between $\boldsymbol{\hat\beta}$ and $\boldsymbol{\beta}$, serving as an approximation of the negative log-likelihood from the minority data, which is not directly available due to DataSHIELD constraints; $B_{\widetilde{\boldsymbol\Sigma}}(\boldsymbol{\check\beta}||\boldsymbol\beta)=(\boldsymbol{\check\beta}-\boldsymbol{\beta})^\top\widetilde{\boldsymbol\Sigma}(\boldsymbol{\check\beta}-\boldsymbol{\beta})/n$ is the Bregman-divergence between $\boldsymbol{\check\beta}$ and $\boldsymbol{\beta}$ measuring the discrepancy between the working model and the prior majority model.
+The detailed BRIGHT model can be found in the Appendix \ref{sec:apd1}
 
-For quantitative traits, $\boldsymbol{\hat\beta}=\widetilde{\boldsymbol\Sigma}^{-1}\boldsymbol r$ ensures $B_{\widetilde{\boldsymbol\Sigma}}(\boldsymbol{\hat\beta}||\boldsymbol\beta)$ to be a valid approximation of the OLS loss through $\widetilde{\boldsymbol\Sigma}\approx\widehat{\boldsymbol\Sigma}$ \citep{li2022bregman}, which is widely deemed to be true in genetics studies \citep{bush2012chapter}. $\boldsymbol r=\frac{\boldsymbol y^\top\boldsymbol X}{n}$ is the marginal SNPs-trait inner product from target minority population, where $\boldsymbol X$ and $\boldsymbol y$ are the target genotype matrix and outcome vector respectively. A standardized version, $\boldsymbol r^*=\frac{\boldsymbol y^{*\top}\boldsymbol X^*}{n}$, can be recovered from GWAS summary statistics with $\boldsymbol X^*$ and $\boldsymbol y^*$ being the standardized genotype and phenotype \citep{vilhjalmsson2015modeling}. We note, in this scenario, $\boldsymbol{\hat\beta}$ is only presented for illustration purposes, the actual implementation does not require the inversion or invertibility of $\widetilde{\boldsymbol\Sigma}$. The above objective function, (\ref{eq: BRIGHT}), ignoring the penalty term, is of quadratic forms concerning $\boldsymbol\beta$; therefore, in this package, we efficiently implement the optimization by group coordinate descent algorithm \citep{breheny2015group,yuan2006model} and warm start and active set technique and the computation cost does not exceed penalized linear regression. Furthermore, the BRIGHTs method will reduce to LASSOsum \citep{mak2017polygenic} when $\eta=0$ and $p_{\lambda}(\boldsymbol\beta)$ is chosen as LASSO penalty. 
+The BRIGHT estimation procedure allows for the incorporation of various types of individual or summary-level information from the prior majority population in the construction of BRIGHT PRS:
 
-BRIGHT estimation procedure can incorporate a wide variety of summary-level information from the prior majority population for the construction of $\boldsymbol{\check\beta}$: (1) when PRS coefficients from the prior majority population are available, they can be directly employed as $\boldsymbol{\check\beta}$; (2) when only GWAS summary statistics from prior majority population are avialble, $\boldsymbol{\check\beta}$ can be estimated through LASSOsum PRS method; (3) when individual-level data from the prior majority population can be accessed by some collaborators, $\boldsymbol{\check\beta}$ can be estimated from LASSO regression and only the LASSO coefficient estimates need to be shared. In addition, BRIGHT estimation procedure can also incorportate flexible summary-level information from the target minority populations: (1) if $\boldsymbol r$ or $\boldsymbol r^*$ is directly available, then the package can take them as input. (2) when only GWAS summary statistics are available, the package can automatically recover $\boldsymbol r^*$ from them.
-In addition, $\boldsymbol{\hat\beta}$ and $\boldsymbol{\check\beta}$ are only required to contain a subset of markers from the LD reference, $\widetilde{\boldsymbol\Sigma}$, and no further assumptions are made on the covariate space of $\boldsymbol{\hat\beta}$ and $\boldsymbol{\check\beta}$.
+* PRS coefficients (weight file) from the prior majority population.
+* GWAS summary statistics from the prior majority population.
+* Individual-level data from the prior majority population.
+
+Moreover, the BRIGHT estimation procedure can also incorporate flexible individual-level or summary-level information from the target minority population in the construction of $\boldsymbol{\hat\beta}$. The specific data requirements for each setting are discussed separately in the following sections.
+
+The flowchart for major functions and the pipeline can be found below.
+
+![Alt](./Figure1_full_LD.pdf){width=100% height=500}
 
 # Installation
 
@@ -60,30 +67,188 @@ for the latest development version. Or you can clone the latest development vers
 Most functions in `BRIGHT` impute missing genotypes in PLINK bfiles with a homozygous A2 genotype, which is the same as using the `--fill-missing-a2` option in PLINK. It is the user's responsibility to filter out individuals and SNPs with too many missing genotypes beforehand. 
 
 # Quick Start
-BRIGHTs group of methods utilize a wide variety of summary-level data from different populations to carry out transfer-learning. We accounted for Linkage Disequilibrium (LD) via a reference panel (1000 genome project as default).
-The reference panel is assumed to be in PLINK 1 [format](https://www.cog-genomics.org/plink/1.9/input#bed).
+
+In this section, we present a toy example to demonstrate the main functions, basic usage, and output results of the \texttt{BRIGHT} package. This example serves as an introduction to the package's capabilities, and we will delve into the different versions of BRIGHT and their specific applications in the subsequent sections.
+
+## Toy example illustration
+First, we load the BRIGHT package:
+
+```{r, message=FALSE}
+library(BRIGHT)
+```
+
+In the default version of the \texttt{BRIGHT} package, the implemented method is BRIGHTs with quantitative traits, which integrates summary-level information from both the target and prior data. In this section, we will demonstrate the application of this method using a toy example. Let's load the pre-simulated toy example data for illustration:
+
+```r
+data(ToyExample)
+```
+```{r, echo=FALSE}
+load("~/Desktop/research/Kevin He/PRS/Rewrite_Lassosum/example/dat.RData")
+```
+The toy example contains the summary statistics from both target and prior population and the directory of the PLINK1 file for reference LD construction.
+
+## BRIGHT fitting and visualization
+The BRIGHT method is fit by using the basic function `BRIGHT` with LASSO penalty on quantitative traits by default: 
+```r
+out <- BRIGHT(data = dat)
+```
+`out` is a list object containing all the information from the fitting of BRIGHT.
+```{r,echo=FALSE}
+load("~/Desktop/research/Kevin He/PRS/Rewrite_Lassosum/example/out.RData")
+Ground_truth=c()
+```
+
+## Hyperparameter fine-tuning with individual-level validation data
+`out` contains a sequence of models corresponding to different hyperparameters, $\lambda$ and $\eta$ pairs. Users would prefer to select the best performance model for the purpose of constructing PRS. Due to only summary statistics being available for the target minority populations, the widely used cross-validation is not applicable for hyper-parameter fine-tuning. Here our package provide two functions for using either individual-level or summary-level validation data to fine-tune hyperparameters. When individual-level validation data is available, users can use `Valid.Ind` to choose the best performance model:
+```{r,echo=FALSE}
+# Read in validation individual-level data
+Valigeno <- "~/Desktop/research/Kevin He/PRS/Rewrite_Lassosum/example/SAS2"
+Valipheno <- read.table("~/Desktop/research/Kevin He/PRS/Rewrite_Lassosum/example/SAS2_phe.fam")
+```
+
+```{r, warning=FALSE}
+# Perform validation with individual-level validation data
+Val <- Valid.Ind(out, Valipheno, Valigeno)
+```
+
+Once validation is done evaluation plots can be generated by using Contour.plot functions provided by the package:
+
+```r
+# Plot Contour plots
+Contour.plot(Val)
+```
+
+![Alt](./R2.pdf){width=100% height=700}
+![Alt](./MSPE.pdf){width=100% height=700}
+
+```{r,fig.height = 10, fig.width = 10}
+# Plot MSPE and R2 plot
+MSPE_R2.plot(Val)
+```
+The plots generated by "MSPE_R2.plot" presents the mean squared prediction error (MSPE) and $R^2$, measuring calibration and discrimination, for local (squares), prior (triangle), and BRIGHT (lines with circles) with varying $\eta$ values and $\lambda$ values. These plots help the user to visualize the local model's small sample size and prior model's heterogeneity effect on their recalibration and discrimination performance. The BRIGHT performance associated with varying $\eta$ and $\lambda$ values helps to decide how much information should be borrowed from the prior majority data and how many covariates should be chosen in order to achieve optimal performance for BRIGHT.
+
+Then the coefficients from the best performance model can be visualized in the following solution path plots by using function `Sol_path_valid.plot`:
+```{r,fig.height = 5, fig.width = 10}
+# Plot solution path containing either best selected eta or best selected lambda
+Sol_path_valid.plot(Val,out,highlight=Ground_truth,criteria="R2")
+```
+After selecting the criteria, either "R2" or "MSPE", for model fine-tuning, the solution paths for $-log(\lambda)$ and $\eta$ are plot for the best $\eta$ and $\lambda$, respectively. Each line corresponds to a covariate (SNPs). The left plot shows the solution path of effect sizes over the change of $-log(\lambda)$ for a given $\eta$ ($\eta=0$ in the above case); the right plot shows the solution path of effect sizes over the change of $\eta$ for a given $\lambda$ ($\lambda=0.353$ in the above case).
+
+## Hyperparameter fine-tuning with summary-level validation data
+However, due to Datashield constraints individual-level validation dataset can be hard to access. Therefore, we provide an alternative validation criteria, approximated MSPE (AMSPE), which only requires summary-level information from validation data. We first read in and present the summary level validation data as well as the Reference LD required for this approximation:
+```{r,echo=FALSE}
+# Read in validation summary-level data
+ValiRef <- "~/Desktop/research/Kevin He/PRS/Rewrite_Lassosum/example/SAS2"
+ValiIProd <- read.table("~/Desktop/research/Kevin He/PRS/Rewrite_Lassosum/example/SAS2.IProd",header = T)
+```
+
+AMSPE is then calculated by executing the `Val.Sum` function.
+```{r, warning=FALSE}
+# Perform validation with summary-level validation data
+Val.Sum <- Valid.Sum(out, ValiIProd, ValiRef)
+```
+
+Similar to the individual-level validation approach, we can visualize the validation process by plotting the AMSPE with regards to each hyper-parameter and the coefficients by plotting the solution paths.
+```{r,fig.height = 5, fig.width = 10}
+# Plot AMSPE plot
+AMSPE.plot(Val.Sum)
+```
+
+```{r,fig.height = 5, fig.width = 10}
+# Plot solution path containing either best selected eta or best selected lambda
+Sol_path_valid.plot(Val.Sum,out,highlight=Ground_truth,criteria="AMSPE")
+```
+
+
+## Model testing based on individual-level testing data
+Finally, with the existence of individual-level testing data, we also provide functions to automatically test the performance of the BRIGHT model with comparison to using either data source only.
+
+We present the required format of the individual-level testing data.
+```{r,echo=FALSE}
+# Read in testing individual-level data
+Testgeno <- "~/Desktop/research/Kevin He/PRS/Rewrite_Lassosum/example/SAS2"
+Testpheno <- read.table("~/Desktop/research/Kevin He/PRS/Rewrite_Lassosum/example/SAS2_phe.fam")
+```
+```{r}
+#Individual level validation data is available, Valipheno is the PLINK1 .fam format phenotype file, and Valigeno is the directory to the PLINK1 .bed file. 
+head(Testpheno)
+head(Testgeno)
+```
+
+Then, model testing can be automatically achieved by executing function `Test.Ind` function.
+```{r, warning=FALSE}
+# Perform validation with individual-level validation data
+Tst <- Test.Ind(Val, Testpheno, Testgeno)
+```
+
+We provide two plotting functions below for easier visualization of testing results:
+```{r,fig.height = 5, fig.width = 10}
+# Plot density plot
+Density.plot(Tst,Pct=0.9,criteria = "R2")
+```
+The plots generated by "Density.plot" presents the distribution of continuous traits in test data stratified by a percentile cut-off (Pct) of the local, prior and BRIGHT PRS. These plots further visualize the discrimination power of each PRS model. In the plots, we compare the median distance between the upper and lower percentile PRS stratification of the observed outcome distribution, and show the distance in the title of the plots.
+
+```{r,fig.height = 5, fig.width = 5, message=FALSE}
+# Plot ROC plot
+ROC.plot(Tst,Pct=0.9,criteria = "R2")
+```
+The plots generated by "ROC.plot" presents the receiver operating characteristic (ROC) curve as well as the area under curve (AUC) measuring the prediction performance of local, prior, and BRIGHT PRS for a given threshold of the continuous traits (Pct).
+
+# BRIGHTs with summary-level data: type.trait="quantitative" (Default)
+
+For quantitative traits, we set $B_{\widetilde{\boldsymbol\Sigma}}(\boldsymbol{\hat\beta}||\boldsymbol\beta)=(\boldsymbol{\hat\beta}-\boldsymbol{\beta})^\top\widetilde{\boldsymbol\Sigma}(\boldsymbol{\hat\beta}-\boldsymbol{\beta})/n$, $B_{\widetilde{\boldsymbol\Sigma}}(\boldsymbol{\check\beta}||\boldsymbol\beta)=(\boldsymbol{\check\beta}-\boldsymbol{\beta})^\top\widetilde{\boldsymbol\Sigma}(\boldsymbol{\check\beta}-\boldsymbol{\beta})/n$ and $\boldsymbol{\hat\beta}=\widetilde{\boldsymbol\Sigma}^{-1}\boldsymbol r$ where $\boldsymbol r=\frac{\boldsymbol y^\top\boldsymbol X}{n}$ is the marginal SNPs-trait inner product from target minority population, where $\boldsymbol X$ and $\boldsymbol y$ are the target genotype matrix and outcome vector respectively. A standardized version, $\boldsymbol r^*=\frac{\boldsymbol y^{*\top}\boldsymbol X^*}{n}$, can be recovered from GWAS summary statistics with $\boldsymbol X^*$ and $\boldsymbol y^*$ being the standardized genotype and phenotype \citep{vilhjalmsson2015modeling}. The above definition of $B_{\widetilde{\boldsymbol\Sigma}}(\boldsymbol{\hat\beta}||\boldsymbol\beta)$ and $\boldsymbol{\hat\beta}$ ensures $B_{\widetilde{\boldsymbol\Sigma}}(\boldsymbol{\hat\beta}||\boldsymbol\beta)$ to be a valid approximation of the OLS loss through $\widetilde{\boldsymbol\Sigma}\approx\widehat{\boldsymbol\Sigma}$ \citep{li2022bregman}, which is widely deemed to be true in genetics studies \citep{bush2012chapter}. We note, in this scenario, $\boldsymbol{\hat\beta}$ is only presented for illustration purposes, the actual implementation does not require the inversion or invertibility of $\widetilde{\boldsymbol\Sigma}$. The objective function in this case can be reduced to 
+\begin{align}
+Q_{BRIGHTs}(\boldsymbol\beta)&\propto\frac{1}{2}\boldsymbol{\beta}^\top \widetilde{\boldsymbol\Sigma}\boldsymbol{\beta}-\boldsymbol{\beta}^\top\boldsymbol{r}+\eta \left ( \frac{1}{2}\boldsymbol{\beta}^\top \widetilde{\boldsymbol\Sigma}\boldsymbol{\beta}-\boldsymbol{\beta}^\top\widetilde{\boldsymbol\Sigma}\boldsymbol{\check\beta}\right )+p_{\lambda}(\boldsymbol\beta). \label{eq: GWAS objective function}
+\end{align}
+The above objective function, (\ref{eq: BRIGHT}), ignoring the penalty term, is of quadratic forms concerning $\boldsymbol\beta$; therefore, in this package, we efficiently implement the optimization by group coordinate descent algorithm \citep{breheny2015group,yuan2006model} and warm start and active set technique and the computation cost does not exceed penalized linear regression. Furthermore, the BRIGHTs method will reduce to LASSOsum \citep{mak2017polygenic} when $\eta=0$ and $p_{\lambda}(\boldsymbol\beta)$ is chosen as LASSO penalty.
+
+BRIGHTs methods for quantitative traits utilize a wide variety of summary-level data from different populations to carry out transfer-learning: from the target minority population, BRIGHTs requires the GWAS summary statistics or marginal genotype-trait inner product ($\boldsymbol r$/$\boldsymbol r^*$), while from the prior majority populations either GWAS summary statistics, marginal genotype-trait inner product, or coefficients estimated from joint models (e.g. PRS or LASSO regression) can be used for model fitting. In addition, $\boldsymbol{\hat\beta}$ and $\boldsymbol{\check\beta}$ are only required to contain a subset of markers from the LD reference, $\widetilde{\boldsymbol\Sigma}$, and no further assumptions are made on the covariate space of $\boldsymbol{\hat\beta}$ or $\boldsymbol{\check\beta}$. 
 Summary statistics are expected to be loaded into memory as a data.frame/data.table. 
 
-Below we briefly present the required data and implementation tutorials for quantitative traits with summery-level target data, for more detailed illustration and binary traits please refer to <a href="https://github.com/UM-KevinHe/BRIGHT/tree/main/docs/articles/BRIGHTs.html#Introduction">"BRIGHTs"</a>.
+Below we present the required data and implementation tutorials for quantitative traits with summary-level target data, for binary traits please refer to <a href="https://github.com/UM-KevinHe/BRIGHT/tree/main/docs/articles/BRIGHTs.html#Introduction">"BRIGHTs"</a>.
 
-## BRIGHTs with quantitative traits and summery-level data
-For quantitative traits, BRIGHTs requires the GWAS summary statistics or marginal genotype-trait inner product, $\frac{\boldsymbol X^\top\boldsymbol y}{n}$, from the target minority population, while from the prior majority populations either GWAS summary statistics, marginal genotype-trait inner product, or coefficients estimated from joint models (e.g. PRS or LASSO regression) can be used for model fitting. We note that more than 1 prior majority data can be incorporated in the BRIGHTs model.
-
-First, we read in the minority summary statistics into R:
+First, we load the package and read in the minority summary statistics into R. As discussed, there are two options of summary statistics to be used for minority populations, below we present the two options separately and note in real application only one of the data is required.
 ```{r,message=FALSE}
 library(BRIGHT)
 ```
+
+The first option of summary-level data for minority population is the marginal inner-product of SNPs and traits
+
 ```{r}
-### Read target minority GWAS summary statistics file or marginal genotype-trait inner product file###
+### Read target minority marginal genotype-trait inner product file###
+
+# Read in target GWAS
+Tind="IProd"
+Tss <- read.table("~/Desktop/research/Kevin He/PRS/Rewrite_Lassosum/example/SAS1.IProd",header = T)
+head(Tss)
+```
+
+```{r}
+### Read target minority GWAS summary statistics file###
 
 # Read in target GWAS
 Tind="GWAS"
 Tss <- read.table("~/Desktop/research/Kevin He/PRS/Rewrite_Lassosum/example/SAS1.GWAS",header = T)
 head(Tss)
 ```
-We use Tind to indicate the data type being provided to BRIGHTs, it should be either "GWAS" or "IProd", corresponding to the GWAS summary statistics or the inner product mentioned above. In the provided example case we read in the GWAS summary statistics from the target minority data and it contains 7 columns: the "CHR" column is the chromosome name must be from 1 to 22; the "BP" column is the corresponding SNPs position in base pair; "A1" column is the effect allele and "A2" column is the reference allele; "Sign" is the marginal association direction for each SNPs (the sign of the beta coefficients); "N" column is the sample size used for each SNPs from GWAS study; "P" column is the p-value of the T test from GWAS.
 
-Second, we read in the prior majority summary statistics into R:
+We use Tind to indicate the data type being provided to BRIGHTs, it should be either "GWAS" or "IProd", corresponding to the GWAS summary statistics or the inner product mentioned above. In the provided example case we read in the IProd summary statistics from the target minority data and it contains 5 columns: the "CHR" column is the chromosome name must be from 1 to 22; the "BP" column is the corresponding SNPs position in base pair; "A1" column is the effect allele and "A2" column is the reference allele; the "IProd" column contains the marginal genotype-trait inner product; alternatively, we can also read in the GWAS summary statistics from the target minority data and it contains 7 columns: the "CHR" column is the chromosome name must be from 1 to 22; the "BP" column is the corresponding SNPs position in base pair; "A1" column is the effect allele and "A2" column is the reference allele; "Sign" is the marginal association direction for each SNPs (the sign of the beta coefficients); "N" column is the sample size used for each SNPs from GWAS study; "P" column is the p-value of the T test from GWAS.
+
+Second, we read in the prior majority summary statistics into R. As discussed, there are three options of summary statistics to be used for minority populations, below we present the three options separately and note in real application only one of the data is required for each prior data. We note that more than 1 prior majority data can be incorporated in the BRIGHTs model.
+```{r}
+### Read prior majority GWAS summary statistics file more than 1 prior majority data can be read in###
+
+Pind=c("GWAS")
+Pss <- read.table("~/Desktop/research/Kevin He/PRS/Rewrite_Lassosum/example/EUR.GWAS",header = T)
+head(Pss)
+```
+```{r}
+### Read prior majority marginal genotype-trait inner product more than 1 prior majority data can be read in###
+
+Pind=c("IProd")
+Pss <- read.table("~/Desktop/research/Kevin He/PRS/Rewrite_Lassosum/example/EUR.IProd")
+head(Pss)
+```
 ```{r}
 ### Read prior majority GWAS summary statistics file, marginal genotype-trait inner product, or joint coefficient estimates, more than 1 prior majority data can be read in###
 
@@ -91,9 +256,11 @@ Pind=c("Coef")
 Pss <- read.table("~/Desktop/research/Kevin He/PRS/Rewrite_Lassosum/example/EUR.Coef",header = T)
 head(Pss)
 ```
-We use Pind to indicate the data type being provided to BRIGHTs, it should be either "GWAS", "IProd", or "Coef", corresponding to the GWAS summary statistics, the inner product, or the joint coefficient estimates respectively. In the provided example case we read in the joint coefficient estimates summary statistics from the prior majority data and it contains 5 columns: the "CHR" column is the chromosome name must be from 1 to 22; the "BP" column is the corresponding SNPs position in base pair; "A1" column is the effect allele and "A2" column is the reference allele; "Coef" column is the coefficient estimate from joint models.
+We use Pind to indicate the data type being provided to BRIGHTs, it should be either "GWAS", "IProd", or "Coef", corresponding to the GWAS summary statistics, the inner product, or the joint coefficient estimates respectively. In the provided example case we read in the IProd summary statistics from the prior data and it contains 5 columns: the "CHR" column is the chromosome name must be from 1 to 22; the "BP" column is the corresponding SNPs position in base pair; "A1" column is the effect allele and "A2" column is the reference allele; the "IProd" column contains the marginal genotype-trait inner product; alternatively, we can also read in the GWAS summary statistics from the prior data and it contains 7 columns: the "CHR" column is the chromosome name must be from 1 to 22; the "BP" column is the corresponding SNPs position in base pair; "A1" column is the effect allele and "A2" column is the reference allele; "Sign" is the marginal association direction for each SNPs (the sign of the beta coefficients); "N" column is the sample size used for each SNPs from GWAS study; "P" column is the p-value of the T test from GWAS; In addition, we can also read in the joint coefficient estimates summary statistics from the prior majority data and it contains 5 columns: the "CHR" column is the chromosome name must be from 1 to 22; the "BP" column is the corresponding SNPs position in base pair; "A1" column is the effect allele and "A2" column is the reference allele; "Coef" column is the coefficient estimate from joint models.
 
-Then we read in the reference LD information. If `ref` names are provided as "EUR" (European ancestry), "AFR" (African ancestry), "EAS" (East Asian ancestry), "SAS" (South Asian ancestry) ,or "AMR" (America admixed ancestry), then the default 1000 genome project reference panels will be used; otherwise `ref` needs to be provided as a directory to the PLINK1 format files (.bim, .bed, .fam). If PLINK1 files are provided then the user also needs to provide the LDblocks to use for the block structures in calculating LD, it also should be provided as "EUR" (European ancestry), "AFR" (African ancestry), "EAS" (East Asian ancestry), "SAS" (South Asian ancestry) ,or "AMR" (America admixed ancestry).
+BRIGHTs also need to account for Linkage Disequilibrium (LD) via a reference panel (1000 genome project as default).
+The reference panel is assumed to be in PLINK 1 [format](https://www.cog-genomics.org/plink/1.9/input#bed).
+For reading in the reference LD information, if `ref` names are provided as "EUR" (European ancestry), "AFR" (African ancestry), "EAS" (East Asian ancestry), "SAS" (South Asian ancestry) ,or "AMR" (America admixed ancestry), then the default 1000 genome project reference panels will be used; otherwise `ref` needs to be provided as a directory to the PLINK1 format files (.bim, .bed, .fam). If PLINK1 files are provided then the user also needs to provide the LDblocks to use for the block structures in calculating LD, it also should be provided as "EUR" (European ancestry), "AFR" (African ancestry), "EAS" (East Asian ancestry), "SAS" (South Asian ancestry) ,or "AMR" (America admixed ancestry).
 ```{r}
 ### Specify the PLINK file stub of the reference panel or "EUR", "AFR", "EAS", "SAS" ,or "AMR" ###
 Tref <- "~/Desktop/research/Kevin He/PRS/Rewrite_Lassosum/example/SAS1"
@@ -117,68 +284,47 @@ Finally, BRIGHTs can be run by using standard pipeline with LASSO penalty on qua
 out <- BRIGHTs(data = dat, type.trait="quantitative", penalty="LASSO")
 ```
 
-## Model validation and visualization
-### Model validation with individual-level test data
-When individual-level test data is available, `BRIGHT` package provide automated validation functions and generates evaluation plots.
+## Model validation, hyper-parameter fine-tuning and visualization
+For model validation, hyper-parameter fine tuning, or visualization options, please refer to the Quick Start section.
 
-First we read in the genotype (PLINK1 .bed format) and phenotype (PLINK1 .fam format) data from test datasets:
-```{r}
-# Read in target individual-level data
+```{r, warning=FALSE}
+# Perform validation with individual-level validation data
+Val <- Valid.Ind(out, Valipheno, Valigeno)
+```
+
+## Model testing with individual-level testing data
+Finally, the selected model can be tested on individual-level testing data, we first read in the individual-level testing data:
+
+```{r,echo=FALSE}
+# Read in validation individual-level data
 Testgeno <- "~/Desktop/research/Kevin He/PRS/Rewrite_Lassosum/example/SAS2"
 Testpheno <- read.table("~/Desktop/research/Kevin He/PRS/Rewrite_Lassosum/example/SAS2_phe.fam")
-head(Testpheno)
 ```
-The first column of the phenotype file contains the FID; the second column of the phenotype file contains the IID which need to be mapped with the sample ID in the .bed file; the third column of the phenotype file contains the observed outcome.
-
-```{r, echo=FALSE}
-load("~/Desktop/research/Kevin He/PRS/Rewrite_Lassosum/example/out.RData")
-```
-
-Then Validation is proformed by using Valid.Ind function as below:
-```r
-# Perform testing
-Val <- Valid.Ind(out, Testpheno, Testgeno)
-```
-```{r, echo=FALSE}
-load("~/Desktop/research/Kevin He/PRS/Rewrite_Lassosum/example/Val.RData")
-```
-
-Once Validation is done evaluation plots can be generated by using .plot functions provided by the package:
-```{r,fig.height = 5, fig.width = 10}
-# Plot MSPE and Cor plot
-MSE_Cor.plot(Val)
-```
-The plots generated by "MSE_Cor.plot" presents the mean squared prediction error (MSPE) and $R^2$, measuring recalibration and discrimination, for local (squares), prior (circle), and BRIGHT (lines) with varying $\eta$ values. These plots help the user to visualize the local model's small sample size and prior model's heterogeneity effect on their recalibration and discrimination performance. The BRIGHT performance associated with varying $\eta$ values helps to decide how much information should be borrowed from the prior majority data in order to achieve optimal performance for BRIGHT.
 
 ```{r,fig.height = 5, fig.width = 10}
 # Plot density plot
-Density.plot(Val,Pct=0.9)
+#Density.plot(Val,Pct=0.9)
 ```
 The plots generated by "Density.plot" presents the distribution of continuous traits in test data stratified by a percentile cut-off (Pct) of the local, prior and BRIGHT PRS. These plots further visualize the discrimination power of each PRS model. In the plots, we compare the median distance between the upper and lower percentile PRS stratification of the observed outcome distribution, and show the distance in the title of the plots.
 
 ```{r,fig.height = 5, fig.width = 5, message=FALSE}
 # Plot ROC plot
-ROC.plot(Val,Pct=0.9)
+#ROC.plot(Val,Pct=0.9)
 ```
 The plots generated by "ROC.plot" presents the receiver operating characteristic (ROC) curve as well as the area under curve (AUC) measuring the prediction performance of local, prior, and BRIGHT PRS for a given threshold of the continuous traits (Pct).
 
-### Model validation with summary-level test data
-When individual-level test data is not available and only summary test data is available, `BRIGHT` package provide automated validation functions for parameter fine-tunning:
+# BRIGHTs with summary-level data: type.trait="qualitative" (Binary)
 
-Like the input for the target minority data, the summary-level test data can also be inputted as GWAS or the inner product as shown below.
-```r
-# Read in test GWAS
-Testind="GWAS"
-Testss <- fread("Target_GWAS.txt")
-head(Testss)
+# BRIGHTi with individual-level data: type.trait="quantitative" (Continuous)
 
-# Alternatively read in test marginal genotype-trait inner product
-Testind="IProd"
-Testss <- fread("Target_IProd.txt")
-head(Testss)
-```
-```r
-# Perform testing
-Val <- Valid.Sum(Testss, Testind, Testpheno, Testgeno)
-```
-We note that for current version, summary level test data is only supported for quantitative traits
+# BRIGHTi with individual-level data: type.trait="qualitative" (Binary)
+
+# BRIGHTi with individual-level data: type.trait="count" (Poisson)
+
+# Appendix 1 \label{sec:apd1}
+To integrate summary-level or individual-level target minority data and summary-level prior majority data, while adjusting for the potential disparities between prior majority and target minority populations, BRIGHT solves the following penalized objective function,
+\begin{align}
+Q_{BRIGHT}(\boldsymbol\beta) =& B_{\widetilde{\boldsymbol\Sigma}}(\boldsymbol{\hat\beta}||\boldsymbol\beta) + \eta B_{\widetilde{\boldsymbol\Sigma}}(\boldsymbol{\check\beta}||\boldsymbol\beta) + p_{\lambda}(\boldsymbol\beta),\label{eq: BRIGHT}
+\end{align}
+where $\boldsymbol{\hat\beta}$ and $\boldsymbol{\check\beta}$ are the estimated coefficients obtained from published studies based on target minority and prior majority populations, respectively; $\widetilde{\boldsymbol\Sigma}$ is the regularized block-structured LD estimation \citep{berisa2016approximately} from publicly available minority genotypes (e.g. 1000 genome project) or user specified Plink genotype files.
+$B_{\widetilde{\boldsymbol\Sigma}}(\boldsymbol{\hat\beta}||\boldsymbol\beta)$ ($B_{\widetilde{\boldsymbol\Sigma}}(\boldsymbol{\check\beta}||\boldsymbol\beta)$) is the Bregman-divergence between $\boldsymbol{\hat\beta}$ ($\boldsymbol{\check\beta}$) and $\boldsymbol{\beta}$, measuring the discrepancy between the working model and the target minority model (prior majority model). In addition, $\eta$ is the weight balancing the importance of the minority data over the prior information to account for the population heterogeneity; when $\eta=0$, BRIGHT will reduce to the penalized regression on the target data; when $\eta\rightarrow\infty$, BRIGHTi will reduce to the penalized prior information. $p_{\lambda}(\beta)$ is a general penalty including (group) LASSO, (group) elastic net, (group) MCP, and (group) SCAD to achieve sparsity and fine mapping in the genotype effect size estimation.

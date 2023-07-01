@@ -12,6 +12,7 @@ Imports: Rcpp (>= 1.0.8),
          mvtnorm,
          BEDMatrix,
          grpreg,
-         pROC
+         pROC,
+         ggplot2
 LinkingTo: Rcpp, RcppEigen
 RoxygenNote: 7.1.1

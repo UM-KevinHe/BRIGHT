@@ -389,7 +389,7 @@ BRIGHTi=function(X_plink,Y,group=1:ncol(X),Beta_prior,penalty="grLasso",family="
 }
 
 Valid.Ind <- function(out, Testpheno, Testgeno){
-  gene_bed = BEDMatrix(paste(Testgeno,".bed",sep=""))
+  gene_bed = BEDMatrix::BEDMatrix(paste(Testgeno,".bed",sep=""))
   gene_bed=as.matrix(gene_bed)
   XG <- newXG(gene_bed, 1:ncol(gene_bed), rep(1,ncol(gene_bed)), 1, FALSE)
   XB_Exom=XG$X%*%out[["Prior"]]
@@ -414,13 +414,18 @@ Valid.Ind <- function(out, Testpheno, Testgeno){
   AIC_best=Inf
   XB_MSE=c()
   XB_Cor=c()
+  Beta_MSE=c()
+  Beta_Cor=c()
   
   phe_test_std=(phe-mean(phe))/sd(phe)
   beta=out[[as.character(0)]]
   XB_Ind2=XG$X%*%beta
   Vali_MSE=colMeans((XB_Ind2-as.vector(phe_test_std))^2)
   Vali_cor=cor(XB_Ind2, phe_test_std)
-  XB_local=XB_Ind2[,which.max(Vali_cor)]
+  XB_local_Cor=XB_Ind2[,which.max(Vali_cor)]
+  Beta_local_Cor=beta[,which.max(Vali_cor)]
+  XB_local_MSE=XB_Ind2[,which.min(Vali_MSE)]
+  Beta_local_MSE=beta[,which.min(Vali_MSE)]
   
   for(eta in eta_vec){
     beta=out[[as.character(eta)]]
@@ -442,6 +447,8 @@ Valid.Ind <- function(out, Testpheno, Testgeno){
       value[2]=BRMSE[Vali_MSE_ind]
       eta_best[1]=eta
       XB_MSE=XB_Ind2[,which.min(Vali_MSE)]
+      Beta_MSE=beta
+      Beta_BRIGHT_MSE=beta[,which.min(Vali_MSE)]
     }
     if(max(Vali_cor,na.rm=T)>Vali_cor_best){
       Vali_cor_best=max(Vali_cor,na.rm=T)
@@ -449,6 +456,8 @@ Valid.Ind <- function(out, Testpheno, Testgeno){
       value[4]=BRMSE[Vali_cor_ind]
       eta_best[2]=eta
       XB_Cor=XB_Ind2[,which.max(Vali_cor)]
+      Beta_Cor=beta
+      Beta_BRIGHT_Cor=beta[,which.max(Vali_cor)]
     }
     
     Vali_MSE_rst=cbind(Vali_MSE_rst,Vali_MSE)
@@ -458,32 +467,150 @@ Valid.Ind <- function(out, Testpheno, Testgeno){
     BRCor_rst=cbind(BRCor_rst,BRcor)
     
   }
+  
+  dinom=dim(BRCor_rst)[1]
+  ind=which.max(BRCor_rst)
+  rw=ind%%dinom
+  cl=ind%/%dinom+1
+  Best_eta_Cor=eta_vec[cl]
+  Best_lambda_Cor=out[["lambda"]][rw]
+  
+  dinom=dim(BRMSE_rst)[1]
+  ind=which.min(BRMSE_rst)
+  rw=ind%%dinom
+  cl=ind%/%dinom+1
+  Best_eta_MSE=eta_vec[cl]
+  Best_lambda_MSE=out[["lambda"]][rw]
+  
+  print(paste("Best eta based on R2 is",round(Best_eta_Cor,digits = 3)))
+  print(paste("Best lambda based on R2 is",round(Best_lambda_Cor,digits = 3)))
+  print(paste("Best eta based on MSPE is",round(Best_eta_MSE,digits = 3)))
+  print(paste("Best lambda based on MSPE is",round(Best_lambda_MSE,digits = 3)))
+  
   rst=list()
   rst[["BRMSE_rst"]]=BRMSE_rst
   rst[["BRCor_rst"]]=BRCor_rst
   rst[["LAScor"]]=LAScor
   rst[["LASMSE"]]=LASMSE
   rst[["XB_Exom"]]=XB_Exom
-  rst[["XB_local"]]=XB_local
+  rst[["Beta_Exom"]]=out[["Prior"]]
+  rst[["XB_local_MSE"]]=XB_local_MSE
+  rst[["XB_local_Cor"]]=XB_local_Cor
+  rst[["Beta_local_MSE"]]=Beta_local_MSE
+  rst[["Beta_local_Cor"]]=Beta_local_Cor
   rst[["XB_MSE"]]=XB_MSE
   rst[["XB_Cor"]]=XB_Cor
+  rst[["Beta_MSE"]]=Beta_MSE
+  rst[["Beta_Cor"]]=Beta_Cor
+  rst[["Beta_BRIGHT_MSE"]]=Beta_BRIGHT_MSE
+  rst[["Beta_BRIGHT_Cor"]]=Beta_BRIGHT_Cor
   rst[["phe"]]=phe
   rst[["phe_std"]]=phe_std
   rst[["eta_vec"]]=eta_vec
+  rst[["lambda"]]=out[["lambda"]]
+  rst[["Best_eta_Cor"]]=Best_eta_Cor
+  rst[["Best_lambda_Cor"]]=Best_lambda_Cor
+  rst[["Best_eta_MSE"]]=Best_eta_MSE
+  rst[["Best_lambda_MSE"]]=Best_lambda_MSE
   return(rst)
 }
 
-MSE_Cor.plot <- function(Val){
+Valid.Sum <- function(out, ValiIProd, ValiRef){
+  gene_bed = BEDMatrix::BEDMatrix(paste(ValiRef,".bed",sep=""))
+  gene_bed=as.matrix(gene_bed)
+  XG <- newXG(gene_bed, 1:ncol(gene_bed), rep(1,ncol(gene_bed)), 1, FALSE)
+  XB_Exom=XG$X%*%out[["Prior"]]
+  LASMSE=t(XB_Exom)%*%XB_Exom/nrow(XG$X)-ValiIProd$IProd%*%out[["Prior"]]
+  eta_vec=out[["eta_vec"]]
+  
+  value=rep(0,6)
+  pos=rep(0,6)
+  eta_best=rep(0,3)
+  ER=c()
+  BRMSE_rst=c()
+  BRCor_rst=c()
+  Vali_MSE_rst=c()
+  Vali_cor_rst=c()
+  AIC_rst=c()
+  Beta=list()
+  Vali_MSE_best=Inf
+  Vali_cor_best=-Inf
+  AIC_best=Inf
+  XB_MSE=c()
+  XB_Cor=c()
+  Beta_MSE=c()
+  Beta_Cor=c()
+  
+  beta=out[[as.character(0)]]
+  XB_Ind2=XG$X%*%beta
+  Vali_MSE=diag(t(XB_Ind2)%*%XB_Ind2/nrow(XG$X))-ValiIProd$IProd%*%beta
+  XB_local_MSE=XB_Ind2[,which.min(Vali_MSE)]
+  Beta_local_MSE=beta[,which.min(Vali_MSE)]
+  
+  for(eta in eta_vec){
+    beta=out[[as.character(eta)]]
+    
+    XB_Ind2=XG$X%*%beta
+    
+    Vali_MSE=diag(t(XB_Ind2)%*%XB_Ind2/nrow(XG$X))-ValiIProd$IProd%*%beta
+    Vali_MSE_ind=which.min(Vali_MSE)
+    
+    BRMSE=diag(t(XB_Ind2)%*%XB_Ind2/nrow(XG$X))-ValiIProd$IProd%*%beta
+    
+    if(min(Vali_MSE,na.rm=T)<Vali_MSE_best){
+      Vali_MSE_best=min(Vali_MSE,na.rm=T)
+      value[2]=BRMSE[Vali_MSE_ind]
+      eta_best[1]=eta
+      XB_MSE=XB_Ind2[,which.min(Vali_MSE)]
+      Beta_MSE=beta
+    }
+    
+    Vali_MSE_rst=cbind(Vali_MSE_rst,Vali_MSE)
+    
+    BRMSE_rst=cbind(BRMSE_rst,t(BRMSE))
+    
+  }
+  
+  dinom=dim(BRMSE_rst)[1]
+  ind=which.min(BRMSE_rst)
+  rw=ind%%dinom
+  cl=ind%/%dinom+1
+  Best_eta_MSE=eta_vec[cl]
+  Best_lambda_MSE=out[["lambda"]][rw]
+  
+  print(paste("Best eta based on AMSPE is",round(Best_eta_MSE,digits = 3)))
+  print(paste("Best lambda based on AMSPE is",round(Best_lambda_MSE,digits = 3)))
+  
+  rst=list()
+  rst[["BRMSE_rst"]]=BRMSE_rst
+  rst[["LASMSE"]]=LASMSE
+  rst[["Beta_Exom"]]=out[["Prior"]]
+  rst[["Beta_local_MSE"]]=Beta_local_MSE
+  rst[["Beta_MSE"]]=Beta_MSE
+  rst[["eta_vec"]]=eta_vec
+  rst[["lambda"]]=out[["lambda"]]
+  rst[["Best_eta_MSE"]]=Best_eta_MSE
+  rst[["Best_lambda_MSE"]]=Best_lambda_MSE
+  return(rst)
+}
+
+Test.ind <- function(out, ValiIProd, ValiRef){
+  gene_bed = BEDMatrix::BEDMatrix(paste(ValiRef,".bed",sep=""))
+  gene_bed=as.matrix(gene_bed)
+}
+
+MSPE_R2.plot <- function(Val){
   eta_vec=Val[["eta_vec"]]
+  lambda=log(Val[["lambda"]])
   dinom=dim(Val[["BRMSE_rst"]])[1]
   
-  m=matrix(c(1,1,2,3),nrow = 2,ncol = 2,byrow = TRUE)
+  m=matrix(c(1,1,2,3,4,5),nrow = 3,ncol = 2,byrow = TRUE)
   
-  layout(mat = m,heights = c(0.1,0.9))
+  layout(mat = m,heights = c(0.1,0.45,0.45))
   
   par(mar = c(0, 0, 0, 0))
   plot(1,type = "n",axes = F,xlab = "",ylab = "",frame.plot = FALSE)
-  legend(x="center", legend=c("BRIGHT","Local","Prior"),col=c("black", "black","black"),lty=c(1,NA,NA),lwd=c(3,NA,NA),pch = c(NA,15,16),cex = c(1.5,1.5,1.5),bty = "n",horiz = T)
+  legend(x="center", legend=c("BRIGHT","Local","Prior"),col=c("black", "black","black"),lty=c(1,NA,NA),lwd=c(3,NA,NA),pch = c(16,15,17),cex = c(1.5,1.5,1.5),bty = "n",horiz = T)
   
   BRCor=Val[["BRMSE_rst"]]
   eta=eta_vec[-22]
@@ -499,8 +626,16 @@ MSE_Cor.plot <- function(Val){
   par(mar = c(5, 5, 0.5, 0.5))
   plot(1,type = "n",ylim = c(min(ER[rw,]),max(ER[rw,],ER_Exom)),xlim = c(min(eta),max(eta)),xlab = expression(eta),ylab = "MSPE",cex.lab=1.5,cex.axis=1.5)
   lines(eta,ER[rw,],lwd=3)
+  points(eta[-1],ER[rw,-1],pch=16,cex=2)
   points(eta[1],ER[rw,1],pch=15,cex=2)
-  points(eta[21],ER_Exom,pch=16,cex=2)
+  points(eta[21],ER_Exom,pch=17,cex=2)
+  
+  cut_lambda=which(colSums(Val[["Beta_MSE"]]!=0)==0)[1]-1
+  
+  par(mar = c(5, 5, 0.5, 0.5))
+  plot(1,type = "n",ylim = c(min(ER[1:cut_lambda,cl]),max(ER[1:cut_lambda,cl],ER_Exom)),xlim = c(min(-lambda[1:cut_lambda]),max(-lambda[1:cut_lambda])),xlab = expression(-log(lambda)),ylab = "MSPE",cex.lab=1.5,cex.axis=1.5)
+  lines(-lambda[1:cut_lambda],ER[1:cut_lambda,cl],lwd=3)
+  points(-lambda[1:cut_lambda],ER[1:cut_lambda,cl],pch=16,cex=2)
   
   BRCor=Val[["BRCor_rst"]]
   eta=eta_vec[-22]
@@ -516,14 +651,311 @@ MSE_Cor.plot <- function(Val){
   par(mar = c(5, 5, 0.5, 0.5))
   plot(1,type = "n",ylim = c(min(ER[rw,],ER_Exom),max(ER[rw,],ER_Exom)),xlim = c(min(eta),max(eta)),xlab = expression(eta),ylab = expression(R^2),cex.lab=1.5,cex.axis=1.5)
   lines(eta,ER[rw,],lwd=3)
+  points(eta[-1],ER[rw,-1],pch=16,cex=2)
   points(eta[1],ER[rw,1],pch=15,cex=2)
-  points(eta[21],ER_Exom,pch=16,cex=2)
+  points(eta[21],ER_Exom,pch=17,cex=2)
+  
+  cut_lambda=which(colSums(Val[["Beta_Cor"]]!=0)==0)[1]-1
+  
+  par(mar = c(5, 5, 0.5, 0.5))
+  plot(1,type = "n",ylim = c(min(ER[1:cut_lambda,cl]),max(ER[1:cut_lambda,cl],ER_Exom)),xlim = c(min(-lambda[1:cut_lambda]),max(-lambda[1:cut_lambda])),xlab = expression(-log(lambda)),ylab = "R2",cex.lab=1.5,cex.axis=1.5)
+  lines(-lambda[1:cut_lambda],ER[1:cut_lambda,cl],lwd=3)
+  points(-lambda[1:cut_lambda],ER[1:cut_lambda,cl],pch=16,cex=2)
+  
 }
 
-Density.plot <- function(Val,Pct){
-  XB_local=Val[["XB_local"]]
-  XB_prior=Val[["XB_Exom"]]
-  XB_BRIGHT=Val[["XB_Cor"]]
+AMSPE.plot <- function(Val){
+  eta_vec=Val[["eta_vec"]]
+  lambda=log(Val[["lambda"]])
+  dinom=dim(Val[["BRMSE_rst"]])[1]
+  
+  m=matrix(c(1,1,2,3),nrow = 2,ncol = 2,byrow = TRUE)
+  
+  layout(mat = m,heights = c(0.1,0.9))
+  
+  par(mar = c(0, 0, 0, 0))
+  plot(1,type = "n",axes = F,xlab = "",ylab = "",frame.plot = FALSE)
+  legend(x="center", legend=c("BRIGHT","Local","Prior"),col=c("black", "black","black"),lty=c(1,NA,NA),lwd=c(3,NA,NA),pch = c(16,15,17),cex = c(1.5,1.5,1.5),bty = "n",horiz = T)
+  
+  BRCor=Val[["BRMSE_rst"]]
+  eta=eta_vec[-22]
+  
+  ind=which.min(BRCor)
+  
+  rw=ind%%dinom
+  cl=ind%/%dinom+1
+  ER=BRCor[,-22]
+  
+  ER_Exom=Val[["LASMSE"]]
+  
+  par(mar = c(5, 5, 0.5, 0.5))
+  plot(1,type = "n",ylim = c(min(ER[rw,]),max(ER[rw,],ER_Exom)),xlim = c(min(eta),max(eta)),xlab = expression(eta),ylab = "AMSPE",cex.lab=1.5,cex.axis=1.5)
+  lines(eta,ER[rw,],lwd=3)
+  points(eta[-1],ER[rw,-1],pch=16,cex=2)
+  points(eta[1],ER[rw,1],pch=15,cex=2)
+  points(eta[21],ER_Exom,pch=17,cex=2)
+  
+  cut_lambda=which(colSums(Val[["Beta_MSE"]]!=0)!=0)
+  
+  par(mar = c(5, 5, 0.5, 0.5))
+  plot(1,type = "n",ylim = c(min(ER[cut_lambda,cl]),max(ER[cut_lambda,cl],ER_Exom)),xlim = c(min(-lambda[cut_lambda]),max(-lambda[cut_lambda])),xlab = expression(-log(lambda)),ylab = "AMSPE",cex.lab=1.5,cex.axis=1.5)
+  lines(-lambda[cut_lambda],ER[cut_lambda,cl],lwd=3)
+  points(-lambda[cut_lambda],ER[cut_lambda,cl],pch=16,cex=2)
+  
+}
+
+Sol_path.plot <- function(out,highlight=NA,eta.plot=NA,lambda.plot=NA){
+  
+  non_zero_pos=highlight
+  
+  eta_vec=out[["eta_vec"]]
+  lambda=out[["lambda"]]
+  p=dim(out[["0"]])[1]
+  
+  if(!is.na(eta.plot)){
+    Beta=out[[as.character(eta.plot)]]
+    cut_lambda_ind=which(colSums(Beta!=0)!=0)
+    cut_Beta=Beta[,cut_lambda_ind]
+    cut_lambda=lambda[cut_lambda_ind]
+    
+    par(mar = c(5, 5, 3, 0.5))
+    plot(1,type = "n",ylim = c(min(cut_Beta),max(cut_Beta)),xlim = c(-log(max(cut_lambda)),-log(min(cut_lambda))),xlab = expression(-log(lambda)),ylab = "Estimated effect sizes",main=paste("lambda solution path (eta=",round(eta.plot,digits = 3),")",sep = ""), frame.plot = FALSE,cex.lab=1.5,cex.axis=1.5)
+    for (i in 1:p) {
+      if (!i%in%non_zero_pos ){
+        lines(-log(cut_lambda),cut_Beta[i,],ty="l",col=ggplot2::alpha("Grey",0.5),lty=1)}
+    }
+    for (i in 1:p) {
+      if (i%in%non_zero_pos ){
+        lines(-log(cut_lambda),cut_Beta[i,],ty="l",col="red",lwd=2)}
+    }
+  }
+  
+  if(!is.na(lambda.plot)){
+    cut_eta=eta_vec[-22]
+    
+    rw=which(lambda==lambda.plot)
+    
+    cut_Beta=c()
+    for(i in eta_vec[-22]){
+      cut_Beta=cbind(cut_Beta,out[[as.character(i)]][,rw])
+    }
+    
+    par(mar = c(5, 5, 3, 0.5))
+    plot(1,type = "n",ylim = c(min(cut_Beta),max(cut_Beta)),xlim = c(min(cut_eta),max(cut_eta)),xlab = expression(eta),ylab = "Estimated effect sizes", main=paste("eta solution path (lambda=",round(lambda.plot,digits = 3),")",sep = ""), frame.plot = FALSE,cex.lab=1.5,cex.axis=1.5)
+    for (i in 1:p) {
+      if (!i%in%non_zero_pos ){
+        lines(cut_eta,cut_Beta[i,],ty="l",col=ggplot2::alpha("Grey",0.5),lty=1)}
+    }
+    for (i in 1:p) {
+      if (i%in%non_zero_pos ){
+        lines(cut_eta,cut_Beta[i,],ty="l",col="red",lwd=2)}
+    }
+  }
+}
+
+Sol_path.plot <- function(out,highlight=NA,eta.plot=NA,lambda.plot=NA){
+  
+  non_zero_pos=highlight
+  
+  eta_vec=out[["eta_vec"]]
+  lambda=out[["lambda"]]
+  p=dim(out[["0"]])[1]
+  
+  if(!is.na(eta.plot)){
+    Beta=out[[as.character(eta.plot)]]
+    cut_lambda_ind=which(colSums(Beta!=0)!=0)
+    cut_Beta=Beta[,cut_lambda_ind]
+    cut_lambda=lambda[cut_lambda_ind]
+    
+    par(mar = c(5, 5, 3, 0.5))
+    plot(1,type = "n",ylim = c(min(cut_Beta),max(cut_Beta)),xlim = c(-log(max(cut_lambda)),-log(min(cut_lambda))),xlab = expression(-log(lambda)),ylab = "Estimated effect sizes",main=paste("lambda solution path (eta=",round(eta.plot,digits = 3),")",sep = ""), frame.plot = FALSE,cex.lab=1.5,cex.axis=1.5)
+    for (i in 1:p) {
+      if (!i%in%non_zero_pos ){
+        lines(-log(cut_lambda),cut_Beta[i,],ty="l",col=ggplot2::alpha("Grey",0.5),lty=1)}
+    }
+    for (i in 1:p) {
+      if (i%in%non_zero_pos ){
+        lines(-log(cut_lambda),cut_Beta[i,],ty="l",col="red",lwd=2)}
+    }
+  }
+  
+  if(!is.na(lambda.plot)){
+    cut_eta=eta_vec[-22]
+    
+    rw=which.min(abs(lambda-lambda.plot))[1]
+    
+    cut_Beta=c()
+    for(i in eta_vec[-22]){
+      cut_Beta=cbind(cut_Beta,out[[as.character(i)]][,rw])
+    }
+    
+    par(mar = c(5, 5, 3, 0.5))
+    plot(1,type = "n",ylim = c(min(cut_Beta),max(cut_Beta)),xlim = c(min(cut_eta),max(cut_eta)),xlab = expression(eta),ylab = "Estimated effect sizes", main=paste("eta solution path (lambda=",round(lambda.plot,digits = 3),")",sep = ""), frame.plot = FALSE,cex.lab=1.5,cex.axis=1.5)
+    for (i in 1:p) {
+      if (!i%in%non_zero_pos ){
+        lines(cut_eta,cut_Beta[i,],ty="l",col=ggplot2::alpha("Grey",0.5),lty=1)}
+    }
+    for (i in 1:p) {
+      if (i%in%non_zero_pos ){
+        lines(cut_eta,cut_Beta[i,],ty="l",col="red",lwd=2)}
+    }
+  }
+}
+
+
+
+Sol_path_valid.plot <- function(Val,out,highlight=NA,criteria="R2"){
+  non_zero_pos=highlight
+  
+  eta_vec=Val[["eta_vec"]]
+  lambda=Val[["lambda"]]
+  dinom=dim(Val[["BRMSE_rst"]])[1]
+  p=dim(out[[Val[["Best_eta_MSE"]]]])[1]
+  
+  m=matrix(c(1,1,2,3),nrow = 2,ncol = 2,byrow = TRUE)
+  
+  layout(mat = m,heights = c(0.1,0.9))
+  
+  par(mar = c(0, 0, 0, 0))
+  plot(1,type = "n",axes = F,xlab = "",ylab = "",frame.plot = FALSE)
+  legend(x="center", legend=c("Highlight markers","Other markers"),col=c("red", ggplot2::alpha("Grey",0.5)),lty=c(1,1),lwd=c(2,1),cex = c(1.5,1.5),bty = "n",horiz = T)
+  
+  if(criteria=="MSPE" || criteria=="AMSPE"){
+    Best_lambda=Val[["Best_lambda_MSE"]]
+    Best_eta=Val[["Best_eta_MSE"]]
+    
+    Beta=out[[Val[["Best_eta_MSE"]]]]
+    cut_lambda_ind=which(colSums(Beta!=0)!=0)
+    cut_Beta=Beta[,cut_lambda_ind]
+    cut_lambda=lambda[cut_lambda_ind]
+    
+    par(mar = c(5, 5, 3, 0.5))
+    plot(1,type = "n",ylim = c(min(cut_Beta),max(cut_Beta)),xlim = c(-log(max(cut_lambda)),-log(min(cut_lambda))),xlab = expression(-log(lambda)),ylab = "Estimated effect sizes", main=paste("lambda solution path (eta=",round(Best_eta,digits = 3),")",sep = ""), frame.plot = FALSE,cex.lab=1.5,cex.axis=1.5)
+    for (i in 1:p) {
+      if (!i%in%non_zero_pos ){
+        lines(-log(cut_lambda),cut_Beta[i,],ty="l",col=ggplot2::alpha("Grey",0.5),lty=1)}
+    }
+    for (i in 1:p) {
+      if (i%in%non_zero_pos ){
+        lines(-log(cut_lambda),cut_Beta[i,],ty="l",col="red",lwd=2)}
+    }
+    
+    BRCor=Val[["BRMSE_rst"]]
+    cut_eta=eta_vec[-22]
+    
+    ind=which.min(BRCor)
+    
+    rw=ind%%dinom
+    cl=ind%/%dinom+1
+    ER=BRCor[,-22]
+    
+    ER_Exom=Val[["LASMSE"]]
+    
+    cut_Beta=c()
+    for(i in eta_vec[-22]){
+      cut_Beta=cbind(cut_Beta,out[[as.character(i)]][,rw])
+    }
+    
+    par(mar = c(5, 5, 3, 0.5))
+    plot(1,type = "n",ylim = c(min(cut_Beta),max(cut_Beta)),xlim = c(min(cut_eta),max(cut_eta)),xlab = expression(eta),ylab = "Estimated effect sizes", main=paste("eta solution path (lambda=",round(Best_lambda,digits = 3),")",sep = ""),frame.plot = FALSE,cex.lab=1.5,cex.axis=1.5)
+    for (i in 1:p) {
+      if (!i%in%non_zero_pos ){
+        lines(cut_eta,cut_Beta[i,],ty="l",col=ggplot2::alpha("Grey",0.5),lty=1)}
+    }
+    for (i in 1:p) {
+      if (i%in%non_zero_pos ){
+        lines(cut_eta,cut_Beta[i,],ty="l",col="red",lwd=2)}
+    }
+  }else if(criteria=="R2"){
+    print("***")
+    Best_lambda=Val[["Best_lambda_Cor"]]
+    Best_eta=Val[["Best_eta_Cor"]]
+    
+    Beta=out[[Val[["Best_eta_Cor"]]]]
+    cut_lambda_ind=which(colSums(Beta!=0)!=0)
+    cut_Beta=Beta[,cut_lambda_ind]
+    cut_lambda=lambda[cut_lambda_ind]
+    
+    non_zero_pos=highlight
+    
+    par(mar = c(5, 5, 3, 0.5))
+    plot(1,type = "n",ylim = c(min(cut_Beta),max(cut_Beta)),xlim = c(-log(max(cut_lambda)),-log(min(cut_lambda))),xlab = expression(-log(lambda)),ylab = "Estimated effect sizes", main=paste("lambda solution path (eta=",round(Best_eta,digits = 3),")",sep = ""),frame.plot = FALSE,cex.lab=1.5,cex.axis=1.5)
+    for (i in 1:p) {
+      if (!i%in%non_zero_pos ){
+        lines(-log(cut_lambda),cut_Beta[i,],ty="l",col=ggplot2::alpha("Grey",0.5),lty=1)}
+    }
+    for (i in 1:p) {
+      if (i%in%non_zero_pos ){
+        lines(-log(cut_lambda),cut_Beta[i,],ty="l",col="red",lwd=2)}
+    }
+    
+    BRCor=Val[["BRCor_rst"]]
+    cut_eta=eta_vec[-22]
+    
+    ind=which.max(BRCor)
+    
+    rw=ind%%dinom
+    cl=ind%/%dinom+1
+    ER=BRCor[,-22]^2
+    
+    ER_Exom=Val[["LAScor"]]^2
+    
+    cut_Beta=c()
+    for(i in eta_vec[-22]){
+      cut_Beta=cbind(cut_Beta,out[[as.character(i)]][,rw])
+    }
+    
+    par(mar = c(5, 5, 3, 0.5))
+    plot(1,type = "n",ylim = c(min(cut_Beta),max(cut_Beta)),xlim = c(min(cut_eta),max(cut_eta)),xlab = expression(eta),ylab = "Estimated effect sizes", main=paste("eta solution path (lambda=",round(Best_lambda,digits = 3),")",sep = ""), frame.plot = FALSE,cex.lab=1.5,cex.axis=1.5)
+    for (i in 1:p) {
+      if (!i%in%non_zero_pos ){
+        lines(cut_eta,cut_Beta[i,],ty="l",col=ggplot2::alpha("Grey",0.5),lty=1)}
+    }
+    for (i in 1:p) {
+      if (i%in%non_zero_pos ){
+        lines(cut_eta,cut_Beta[i,],ty="l",col="red",lwd=2)}
+    }
+  }else{
+    stop('criteria must be either "MSPE" or "R2"')
+  }
+  
+}
+
+Test.Ind <- function(Val, Testpheno, Testgeno){
+  gene_bed = BEDMatrix::BEDMatrix(paste(Testgeno,".bed",sep=""))
+  gene_bed=as.matrix(gene_bed)
+  XG <- newXG(gene_bed, 1:ncol(gene_bed), rep(1,ncol(gene_bed)), 1, FALSE)
+  XB_Exom=XG$X%*%Val[["Beta_Exom"]]
+  XB_local_MSE=XG$X%*%Val[["Beta_local_MSE"]]
+  XB_local_Cor=XG$X%*%Val[["Beta_local_Cor"]]
+  XB_MSE=XG$X%*%Val[["Beta_BRIGHT_MSE"]]
+  XB_Cor=XG$X%*%Val[["Beta_BRIGHT_Cor"]]
+  phe=Testpheno[,3]
+  
+  rst=list()
+  rst[["XB_Exom"]]=XB_Exom
+  rst[["XB_local_MSE"]]=XB_local_MSE
+  rst[["XB_local_Cor"]]=XB_local_Cor
+  rst[["XB_MSE"]]=XB_MSE
+  rst[["XB_Cor"]]=XB_Cor
+  rst[["phe"]]=phe
+  return(rst)
+}
+
+Density.plot <- function(Val,Pct,criteria="R2"){
+  if(criteria=="R2"){
+    XB_local=Val[["XB_local_Cor"]]
+    XB_prior=Val[["XB_Exom"]]
+    XB_BRIGHT=Val[["XB_Cor"]]
+  }else if(criteria=="MSPE"){
+    XB_local=Val[["XB_local_MSE"]]
+    XB_prior=Val[["XB_Exom"]]
+    XB_BRIGHT=Val[["XB_MSE"]]
+  }else if(criteria=="AMSPE"){
+    XB_local=Val[["XB_local_MSE"]]
+    XB_prior=Val[["XB_Exom"]]
+    XB_BRIGHT=Val[["XB_MSE"]]
+  }
   phe=Val[["phe"]]
   
   ind_local=XB_local>quantile(XB_local,probs = c(0,0.1,0.5,Pct,1))[4]
@@ -575,10 +1007,20 @@ Density.plot <- function(Val,Pct){
   abline(v = density(low_BRIGHT)$x[which.max(density(low_BRIGHT)$y)], col="black", lwd=3, lty=3)
 }
 
-ROC.plot <- function(Val, Pct=0.5){
-  XB_local=Val[["XB_local"]]
-  XB_prior=Val[["XB_Exom"]]
-  XB_BRIGHT=Val[["XB_Cor"]]
+ROC.plot <- function(Val, Pct=0.5, criteria="R2"){
+  if(criteria=="R2"){
+    XB_local=Val[["XB_local_Cor"]]
+    XB_prior=Val[["XB_Exom"]]
+    XB_BRIGHT=Val[["XB_Cor"]]
+  }else if(criteria=="MSPE"){
+    XB_local=Val[["XB_local_MSE"]]
+    XB_prior=Val[["XB_Exom"]]
+    XB_BRIGHT=Val[["XB_MSE"]]
+  }else if(criteria=="AMSPE"){
+    XB_local=Val[["XB_local_MSE"]]
+    XB_prior=Val[["XB_Exom"]]
+    XB_BRIGHT=Val[["XB_MSE"]]
+  }
   phe=Val[["phe"]]
   
   phe_bi=phe>quantile(phe,probs = c(Pct))[1]
