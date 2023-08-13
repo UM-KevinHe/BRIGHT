@@ -527,8 +527,8 @@ List gdfit_gaussian(Eigen::MatrixXd XtY, Eigen::MatrixXd tilde_beta, Eigen::Matr
   }
   
   for (int l=lstart; l<L; l++) {
-    //Rcout << l;
-    //Rcout << "l\n";
+    Rcout << l;
+    Rcout << "l\n";
     R_CheckUserInterrupt();
     if (l != 0) {
       a=b.block(0,l-1,P,1);
