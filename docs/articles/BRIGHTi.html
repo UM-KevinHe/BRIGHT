@@ -61,7 +61,14 @@
   </ul>
 </li>
       </ul>
-<ul class="nav navbar-nav navbar-right"></ul>
+<ul class="nav navbar-nav navbar-right">
+<li>
+  <a href="https://github.com/UM-KevinHe/BRIGHT/" class="external-link">
+    <span class="fab fa-github fa-lg"></span>
+     
+  </a>
+</li>
+      </ul>
 </div>
 <!--/.nav-collapse -->
   </div>
@@ -79,7 +86,7 @@
             
             <h4 data-toc-skip class="date">5/1/2023</h4>
       
-      
+      <small class="dont-index">Source: <a href="https://github.com/UM-KevinHe/BRIGHT/blob/HEAD/vignettes/BRIGHTi.Rmd" class="external-link"><code>vignettes/BRIGHTi.Rmd</code></a></small>
       <div class="hidden name"><code>BRIGHTi.Rmd</code></div>
 
     </div>
@@ -101,7 +108,7 @@ Q_{BRIGHTi}(\boldsymbol\beta) = -\ell(\boldsymbol\beta)+\eta B_{\widehat{\boldsy
 <p>BRIGHTi requires the individual-level genotype and phenotype from the target minority population, while from the prior majority populations either GWAS summary statistics, marginal genotype-trait inner product, or coefficients estimated from joint models (e.g. PRS or LASSO regression) can be used for model fitting. We note that more than 1 prior majority data can be incorporated in the BRIGHTi model.</p>
 <p>First we read the minority genotype data from plink1 files and phenotype data from text files and majority summary statistics into R.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">BRIGHT</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/UM-KevinHe/BRIGHT" class="external-link">BRIGHT</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-datatable.com" class="external-link">data.table</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co">### Read target minority GWAS summary statistics file or marginal genotype-trait inner product file###</span></span>

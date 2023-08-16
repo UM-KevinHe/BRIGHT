@@ -61,7 +61,14 @@
   </ul>
 </li>
       </ul>
-<ul class="nav navbar-nav navbar-right"></ul>
+<ul class="nav navbar-nav navbar-right">
+<li>
+  <a href="https://github.com/UM-KevinHe/BRIGHT/" class="external-link">
+    <span class="fab fa-github fa-lg"></span>
+     
+  </a>
+</li>
+      </ul>
 </div>
 <!--/.nav-collapse -->
   </div>
@@ -79,7 +86,7 @@
             
             <h4 data-toc-skip class="date">5/1/2023</h4>
       
-      
+      <small class="dont-index">Source: <a href="https://github.com/UM-KevinHe/BRIGHT/blob/HEAD/vignettes/BRIGHT.Rmd" class="external-link"><code>vignettes/BRIGHT.Rmd</code></a></small>
       <div class="hidden name"><code>BRIGHT.Rmd</code></div>
 
     </div>
@@ -184,7 +191,7 @@ BRIGHTi utilize individual-level data from target minority population and summer
 </h3>
 <p>First, we load the BRIGHT package:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">BRIGHT</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/UM-KevinHe/BRIGHT" class="external-link">BRIGHT</a></span><span class="op">)</span></span></code></pre></div>
 <p>In the default version of the  package, the implemented method is BRIGHTs with quantitative traits, which integrates summary-level information from both the target and prior data. In this section, we will demonstrate the application of this method using a toy example. Let’s load the pre-simulated toy example data for illustration:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">ToyExample</span><span class="op">)</span></span></code></pre></div>
@@ -233,16 +240,19 @@ BRIGHTi utilize individual-level data from target minority population and summer
 </div>
 </div>
 <div class="section level2">
-<h2 id="brights-with-summary-level-data-type-traitquantitative-continuous">BRIGHTs with summary-level data: type.trait=“quantitative” (Continuous)<a class="anchor" aria-label="anchor" href="#brights-with-summary-level-data-type-traitquantitative-continuous"></a>
+<h2 id="brights-with-summary-level-target-data">BRIGHTs with summary-level target data<a class="anchor" aria-label="anchor" href="#brights-with-summary-level-target-data"></a>
 </h2>
-<p>The model details are provided in the Appendix. Below we present the required data and implementation tutorials for quantitative traits with summary-level target data.</p>
 <div class="section level3">
-<h3 id="data-format">Data format<a class="anchor" aria-label="anchor" href="#data-format"></a>
+<h3 id="continuous-traits">Continuous traits<a class="anchor" aria-label="anchor" href="#continuous-traits"></a>
 </h3>
+<p>The model details are provided in the Appendix. Below we present the required data and implementation tutorials for quantitative traits with summary-level target data.</p>
+<div class="section level4">
+<h4 id="data-format">Data format<a class="anchor" aria-label="anchor" href="#data-format"></a>
+</h4>
 <p>BRIGHTs methods for quantitative traits utilize a wide variety of summary-level data from different populations to carry out transfer-learning: from the target minority population, BRIGHTs requires the GWAS summary statistics or marginal genotype-trait inner product (<span class="math inline">\(\boldsymbol X\boldsymbol y/n\)</span>, where <span class="math inline">\(\boldsymbol X\)</span>, <span class="math inline">\(\boldsymbol y\)</span> can be either standardized or unstandardized), while from the prior majority populations either GWAS summary statistics, marginal genotype-trait inner product, or coefficients estimated from joint models (e.g. PRS or LASSO regression) can be used for model fitting. In addition, summary data are only required to contain a subset of markers from the LD reference, and no further assumptions are made on the covariate space of either target or prior summary statistics. Summary statistics are expected to be loaded into memory as a data.frame/data.table.</p>
 <p>First, we load the package and read in the minority summary statistics into R. As discussed, there are two options of summary statistics to be used for minority populations, below we present the two options separately and note in real application only one of the data is required.</p>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">BRIGHT</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/UM-KevinHe/BRIGHT" class="external-link">BRIGHT</a></span><span class="op">)</span></span></code></pre></div>
 <p>The first option of summary-level data for minority population is the GWAS summary statistics.</p>
 <div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">### Read target minority GWAS summary statistics file###</span></span>
@@ -328,21 +338,17 @@ BRIGHTi utilize individual-level data from target minority population and summer
 <p>Then, a preprocessing step is required to remove the SNPs that are not in the reference panel from all data, convert target data into marginal SNPs-trait inner product, convert prior data into joint coefficient estimates, and match the effect alleles between the reference panel and data.</p>
 <div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">dat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PreprocessS.html">PreprocessS</a></span><span class="op">(</span><span class="va">Tss</span>, <span class="va">Tind</span>, <span class="va">Tref</span>, <span class="va">Pss</span>, <span class="va">Pind</span>, <span class="va">Pref</span>, <span class="va">LDblocks</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## Using user specified LD</span></span>
-<span><span class="co">## 1 source of prior information identified</span></span>
-<span><span class="co">## 5000 SNPs passed filtering for target data</span></span>
-<span><span class="co">## 5000 SNPs passed filtering for prior data 1</span></span></code></pre>
 <p>Finally, BRIGHTs can be run by using standard pipeline with LASSO penalty on quantitative traits:</p>
-<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/BRIGHTs.html">BRIGHTs</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">dat</span>, type.trait<span class="op">=</span><span class="st">"quantitative"</span>, penalty<span class="op">=</span><span class="st">"LASSO"</span><span class="op">)</span></span></code></pre></div>
 </div>
-<div class="section level3">
-<h3 id="hyperparameter-fine-tuning">Hyperparameter fine-tuning<a class="anchor" aria-label="anchor" href="#hyperparameter-fine-tuning"></a>
-</h3>
-<p><code>out</code> contains a sequence of models corresponding to different hyperparameters, <span class="math inline">\(\lambda\)</span> and <span class="math inline">\(\eta\)</span> pairs. Users would prefer to select the best performance model for the purpose of constructing PRS. Due to only summary statistics being available for the target minority populations, the widely used cross-validation is not applicable for hyper-parameter fine-tuning. Here our package provide two functions for using either individual-level or summary-level validation data to fine-tune hyperparameters.</p>
 <div class="section level4">
-<h4 id="hyperparameter-fine-tuning-with-individual-level-validation-data-1">Hyperparameter fine-tuning with individual-level validation data<a class="anchor" aria-label="anchor" href="#hyperparameter-fine-tuning-with-individual-level-validation-data-1"></a>
+<h4 id="hyperparameter-fine-tuning">Hyperparameter fine-tuning<a class="anchor" aria-label="anchor" href="#hyperparameter-fine-tuning"></a>
 </h4>
+<p><code>out</code> contains a sequence of models corresponding to different hyperparameters, <span class="math inline">\(\lambda\)</span> and <span class="math inline">\(\eta\)</span> pairs. Users would prefer to select the best performance model for the purpose of constructing PRS. Due to only summary statistics being available for the target minority populations, the widely used cross-validation is not applicable for hyper-parameter fine-tuning. Here our package provide two functions for using either individual-level or summary-level validation data to fine-tune hyperparameters.</p>
+<div class="section level5">
+<h5 id="hyperparameter-fine-tuning-with-individual-level-validation-data-1">Hyperparameter fine-tuning with individual-level validation data<a class="anchor" aria-label="anchor" href="#hyperparameter-fine-tuning-with-individual-level-validation-data-1"></a>
+</h5>
 <p>In this subsection, we present the use of <code>Valid.Ind</code> to choose the best performance model when individual-level validation data is available.</p>
 <p>We first read in the individual-level validation data, including the plink genotype directory as well as the phenotypes.</p>
 <pre><code><span><span class="co">## [1] "~/Desktop/research/Kevin He/PRS/Rewrite_Lassosum/example/SAS2"</span></span></code></pre>
@@ -354,29 +360,29 @@ BRIGHTi utilize individual-level data from target minority population and summer
 <span><span class="co">## 5  0 711681 -11.331491</span></span>
 <span><span class="co">## 6  0 711682  -2.485393</span></span></code></pre>
 <p>Then use the provided <code>Valid.Ind()</code> function to perform model validation.</p>
-<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Perform validation with individual-level validation data</span></span>
 <span><span class="va">Val</span> <span class="op">&lt;-</span> <span class="fu">Valid.Ind</span><span class="op">(</span><span class="va">out</span>, <span class="va">Valipheno</span>, <span class="va">Valigeno</span><span class="op">)</span></span></code></pre></div>
 <p>Then validation plots can be generated by using Contour.plot, MSPE_R2.plot and Sol_path_valid.plot functions provided by the package.</p>
-<div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Plot Contour plots</span></span>
 <span><span class="fu">Contour.plot</span><span class="op">(</span><span class="va">Val</span><span class="op">)</span></span></code></pre></div>
 <p><embed src="./R2.pdf" style="width:100.0%" height="700"></embed><embed src="./MSPE.pdf" style="width:100.0%" height="700"></embed></p>
 <p>Contour plots are used to select the best performing hyperparameter, <span class="math inline">\(\eta\)</span> and <span class="math inline">\(\lambda\)</span>, pairs with either <span class="math inline">\(R^2\)</span> or <span class="math inline">\(MSPE\)</span> criteria.</p>
-<div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Plot MSPE and R2 plot</span></span>
 <span><span class="fu">MSPE_R2.plot</span><span class="op">(</span><span class="va">Val</span><span class="op">)</span></span></code></pre></div>
-<p><img src="BRIGHT_files/figure-html/unnamed-chunk-17-1.png" width="960"> The plots generated by “MSPE_R2.plot” presents the mean squared prediction error (MSPE) and <span class="math inline">\(R^2\)</span>, measuring calibration and discrimination, for local (squares), prior (triangle), and BRIGHT (lines with circles) with varying <span class="math inline">\(\eta\)</span> values and <span class="math inline">\(\lambda\)</span> values. These plots help the user to visualize the local model’s small sample size and prior model’s heterogeneity effect on their recalibration and discrimination performance. The BRIGHT performance associated with varying <span class="math inline">\(\eta\)</span> and <span class="math inline">\(\lambda\)</span> values helps to decide how much information should be borrowed from the prior majority data and how many covariates should be chosen in order to achieve optimal performance for BRIGHT.</p>
+<p><img src="BRIGHT_files/figure-html/unnamed-chunk-16-1.png" width="960"> The plots generated by “MSPE_R2.plot” presents the mean squared prediction error (MSPE) and <span class="math inline">\(R^2\)</span>, measuring calibration and discrimination, for local (squares), prior (triangle), and BRIGHT (lines with circles) with varying <span class="math inline">\(\eta\)</span> values and <span class="math inline">\(\lambda\)</span> values. These plots help the user to visualize the local model’s small sample size and prior model’s heterogeneity effect on their recalibration and discrimination performance. The BRIGHT performance associated with varying <span class="math inline">\(\eta\)</span> and <span class="math inline">\(\lambda\)</span> values helps to decide how much information should be borrowed from the prior majority data and how many covariates should be chosen in order to achieve optimal performance for BRIGHT.</p>
 <p>Then the coefficients from the best performance model can be visualized in the following solution path plots by using function <code>Sol_path_valid.plot</code>:</p>
-<div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Plot solution path containing either best selected eta or best selected lambda</span></span>
 <span><span class="fu">Sol_path_valid.plot</span><span class="op">(</span><span class="va">Val</span>,<span class="va">out</span>,highlight<span class="op">=</span><span class="va">Ground_truth</span>,criteria<span class="op">=</span><span class="st">"R2"</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## [1] "***"</span></span></code></pre>
-<p><img src="BRIGHT_files/figure-html/unnamed-chunk-18-1.png" width="960"> After selecting the criteria, either “R2” or “MSPE”, for model fine-tuning, the solution paths for <span class="math inline">\(-log(\lambda)\)</span> and <span class="math inline">\(\eta\)</span> are plot for the best <span class="math inline">\(\eta\)</span> and <span class="math inline">\(\lambda\)</span>, respectively. Each line corresponds to a covariate (SNPs). The left plot shows the solution path of effect sizes over the change of <span class="math inline">\(-log(\lambda)\)</span> for a given <span class="math inline">\(\eta\)</span> (<span class="math inline">\(\eta=0\)</span> in the above case); the right plot shows the solution path of effect sizes over the change of <span class="math inline">\(\eta\)</span> for a given <span class="math inline">\(\lambda\)</span> (<span class="math inline">\(\lambda=0.353\)</span> in the above case).</p>
+<p><img src="BRIGHT_files/figure-html/unnamed-chunk-17-1.png" width="960"> After selecting the criteria, either “R2” or “MSPE”, for model fine-tuning, the solution paths for <span class="math inline">\(-log(\lambda)\)</span> and <span class="math inline">\(\eta\)</span> are plot for the best <span class="math inline">\(\eta\)</span> and <span class="math inline">\(\lambda\)</span>, respectively. Each line corresponds to a covariate (SNPs). The left plot shows the solution path of effect sizes over the change of <span class="math inline">\(-log(\lambda)\)</span> for a given <span class="math inline">\(\eta\)</span> (<span class="math inline">\(\eta=0\)</span> in the above case); the right plot shows the solution path of effect sizes over the change of <span class="math inline">\(\eta\)</span> for a given <span class="math inline">\(\lambda\)</span> (<span class="math inline">\(\lambda=0.353\)</span> in the above case).</p>
 </div>
-<div class="section level4">
-<h4 id="hyperparameter-fine-tuning-with-summary-level-validation-data">Hyperparameter fine-tuning with summary-level validation data<a class="anchor" aria-label="anchor" href="#hyperparameter-fine-tuning-with-summary-level-validation-data"></a>
-</h4>
+<div class="section level5">
+<h5 id="hyperparameter-fine-tuning-with-summary-level-validation-data">Hyperparameter fine-tuning with summary-level validation data<a class="anchor" aria-label="anchor" href="#hyperparameter-fine-tuning-with-summary-level-validation-data"></a>
+</h5>
 <p>However, due to Datashield constraints individual-level validation dataset can be hard to access. Therefore, we provide an alternative validation criteria, approximated MSPE (AMSPE), which only requires summary-level information from validation data. We first read in and present the summary level validation data as well as the Reference LD required for this approximation.</p>
 <pre><code><span><span class="co">## [1] "~/Desktop/research/Kevin He/PRS/Rewrite_Lassosum/example/SAS2"</span></span></code></pre>
 <pre><code><span><span class="co">##   CHR     BP A1 A2       IProd</span></span>
@@ -387,7 +393,7 @@ BRIGHTi utilize individual-level data from target minority population and summer
 <span><span class="co">## 5   1 769223  G  C  0.01584162</span></span>
 <span><span class="co">## 6   1 777122  T  A -0.01851673</span></span></code></pre>
 <p>AMSPE is then calculated by executing the <code>Val.Sum</code> function.</p>
-<div class="sourceCode" id="cb42"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb41"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Perform validation with summary-level validation data</span></span>
 <span><span class="va">Val.Sum</span> <span class="op">&lt;-</span> <span class="fu">Valid.Sum</span><span class="op">(</span><span class="va">out</span>, <span class="va">ValiIProd</span>, <span class="va">ValiRef</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## Extracting number of samples and rownames from SAS2.fam...</span></span></code></pre>
@@ -395,22 +401,22 @@ BRIGHTi utilize individual-level data from target minority population and summer
 <pre><code><span><span class="co">## [1] "Best eta based on AMSPE is 0.886"</span></span>
 <span><span class="co">## [1] "Best lambda based on AMSPE is 0.082"</span></span></code></pre>
 <p>Similar to the individual-level validation approach, we can visualize the validation process by plotting the AMSPE with regards to each hyper-parameter and the coefficients by plotting the solution paths.</p>
-<div class="sourceCode" id="cb46"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb45"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Plot AMSPE plot</span></span>
 <span><span class="fu">AMSPE.plot</span><span class="op">(</span><span class="va">Val.Sum</span><span class="op">)</span></span></code></pre></div>
-<p><img src="BRIGHT_files/figure-html/unnamed-chunk-21-1.png" width="960"></p>
-<div class="sourceCode" id="cb47"><pre class="downlit sourceCode r">
+<p><img src="BRIGHT_files/figure-html/unnamed-chunk-20-1.png" width="960"></p>
+<div class="sourceCode" id="cb46"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Plot solution path containing either best selected eta or best selected lambda</span></span>
 <span><span class="fu">Sol_path_valid.plot</span><span class="op">(</span><span class="va">Val.Sum</span>,<span class="va">out</span>,highlight<span class="op">=</span><span class="va">Ground_truth</span>,criteria<span class="op">=</span><span class="st">"AMSPE"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="BRIGHT_files/figure-html/unnamed-chunk-22-1.png" width="960"></p>
+<p><img src="BRIGHT_files/figure-html/unnamed-chunk-21-1.png" width="960"></p>
 </div>
 </div>
-<div class="section level3">
-<h3 id="model-testing-based-on-individual-level-testing-data">Model testing based on individual-level testing data<a class="anchor" aria-label="anchor" href="#model-testing-based-on-individual-level-testing-data"></a>
-</h3>
+<div class="section level4">
+<h4 id="model-testing-based-on-individual-level-testing-data">Model testing based on individual-level testing data<a class="anchor" aria-label="anchor" href="#model-testing-based-on-individual-level-testing-data"></a>
+</h4>
 <p>Finally, with the existence of individual-level testing data, we also provide functions to automatically test the performance of the BRIGHT model with comparison to using either data source only.</p>
 <p>We present the required format of the individual-level testing data.</p>
-<div class="sourceCode" id="cb48"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb47"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#Individual level validation data is available, Valipheno is the PLINK1 .fam format phenotype file, and Valigeno is the directory to the PLINK1 .bed file. </span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">Testpheno</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##   V1     V2         V3</span></span>
@@ -420,36 +426,36 @@ BRIGHTi utilize individual-level data from target minority population and summer
 <span><span class="co">## 4  0 711680   8.004271</span></span>
 <span><span class="co">## 5  0 711681 -11.331491</span></span>
 <span><span class="co">## 6  0 711682  -2.485393</span></span></code></pre>
-<div class="sourceCode" id="cb50"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb49"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">Testgeno</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## [1] "~/Desktop/research/Kevin He/PRS/Rewrite_Lassosum/example/SAS2"</span></span></code></pre>
 <p>Then, model testing can be automatically achieved by executing function <code>Test.Ind</code> function.</p>
-<div class="sourceCode" id="cb52"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb51"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Perform validation with individual-level validation data</span></span>
 <span><span class="va">Tst</span> <span class="op">&lt;-</span> <span class="fu">Test.Ind</span><span class="op">(</span><span class="va">Val</span>, <span class="va">Testpheno</span>, <span class="va">Testgeno</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## Extracting number of samples and rownames from SAS2.fam...</span></span></code></pre>
 <pre><code><span><span class="co">## Extracting number of variants and colnames from SAS2.bim...</span></span></code></pre>
 <p>We provide two plotting functions below for easier visualization of testing results:</p>
-<div class="sourceCode" id="cb55"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb54"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Plot density plot</span></span>
 <span><span class="fu">Density.plot</span><span class="op">(</span><span class="va">Tst</span>,Pct<span class="op">=</span><span class="fl">0.9</span>,criteria <span class="op">=</span> <span class="st">"R2"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="BRIGHT_files/figure-html/unnamed-chunk-26-1.png" width="960"> The plots generated by “Density.plot” presents the distribution of continuous traits in test data stratified by a percentile cut-off (Pct) of the local, prior and BRIGHT PRS. These plots further visualize the discrimination power of each PRS model. In the plots, we compare the median distance between the upper and lower percentile PRS stratification of the observed outcome distribution, and show the distance in the title of the plots.</p>
-<div class="sourceCode" id="cb56"><pre class="downlit sourceCode r">
+<p><img src="BRIGHT_files/figure-html/unnamed-chunk-25-1.png" width="960"> The plots generated by “Density.plot” presents the distribution of continuous traits in test data stratified by a percentile cut-off (Pct) of the local, prior and BRIGHT PRS. These plots further visualize the discrimination power of each PRS model. In the plots, we compare the median distance between the upper and lower percentile PRS stratification of the observed outcome distribution, and show the distance in the title of the plots.</p>
+<div class="sourceCode" id="cb55"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Plot ROC plot</span></span>
 <span><span class="fu">ROC.plot</span><span class="op">(</span><span class="va">Tst</span>,Pct<span class="op">=</span><span class="fl">0.9</span>,criteria <span class="op">=</span> <span class="st">"R2"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="BRIGHT_files/figure-html/unnamed-chunk-27-1.png" width="480"> The plots generated by “ROC.plot” presents the receiver operating characteristic (ROC) curve as well as the area under curve (AUC) measuring the prediction performance of local, prior, and BRIGHT PRS for a given threshold of the continuous traits (Pct).</p>
+<p><img src="BRIGHT_files/figure-html/unnamed-chunk-26-1.png" width="480"> The plots generated by “ROC.plot” presents the receiver operating characteristic (ROC) curve as well as the area under curve (AUC) measuring the prediction performance of local, prior, and BRIGHT PRS for a given threshold of the continuous traits (Pct).</p>
 </div>
 </div>
-<div class="section level2">
-<h2 id="brights-with-summary-level-data-type-traitqualitative-binary">BRIGHTs with summary-level data: type.trait=“qualitative” (Binary)<a class="anchor" aria-label="anchor" href="#brights-with-summary-level-data-type-traitqualitative-binary"></a>
-</h2>
 <div class="section level3">
-<h3 id="data-format-1">Data format<a class="anchor" aria-label="anchor" href="#data-format-1"></a>
+<h3 id="binary-traits">Binary traits<a class="anchor" aria-label="anchor" href="#binary-traits"></a>
 </h3>
+<div class="section level4">
+<h4 id="data-format-1">Data format<a class="anchor" aria-label="anchor" href="#data-format-1"></a>
+</h4>
 <p>For binary traits, in addition to the GWAS summary statistics or marginal genotype-trait inner product, <span class="math inline">\(\frac{\boldsymbol X^\top\boldsymbol y}{n}\)</span>, BRIGHTs requires an estimate based on logistic LASSO regression, <span class="math inline">\(\boldsymbol{\hat b}\)</span>, and the marginal genotype-predicted traits inner product, <span class="math inline">\(\frac{\boldsymbol X^\top expit(\boldsymbol X \boldsymbol{\hat b})}{n}\)</span>, from the target minority population. From the prior majority populations coefficients estimated from joint models (e.g. logistic LASSO regression) is required for model fitting. We note that more than 1 prior majority data can be incorporated in the BRIGHTs model.</p>
 <p>First we read the minority summary statistics and majority summary statistics into R, and provide the <code>ref</code> names of the reference panel. If <code>ref</code> names are provided as “EUR”, “AFR”, “EAS”, “SAS” ,or “AMR”, then the default 1000 genome project reference panels will be used; otherwise <code>ref</code> needs to be provided as a directory to the plink1 format files (.bim, .bed, .fam).</p>
-<div class="sourceCode" id="cb57"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">BRIGHT</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb56"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/UM-KevinHe/BRIGHT" class="external-link">BRIGHT</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-datatable.com" class="external-link">data.table</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co">### Read target minority GWAS summary statistics file or marginal genotype-trait inner product file###</span></span>
@@ -490,16 +496,17 @@ BRIGHTi utilize individual-level data from target minority population and summer
 <span><span class="va">LDblocks</span> <span class="op">&lt;-</span> <span class="st">"AFR.hg19"</span> <span class="co"># This will use LD regions as defined in Berisa and Pickrell (2015) for the African population and the hg19 genome build.</span></span>
 <span><span class="co"># Other alternatives available. Type ?BRIGHTs for more details. </span></span></code></pre></div>
 <p>Then, a preprocessing step is required to remove the SNPs that are not in the reference panel from all data, convert target data into marginal SNPs-trait inner product, convert prior data into joint coefficient estimates, and match the effect alleles between the reference panel and data.</p>
-<div class="sourceCode" id="cb58"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb57"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">dat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PreprocessS.html">PreprocessS</a></span><span class="op">(</span>Tss <span class="op">=</span> <span class="va">Tss</span>, Tind <span class="op">=</span> <span class="va">Tind</span>, Pss <span class="op">=</span> <span class="va">Pss</span>, Pind <span class="op">=</span> <span class="va">Pind</span>, ref.bfile<span class="op">=</span><span class="va">ref.bfile</span>, LDblocks<span class="op">=</span><span class="va">LDblocks</span><span class="op">)</span></span></code></pre></div>
 <p>Running BRIGHTs using standard pipeline with LASSO penalty on quantitative traits:</p>
-<div class="sourceCode" id="cb59"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb58"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/BRIGHTs.html">BRIGHTs</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">dat</span>, type.trait<span class="op">=</span><span class="st">"quantitative"</span>, penalty<span class="op">=</span><span class="st">"LASSO"</span><span class="op">)</span></span></code></pre></div>
 <p>This procedure requires additional and quite stringent summary statistics from both target and prior data, in genetics studies its quite common to treat binary outcome as continuous and perform continuous models on the data; therefore, in the case where the above additonal summary statistics are not available, the BRIGHTS with quantitative traits procedure can also be used to analyze the binary data.</p>
 </div>
 </div>
+</div>
 <div class="section level2">
-<h2 id="brighti-with-individual-level-data-type-traitquantitative-continuous-qualitative-binary-or-count-poisson">BRIGHTi with individual-level data: type.trait=“quantitative” (continuous), “qualitative” (binary), or “count” (poisson)<a class="anchor" aria-label="anchor" href="#brighti-with-individual-level-data-type-traitquantitative-continuous-qualitative-binary-or-count-poisson"></a>
+<h2 id="brighti-with-individual-level-target-data">BRIGHTi with individual-level target data<a class="anchor" aria-label="anchor" href="#brighti-with-individual-level-target-data"></a>
 </h2>
 <p>Below we discuss the required data and implementation tutorials.</p>
 <div class="section level3">
@@ -507,8 +514,8 @@ BRIGHTi utilize individual-level data from target minority population and summer
 </h3>
 <p>BRIGHTi requires the individual-level genotype and phenotype from the target minority population, while from the prior majority populations either GWAS summary statistics, marginal genotype-trait inner product, or coefficients estimated from joint models (e.g. PRS or LASSO regression) can be used for model fitting. We note that more than 1 prior majority data can be incorporated in the BRIGHTi model.</p>
 <p>First we read the minority genotype data from plink1 files and phenotype data from text files and majority summary statistics into R.</p>
-<div class="sourceCode" id="cb60"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">BRIGHT</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb59"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/UM-KevinHe/BRIGHT" class="external-link">BRIGHT</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-datatable.com" class="external-link">data.table</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co">### Read target minority GWAS summary statistics file or marginal genotype-trait inner product file###</span></span>
@@ -530,17 +537,17 @@ BRIGHTi utilize individual-level data from target minority population and summer
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">Pss3</span><span class="op">)</span></span>
 <span><span class="va">Pss</span><span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">"1"</span><span class="op">=</span><span class="va">Pss1</span>,<span class="st">"2"</span><span class="op">=</span><span class="va">Pss2</span>,<span class="st">"3"</span><span class="op">=</span><span class="va">Pss3</span><span class="op">)</span> <span class="co"># The order of list Pss need to be matched with Pind</span></span></code></pre></div>
 <p>Then, a preprocessing step is required to remove the SNPs that are not in the target minority genotype files from prior majority data, convert prior data into joint coefficient estimates, and match the effect alleles between the minority genotype and prior data.</p>
-<div class="sourceCode" id="cb61"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb60"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">dat</span> <span class="op">&lt;-</span> <span class="fu">PreprocessI</span><span class="op">(</span>Tpheno <span class="op">=</span> <span class="va">Tpheno</span>, Tgeno <span class="op">=</span> <span class="va">Tgeno</span>, Pss <span class="op">=</span> <span class="va">Pss</span>, Pind <span class="op">=</span> <span class="va">Pind</span><span class="op">)</span></span></code></pre></div>
 <p>Running BRIGHTi using standard pipeline with LASSO penalty on different types of traits including “quantitative”, “qualitative” and “count”:</p>
-<div class="sourceCode" id="cb62"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb61"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/BRIGHTi.html">BRIGHTi</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">dat</span>, type.trait<span class="op">=</span><span class="st">"quantitative"</span>, penalty<span class="op">=</span><span class="st">"LASSO"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="hyperparameter-fine-tuning-with-cross-validation">Hyperparameter fine-tuning with cross-validation<a class="anchor" aria-label="anchor" href="#hyperparameter-fine-tuning-with-cross-validation"></a>
 </h3>
 <p>With individual-level target minority data, cross-validation is achievable in BRIGHTi through <code>BRIGHTi.cv()</code> to avoid independent validation datasets.</p>
-<div class="sourceCode" id="cb63"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb62"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu">BRIGHTi.cv</span><span class="op">(</span>data <span class="op">=</span> <span class="va">dat</span>, type.trait<span class="op">=</span><span class="st">"quantitative"</span>, penalty<span class="op">=</span><span class="st">"LASSO"</span><span class="op">)</span></span></code></pre></div>
 <p>We note that hyperparameter-fine tuning through individual-level or summary-level validation data is still available for BRIGHTi models, please refer to BRIGHTs hyperparameter fine tunning section for more details.</p>
 </div>

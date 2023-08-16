@@ -97,7 +97,7 @@ QC <- function(ss,ind,KG,lab){
 #' selection methods, and a vector of 1's (i.e., no adjustment for group size)
 #' for bi-level selection.
 #' @return A list of preprocessed XtY and reference genotype matrix.
-PreprocessS=function(Tss, Tind, Tref, Pss=NA, Pind=NA, Pref=NA, LDblocks="EUR"){
+PreprocessS=function(Tss, Tind, Tref, Pss=NA, Pind=NA, Pref=NA, TLDblocks="EUR", PLDblocks=NA){
   
   # read in reference panel
   if(Tref%in%c("EUR","AFR","EAS","AMR","SAS")){
@@ -120,7 +120,8 @@ PreprocessS=function(Tss, Tind, Tref, Pss=NA, Pind=NA, Pref=NA, LDblocks="EUR"){
   if(sum(is.na(Pind))){
     rst=list()
     writeLines(strwrap("No prior summary statistics detected"))
-    rst[["LDblocks"]]=LDblocks
+    rst[["TLDblocks"]]=TLDblocks
+    rst[["PLDblocks"]]=PLDblocks
     rst[["LD_dir"]]=LD_dir
     rst[["Tss"]]=Tss
     rst[["Tref"]]=Tref
@@ -130,7 +131,13 @@ PreprocessS=function(Tss, Tind, Tref, Pss=NA, Pind=NA, Pref=NA, LDblocks="EUR"){
   
   if(is.data.frame(Pss)){
     Pss=QC(Pss,Pind,KG,lab = "Prior")
-    #Prior_Lassosum=BRIGHTs(Tss=Pss,Tref=Pref,LDblocks="EUR",Pss=NA,m=NA,group=NA,m=NA,penalty=1,tau=0,eta=0,lambda=NA,nlambda=100,lambda.min=0.001,alpha=1, gamma=0,eps=0.0001,max_iter=1000000, dfmax=5000, gmax=5000, user=T)
+    Pdata=list()
+    Pdata[["Tss"]]=Pss
+    Pdata[["Tind"]]=Pind
+    Pdata[["TLDblocks"]]=PLDblocks
+    Pdata[["Tref"]]=Pref
+    Pdata[["LD_dir"]]=paste(Pref,".bed",sep="")
+    Prior_Lassosum=BRIGHTs(Pdata,m=NA,group=NA,penalty=1,tau=0,eta=0,lambda=NA,nlambda=100,lambda.min=0.001,alpha=1, gamma=0,eps=0.0001,max_iter=1000000, dfmax=5000, gmax=5000, user=T)
   }else if(is.list(Pss)){
     for (i in 1:nrow(Pind)){
       Pss[[i]]=QC(Pss[[i]],Pind[i],KG,lab = paste("Prior",i))
@@ -140,7 +147,8 @@ PreprocessS=function(Tss, Tind, Tref, Pss=NA, Pind=NA, Pref=NA, LDblocks="EUR"){
   }
   rst=list()
   
-  rst[["LDblocks"]]=LDblocks
+  rst[["TLDblocks"]]=TLDblocks
+  rst[["PLDblocks"]]=PLDblocks
   rst[["LD_dir"]]=LD_dir
   rst[["Tss"]]=Tss
   rst[["Pss"]]=Pss
@@ -235,8 +243,8 @@ BRIGHTs=function(data,m=NA,group=NA,penalty=1,tau=0,eta=0,lambda=NA,nlambda=100,
   if(is.null(data$LD_dir)){
     stop("Directory to Plink1 bed files (LD_dir) not found with no default")
   }
-  if(is.null(data$LDblocks)){
-    stop("LDblocks not found with no default")
+  if(is.null(data$TLDblocks)){
+    stop("target LDblocks not found with no default")
   }
   
   p=nrow(Tss)
@@ -257,7 +265,7 @@ BRIGHTs=function(data,m=NA,group=NA,penalty=1,tau=0,eta=0,lambda=NA,nlambda=100,
     m=sqrt(table(group[group!=0]))
   }
   
-  gene_bed = BEDMatrix(paste(dat$Tref,".bed",sep=""))
+  gene_bed = BEDMatrix(paste(data$Tref,".bed",sep=""))
   gene_bed=as.matrix(gene_bed)
   
   XG <- newXG(gene_bed, group, m, 1, FALSE)
@@ -266,7 +274,7 @@ BRIGHTs=function(data,m=NA,group=NA,penalty=1,tau=0,eta=0,lambda=NA,nlambda=100,
   K1 <- as.integer(if (min(XG$g)==0) cumsum(K) else c(0, cumsum(K)))
   XtY <- t(t(data$Tss$IProd))
   
-  LDB=read.table(paste("inst/data/Berisa.",dat$LDblocks,".hg19.bed",sep=""),header=T)
+  LDB=read.table(paste("inst/data/Berisa.",data$TLDblocks,".hg19.bed",sep=""),header=T)
   LDB[,1]=as.numeric(sapply(strsplit(as.vector(LDB[,1]),"chr"), function(x){x[2]}))
   LDB=as.matrix(LDB)
   blk=t(t(c(LD(t(t(data$Tss$CHR)),t(t(data$Tss$BP)),LDB),length(data$Tss$BP))))

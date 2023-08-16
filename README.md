@@ -28,6 +28,9 @@ BRIGHT
     </tr>
 </table>
 
+We recommand to start with <a href="https://um-kevinhe.github.io/BRIGHT/docs/articles/BRIGHT.html#quick-start" target="_blank">tutorial</a>, where we provide an overview of the package's usage, including preprocessing, model training, hyperparameter fine tunning, and post-estimation evaluation.
 
 # Reference
-Li Q, Patrick MT, Zhang H, Khunsriraksakul C, Stuart PE, Gudjonsson JE, Nair R, Elder JT, Liu DJ, Kang J, Tsoi LC. Bregman Divergence-Based Data Integration with Application to Polygenic Risk Score (PRS) Heterogeneity Adjustment. arXiv preprint arXiv:2210.06025. 2022 Oct 12. (https://arxiv.org/abs/2210.06025)
+Li Q, Patrick MT, Zhang H, Khunsriraksakul C, Stuart PE, Gudjonsson JE, Nair R, Elder JT, Liu DJ, Kang J, Tsoi LC, He K. Bregman Divergence-Based Data Integration with Application to Polygenic Risk Score (PRS) Heterogeneity Adjustment. arXiv preprint arXiv:2210.06025. 2022 Oct 12. (https://arxiv.org/abs/2210.06025)
+
+Li Q, Patrick MT, Fritsche L, Wang D, Kang J, Tsoi LC, He K. Bregman Divergence-Based Data Integration with Application to Polygenic Risk Score (PRS) Heterogeneity Adjustment. arXiv preprint arXiv:2210.06025. 2022 Oct 12. (https://arxiv.org/abs/2210.06025)

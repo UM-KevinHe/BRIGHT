@@ -61,7 +61,14 @@
   </ul>
 </li>
       </ul>
-<ul class="nav navbar-nav navbar-right"></ul>
+<ul class="nav navbar-nav navbar-right">
+<li>
+  <a href="https://github.com/UM-KevinHe/BRIGHT/" class="external-link">
+    <span class="fab fa-github fa-lg"></span>
+     
+  </a>
+</li>
+      </ul>
 </div>
 <!--/.nav-collapse -->
   </div>
@@ -79,7 +86,7 @@
             
             <h4 data-toc-skip class="date">5/1/2023</h4>
       
-      
+      <small class="dont-index">Source: <a href="https://github.com/UM-KevinHe/BRIGHT/blob/HEAD/vignettes/BRIGHTs.Rmd" class="external-link"><code>vignettes/BRIGHTs.Rmd</code></a></small>
       <div class="hidden name"><code>BRIGHTs.Rmd</code></div>
 
     </div>
@@ -105,7 +112,7 @@ Q_{BRIGHTs}(\boldsymbol\beta) =&amp; B_{\widetilde{\boldsymbol\Sigma}}(\boldsymb
 <p>For quantitative traits, BRIGHTs requires the GWAS summary statistics or marginal genotype-trait inner product, <span class="math inline">\(\frac{\boldsymbol X^\top\boldsymbol y}{n}\)</span>, from the target minority population, while from the prior majority populations either GWAS summary statistics, marginal genotype-trait inner product, or coefficients estimated from joint models (e.g. PRS or LASSO regression) can be used for model fitting. We note that more than 1 prior majority data can be incorporated in the BRIGHTs model.</p>
 <p>First we read the minority summary statistics and majority summary statistics into R, and provide the <code>ref</code> names of the reference panel. If <code>ref</code> names are provided as “EUR”, “AFR”, “EAS”, “SAS” ,or “AMR”, then the default 1000 genome project reference panels will be used; otherwise <code>ref</code> needs to be provided as a directory to the plink1 format files (.bim, .bed, .fam).</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">BRIGHT</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/UM-KevinHe/BRIGHT" class="external-link">BRIGHT</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-datatable.com" class="external-link">data.table</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co">### Read target minority GWAS summary statistics file or marginal genotype-trait inner product file###</span></span>
@@ -151,7 +158,7 @@ Q_{BRIGHTs}(\boldsymbol\beta) =&amp; B_{\widetilde{\boldsymbol\Sigma}}(\boldsymb
 <p>For binary traits, in addition to the GWAS summary statistics or marginal genotype-trait inner product, <span class="math inline">\(\frac{\boldsymbol X^\top\boldsymbol y}{n}\)</span>, BRIGHTs requires an estimate based on logistic LASSO regression, <span class="math inline">\(\boldsymbol{\hat b}\)</span>, and the marginal genotype-predicted traits inner product, <span class="math inline">\(\frac{\boldsymbol X^\top expit(\boldsymbol X \boldsymbol{\hat b})}{n}\)</span>, from the target minority population. From the prior majority populations coefficients estimated from joint models (e.g. logistic LASSO regression) is required for model fitting. We note that more than 1 prior majority data can be incorporated in the BRIGHTs model.</p>
 <p>First we read the minority summary statistics and majority summary statistics into R, and provide the <code>ref</code> names of the reference panel. If <code>ref</code> names are provided as “EUR”, “AFR”, “EAS”, “SAS” ,or “AMR”, then the default 1000 genome project reference panels will be used; otherwise <code>ref</code> needs to be provided as a directory to the plink1 format files (.bim, .bed, .fam).</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">BRIGHT</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/UM-KevinHe/BRIGHT" class="external-link">BRIGHT</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-datatable.com" class="external-link">data.table</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co">### Read target minority GWAS summary statistics file or marginal genotype-trait inner product file###</span></span>
