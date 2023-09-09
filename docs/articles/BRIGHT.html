@@ -96,8 +96,8 @@
 <div class="section level2">
 <h2 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
 </h2>
-<p>PRS are widely used tools for genetic risk prediction, but its performance is limited in clinically under-represented minority populations. This motivates the development of a transfer learning procedure to leverage knowledge from well-studied majority populations. To address this, we propose the BRegman divergence-based Integrational Genetic Hazard Trans-ethnic (BRIGHT) estimation procedure.</p>
-<p>We provide two versions of the BRIGHT model: BRIGHTi and BRIGHTs. BRIGHTi integrates individual-level target minority data with the prior majority information. In comparison, BRIGHTs integrates summary-level target minority data with the prior majority information, which ensures privacy protection. Both versions of BRIGHT support general penalty structures for fine mapping of genetic markers.</p>
+<p>Polygenic Risk Scores (PRS) are commonly employed tools for predicting genetic risks; however, their effectiveness is often limited when applied to minority populations that are underrepresented in clinical studies. This limitation has spurred the development of a transfer learning approach aimed at harnessing insights gained from extensively studied majority populations. In response to this challenge, we introduce the BRegman divergence-based Integrational Genetic Hazard Trans-ethnic (BRIGHT) estimation method.</p>
+<p>We present two variants of the BRIGHT model: BRIGHTi and BRIGHTs. BRIGHTi incorporates individual-level data from the target minority population with prior knowledge derived from majority populations. In contrast, BRIGHTs utilizes summary-level data from the target minority population while preserving privacy when incorporating prior information from majority populations. Both variants of the BRIGHT model support versatile penalty structures for fine-mapping genetic markers.</p>
 <table class="table">
 <tr>
 <th>
@@ -115,7 +115,7 @@ Example
 BRIGHTs
 </td>
 <td>
-BRIGHTs utilize summary statistics from both target minority and prior majority data to construct trans-ethnic PRS. Both binary and continuous outcomes are implemented in the package. <a href="#references">[1]</a>.
+BRIGHTs utilizes summary statistics from both target minority and prior majority data to construct trans-ethnic PRS. Continuous, binary, and count outcomes are implemented in the package. <a href="#references">[1]</a>.
 </td>
 <td>
 <a href="https://github.com/UM-KevinHe/BRIGHT/tree/main/docs/articles/BRIGHTs.html#Introduction" class="external-link">tutorial</a>
@@ -126,33 +126,34 @@ BRIGHTs utilize summary statistics from both target minority and prior majority 
 BRIGHTi
 </td>
 <td>
-BRIGHTi utilize individual-level data from target minority population and summery-level data from prior majority population to construct trans-ethnic PRS. Binary, continuous, and count outcomes are implemented in the package. <a href="#references">[2]</a>.
+BRIGHTi utilizes individual-level data from target minority population and summery-level data from prior majority population to construct trans-ethnic PRS. Continuous, binary, and count outcomes are implemented in the package. <a href="#references">[2]</a>.
 </td>
 <td>
 <a href="https://github.com/UM-KevinHe/BRIGHT/tree/main/docs/articles/BRIGHTi.html#Introduction" class="external-link">tutorial</a>
 </td>
 </tr>
 </table>
-<p>By using BRIGHT, researchers can overcome the limitations of single-ethnic PRS and improve prediction accuracy for minority populations. The package provides a valuable tool for transferring knowledge and optimizing the information integration between populations with heterogeneous genetic backgrounds. In addition, this package also provides a wide variety of plotting tools to help researchers visualize the population heterogeneity as well as model performance.</p>
+<p>Employing BRIGHT empowers researchers to transcend the constraints of single-ethnic PRS, leading to enhanced prediction accuracy specifically tailored for minority populations. This toolkit offers an invaluable resource for facilitating the transfer of knowledge and optimizing the integration of information across populations characterized by diverse genetic backgrounds. Furthermore, the package provide an extensive array of plotting tools, enabling researchers to effectively visualize population heterogeneity and assess model performance.</p>
 <p>The flowchart for the pipeline and major functions is presented below.</p>
 <div class="figure">
 <embed src="./Figure1_full_LD.pdf" style="width:100.0%" height="500"></embed><p class="caption">Alt</p>
 </div>
-<p>To summarize, BRIGHT estimation procedure utilize Bregman-divergence to measure the difference between the populations and optimally balance the information from them. The method enjoys the following properties :</p>
+<p>To summarize, BRIGHT estimation procedure utilizes Bregman-divergence to measure the differences between the populations and optimally balance the information from them. The method enjoys the following properties :</p>
 <ul>
-<li>it controls the relative weight of the prior information, identifying the most compatible ones and diminishing the weights of less relevant ones;</li>
-<li>it is robust to model misspecification and incorporates various types of prior risk scores, including risk scores derived from different statistical models or built upon different outcomes;</li>
-<li>it accommodates that the covariate space may be different between data sources;</li>
-<li>less sensitive summary statistics from both prior and target data sources suffice the model fitting of BRIGHTs;</li>
-<li>it achieves fine-mapping simultaneously in the process of PRS construction;</li>
-<li>its objective function retains similar forms as the penalized regression and guarantees the computation efficiency;</li>
+<li>It controls the relative weight of the prior information, identifying the most compatible prior information and diminishing the weights of less relevant prior information.</li>
+<li>It is robust to model misspecification and incorporates various types of prior risk scores, including risk scores derived from different statistical models or built upon different outcomes.</li>
+<li>It accommodates that the covariate space may be different between data sources.</li>
+<li>Less sensitive summary statistics from both prior and target data sources suffice the model fitting of BRIGHTs.</li>
+<li>It achieves fine-mapping simultaneously in the process of PRS construction.</li>
+<li>Its objective function retains similar forms as the penalized regression and guarantees the computation efficiency.</li>
 <li>it incorporates pLASSO  and LASSOsum  as special cases.</li>
 </ul>
-<p>The detailed BRIGHT model can be found in the Appendix </p>
+<p>The detailed BRIGHT model can be found in the Appendix.</p>
 <p>The BRIGHT estimation procedure allows for the incorporation of various types of individual or summary-level information from the prior majority population in the construction of BRIGHT PRS:</p>
 <ul>
 <li>PRS coefficients (weight file) from the prior majority population.</li>
 <li>GWAS summary statistics from the prior majority population.</li>
+<li>Correlation summary statistics from the prior majority population.</li>
 <li>Individual-level data from the prior majority population.</li>
 </ul>
 <p>Moreover, the BRIGHT estimation procedure can also incorporate flexible individual-level or summary-level information from the target minority population. The specific data requirements for each setting are discussed separately in the following sections.</p>
@@ -192,223 +193,315 @@ BRIGHTi utilize individual-level data from target minority population and summer
 <p>First, we load the BRIGHT package:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/UM-KevinHe/BRIGHT" class="external-link">BRIGHT</a></span><span class="op">)</span></span></code></pre></div>
-<p>In the default version of the  package, the implemented method is BRIGHTs with quantitative traits, which integrates summary-level information from both the target and prior data. In this section, we will demonstrate the application of this method using a toy example. Let’s load the pre-simulated toy example data for illustration:</p>
+<p>In the default version of the  package, the implemented method is BRIGHTs with identity link function, which integrates summary-level information from both the target and prior data. In this section, we will demonstrate the application of this method using a toy example. Let’s load the pre-simulated toy example data for illustration:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">ToyExample</span><span class="op">)</span></span></code></pre></div>
-<p>The toy example contains the summary statistics from both target and prior population. For more detailed discussion on the format of target and piror summary statistics, please refer to BRIGHTs with continuous traits section.</p>
+<p>The toy example contains the summary statistics from both target and prior population with a continuous trait. For more detailed discussion on the format of target and piror summary statistics, please refer to BRIGHTs with identity link section.</p>
 </div>
 <div class="section level3">
-<h3 id="brights-fitting-and-visualization">BRIGHTs fitting and visualization<a class="anchor" aria-label="anchor" href="#brights-fitting-and-visualization"></a>
+<h3 id="brights-model-fitting-and-visualization">BRIGHTs model fitting and visualization<a class="anchor" aria-label="anchor" href="#brights-model-fitting-and-visualization"></a>
 </h3>
-<p>The BRIGHTs method is fit by using the basic function <code>BRIGHTs</code> with LASSO penalty on quantitative traits by default:</p>
+<p>The BRIGHTs model can be fit by using the basic function <code>BRIGHTs</code> with LASSO penalty and identity link by default:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/BRIGHTs.html">BRIGHTs</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">dat</span><span class="op">)</span></span></code></pre></div>
-<p><code>out</code> is a list object containing all the information from the fitting of BRIGHT.</p>
-</div>
-<div class="section level3">
-<h3 id="hyperparameter-fine-tuning-with-individual-level-validation-data">Hyperparameter fine-tuning with individual-level validation data<a class="anchor" aria-label="anchor" href="#hyperparameter-fine-tuning-with-individual-level-validation-data"></a>
-</h3>
-<p>In this subsection, we present the use of <code>Valid.Ind</code> to choose the best performance model when individual-level validation data is available:</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Present the data structure of the validation data</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">Valigeno</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## [1] "~/Desktop/research/Kevin He/PRS/Rewrite_Lassosum/example/SAS2"</span></span></code></pre>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">Valipheno</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">##   V1     V2         V3</span></span>
-<span><span class="co">## 1  0 711676   9.415242</span></span>
-<span><span class="co">## 2  0 711677  20.729158</span></span>
-<span><span class="co">## 3  0 711679   8.834436</span></span>
-<span><span class="co">## 4  0 711680   8.004271</span></span>
-<span><span class="co">## 5  0 711681 -11.331491</span></span>
-<span><span class="co">## 6  0 711682  -2.485393</span></span></code></pre>
-<p>The individual-level validation data should consists of a directory leading to the Plink1 genotype data (Valigeno), as well as a phenotype data.frame with the first column being the sample IID, second column being the sample SID, and the third column being the continuous trait values. Then we perform validation by using <code>Valid.Ind()</code> function.</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Perform validation with individual-level validation data</span></span>
-<span><span class="va">Val</span> <span class="op">&lt;-</span> <span class="fu">Valid.Ind</span><span class="op">(</span><span class="va">out</span>, <span class="va">Valipheno</span>, <span class="va">Valigeno</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## Extracting number of samples and rownames from SAS2.fam...</span></span></code></pre>
-<pre><code><span><span class="co">## Extracting number of variants and colnames from SAS2.bim...</span></span></code></pre>
-<pre><code><span><span class="co">## [1] "Best eta based on R2 is 1.833"</span></span>
-<span><span class="co">## [1] "Best lambda based on R2 is 0.056"</span></span>
-<span><span class="co">## [1] "Best eta based on MSPE is 1.833"</span></span>
-<span><span class="co">## [1] "Best lambda based on MSPE is 0.044"</span></span></code></pre>
-<p><code>Valid.Ind()</code> function automatically output the best <span class="math inline">\(\eta\)</span> and <span class="math inline">\(\lambda\)</span> pairs based on either <span class="math inline">\(R^2\)</span> or <span class="math inline">\(MSPE\)</span> criteria. Then we can use <code>MSPE_R2.plot()</code> to visualize the hyperparameter selection and showcase the effects of incorporating prior information for constructing the PRS in the target population.</p>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Plot MSPE and R2 plot</span></span>
-<span><span class="fu">MSPE_R2.plot</span><span class="op">(</span><span class="va">Val</span><span class="op">)</span></span></code></pre></div>
-<p><img src="BRIGHT_files/figure-html/unnamed-chunk-7-1.png" width="960"> The plots generated by <code>MSPE_R2.plot</code> presents the mean squared prediction error (MSPE, the smaller the better) and <span class="math inline">\(R^2\)</span> (the larger the better), measuring calibration and discrimination, for target minority (squares), prior majority (triangle), and BRIGHT (lines with circles) with varying <span class="math inline">\(\eta\)</span> values and <span class="math inline">\(\lambda\)</span> values. The <span class="math inline">\(\eta\)</span> parameter controls the relative importance of prior information, while <span class="math inline">\(\lambda\)</span> controls the number of selected markers. These plots help the user to visualize the local model’s small sample size and prior model’s heterogeneity effect on their calibration and discrimination performance. The BRIGHT performance associated with varying <span class="math inline">\(\eta\)</span> and <span class="math inline">\(\lambda\)</span> values helps to decide how much information should be borrowed from the prior majority data and how many covariates should be chosen in order to achieve optimal model performance.</p>
+<pre><code><span><span class="co">## Extracting number of samples and rownames from SAS1_train.fam...</span></span></code></pre>
+<pre><code><span><span class="co">## Extracting number of variants and colnames from SAS1_train.bim...</span></span></code></pre>
+<pre><code><span><span class="co">## Best eta based on AIC is 0.336</span></span>
+<span><span class="co">## Best lambda based on AIC is 0.123</span></span></code></pre>
+<p><code>out</code> is a list object containing all the information from the fitting of BRIGHTs. We provide the variable selection result based on Akaike information criterion (AIC) by default; other choices of hyperparameter fine tuning can be found in the section below.</p>
+<p>The AIC change with respect to the hyperparameters, <span class="math inline">\(\eta\)</span> and <span class="math inline">\(\lambda\)</span>, can be plot by using the following function:</p>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Plot AIC</span></span>
+<span><span class="fu">Eta_curve.plot</span><span class="op">(</span><span class="va">out</span>,valid.type <span class="op">=</span> <span class="st">"AIC"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="BRIGHT_files/figure-html/unnamed-chunk-4-1.png" width="960"> These plots present the AIC (consistent estimate of the true risk, the smaller the better) measuring model performance for target minority model (squares) and BRIGHT model (lines with circles) with varying <span class="math inline">\(\eta\)</span> values and <span class="math inline">\(\lambda\)</span> values. The <span class="math inline">\(\eta\)</span> parameter controls the relative importance of prior information, while <span class="math inline">\(\lambda\)</span> controls the number of selected markers. The <span class="math inline">\(\eta\)</span>-curve highlights the implications of integrating varying degrees of prior information into the construction of the PRS on the target population. As a result, it effectively portrays the levels of heterogeneity between datasets and provides guidance on the optimal degree of prior information incorporation. The <span class="math inline">\(\lambda\)</span>-curve helps the user to visualize the model performance associated with different numbers of makers selected and provides guidance on selecting optimal number of variables.</p>
 </div>
 </div>
 <div class="section level2">
 <h2 id="brights-with-summary-level-target-data">BRIGHTs with summary-level target data<a class="anchor" aria-label="anchor" href="#brights-with-summary-level-target-data"></a>
 </h2>
 <div class="section level3">
-<h3 id="continuous-traits">Continuous traits<a class="anchor" aria-label="anchor" href="#continuous-traits"></a>
+<h3 id="identity-link-function">Identity link function<a class="anchor" aria-label="anchor" href="#identity-link-function"></a>
 </h3>
-<p>The model details are provided in the Appendix. Below we present the required data and implementation tutorials for quantitative traits with summary-level target data.</p>
+<p>The model details are provided in the Appendix. Below we present the format of input data and implementation tutorials for BRIGHTs with summary-level target data and identity link function.</p>
 <div class="section level4">
-<h4 id="data-format">Data format<a class="anchor" aria-label="anchor" href="#data-format"></a>
+<h4 id="input-data-format">Input data format<a class="anchor" aria-label="anchor" href="#input-data-format"></a>
 </h4>
-<p>BRIGHTs methods for quantitative traits utilize a wide variety of summary-level data from different populations to carry out transfer-learning: from the target minority population, BRIGHTs requires the GWAS summary statistics or marginal genotype-trait inner product (<span class="math inline">\(\boldsymbol X\boldsymbol y/n\)</span>, where <span class="math inline">\(\boldsymbol X\)</span>, <span class="math inline">\(\boldsymbol y\)</span> can be either standardized or unstandardized), while from the prior majority populations either GWAS summary statistics, marginal genotype-trait inner product, or coefficients estimated from joint models (e.g. PRS or LASSO regression) can be used for model fitting. In addition, summary data are only required to contain a subset of markers from the LD reference, and no further assumptions are made on the covariate space of either target or prior summary statistics. Summary statistics are expected to be loaded into memory as a data.frame/data.table.</p>
-<p>First, we load the package and read in the minority summary statistics into R. As discussed, there are two options of summary statistics to be used for minority populations, below we present the two options separately and note in real application only one of the data is required.</p>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/UM-KevinHe/BRIGHT" class="external-link">BRIGHT</a></span><span class="op">)</span></span></code></pre></div>
-<p>The first option of summary-level data for minority population is the GWAS summary statistics.</p>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<p>BRIGHTs method with identity link function utilizes a wide variety of summary-level data from different populations to carry out transfer-learning: (1), From the target minority population, BRIGHTs requires either the GWAS summary statistics or SNP-wise (marginal) genotype-trait correlation (<span class="math inline">\(\boldsymbol X\boldsymbol y/n\)</span>, where <span class="math inline">\(\boldsymbol X\)</span>, <span class="math inline">\(\boldsymbol y\)</span> can be either standardized or unstandardized). (2) From the prior majority population, one of GWAS summary statistics, SNP-wise genotype-trait correlation, or coefficient estimates (e.g. from joint models such as PRS or LASSO regression) is required. (3) From the linkage disequilibrium (LD) reference population, Plink binary files (.bed, .bim and .fam) are required for user specified LD; alternatively, precalculated 1000 genome project based LD will be used by default.</p>
+<table class="table">
+<tr>
+<th>
+Populations
+</th>
+<th>
+Required data
+</th>
+<th>
+Format
+</th>
+</tr>
+<tr>
+<td>
+Target
+</td>
+<td>
+(1), GWAS summary statistics including sample size, association direction, and P-values. (2), SNP-wise genotype-trait correlation.
+</td>
+<td>
+data.frame
+</td>
+</tr>
+<tr>
+<td>
+Prior
+</td>
+<td>
+(1), GWAS summary statistics including association direction, sample size, and P-values. (2), SNP-wise genotype-trait correlation. (3), Coefficient estimates of the prior PRS
+</td>
+<td>
+data.frame
+</td>
+</tr>
+<tr>
+<td>
+LD
+</td>
+<td>
+(1), Package provided LD based on 1000 genomes project cohort by default. (2), User specified LD.
+</td>
+<td>
+Plink binary files (.bed, .bim and .fam)
+</td>
+</tr>
+</table>
+<p>Summary data from target and prior population are only required to contain a subset of markers from the LD reference matrix, and no further assumptions are made on the covariate space of either target or prior summary statistics. In the case where either the input target or prior summary data are not a subset of the provided LD, the BRIGHT package automatically removes markers not in LD.</p>
+<div class="section level5">
+<h5 id="target-minority-input">Target minority input<a class="anchor" aria-label="anchor" href="#target-minority-input"></a>
+</h5>
+<p>As discussed, there are two options of summary statistics for the minority population. Below we present the two options separately and note that in application only one of them is required. We use <code>Tind</code> to indicate the data type of target summary data being provided to BRIGHTs, it should be either “GWAS” or “Corr”, corresponding to the GWAS summary statistics or the SNP-wise genotype-trait correlation, respectively. We use <code>Tss</code> to store the summary statistics in data.frame format; it must match with the Tind indicator. We use <code>TN</code> to indicate the target sample size.</p>
+<p>The first option of summary-level data for target population is the GWAS summary statistics.</p>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">### Read target minority GWAS summary statistics file###</span></span>
 <span></span>
 <span><span class="co"># Read in target GWAS</span></span>
-<span><span class="va">Tind</span><span class="op">=</span><span class="st">"GWAS"</span></span>
-<span><span class="va">Tss</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.table</a></span><span class="op">(</span><span class="st">"~/Desktop/research/Kevin He/PRS/Rewrite_Lassosum/example/SAS1.GWAS"</span>,header <span class="op">=</span> <span class="cn">T</span><span class="op">)</span></span>
+<span><span class="va">TN</span> <span class="op">&lt;-</span> <span class="fl">100</span></span>
+<span><span class="va">Tind</span> <span class="op">&lt;-</span> <span class="st">"GWAS"</span></span>
+<span><span class="va">Tss</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.table</a></span><span class="op">(</span><span class="st">"~/Desktop/research/Kevin He/PRS/Rewrite_Lassosum/example_2/SAS1_train.GWAS"</span>,header <span class="op">=</span> <span class="cn">T</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">Tss</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">##   CHR     BP A1 A2 Sign    N      P</span></span>
-<span><span class="co">## 1   1 753405  A  C    1 1760 0.3624</span></span>
-<span><span class="co">## 2   1 754192  G  A    1 1760 0.3065</span></span>
-<span><span class="co">## 3   1 757640  A  G    1 1760 0.4178</span></span>
-<span><span class="co">## 4   1 758626  T  C    1 1760 0.5019</span></span>
-<span><span class="co">## 5   1 769223  G  C   -1 1760 0.6513</span></span>
-<span><span class="co">## 6   1 777122  T  A    1 1760 0.5741</span></span></code></pre>
-<p>The second option of summary-level data for minority population is the marginal inner-product of SNPs and traits.</p>
-<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<pre><code><span><span class="co">##   CHR      BP A1 A2 Sign   N       P</span></span>
+<span><span class="co">## 1   1  937250  G  C    1 100 0.71110</span></span>
+<span><span class="co">## 2   1 1047374  A  T    1 100 0.02217</span></span>
+<span><span class="co">## 3   1 1177211  C  G    1 100 0.64060</span></span>
+<span><span class="co">## 4   1 1319926  T  C   -1 100 0.30080</span></span>
+<span><span class="co">## 5   1 1618598  T  G    1 100 0.40750</span></span>
+<span><span class="co">## 6   1 1814354  T  C    1 100 0.37750</span></span></code></pre>
+<p>We require the GWAS summary statistics from the target minority data to contain 7 columns ordered exactly as above: the “CHR” column is the chromosome name and must be from 1 to 22; the “BP” column is the corresponding SNPs position in base pair; “A1” column is the effect allele and “A2” column is the alternative allele; “Sign” is the marginal association direction for each SNPs (the sign of the beta coefficients); “N” column is the sample size used for each SNPs from GWAS study; “P” column is the p-value of the t-test from GWAS.</p>
+<p>The second option of summary-level data for target population is the SNP-wise correlation of SNPs and traits.</p>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">### Read target minority marginal genotype-trait inner product file###</span></span>
 <span></span>
 <span><span class="co"># Read in target GWAS</span></span>
-<span><span class="va">Tind</span><span class="op">=</span><span class="st">"IProd"</span></span>
-<span><span class="va">Tss</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.table</a></span><span class="op">(</span><span class="st">"~/Desktop/research/Kevin He/PRS/Rewrite_Lassosum/example/SAS1.IProd"</span>,header <span class="op">=</span> <span class="cn">T</span><span class="op">)</span></span>
+<span><span class="va">TN</span> <span class="op">&lt;-</span> <span class="fl">100</span></span>
+<span><span class="va">Tind</span> <span class="op">&lt;-</span> <span class="st">"Corr"</span></span>
+<span><span class="va">Tss</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.table</a></span><span class="op">(</span><span class="st">"~/Desktop/research/Kevin He/PRS/Rewrite_Lassosum/example_2/SAS1_train.Corr"</span>,header <span class="op">=</span> <span class="cn">T</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">Tss</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">##   CHR     BP A1 A2       IProd</span></span>
-<span><span class="co">## 1   1 753405  A  C  0.02172325</span></span>
-<span><span class="co">## 2   1 754192  G  A  0.02438882</span></span>
-<span><span class="co">## 3   1 757640  A  G  0.01932536</span></span>
-<span><span class="co">## 4   1 758626  T  C  0.01601668</span></span>
-<span><span class="co">## 5   1 769223  G  C -0.01078045</span></span>
-<span><span class="co">## 6   1 777122  T  A  0.01340563</span></span></code></pre>
-<p>We use Tind to indicate the target summary data type being provided to BRIGHTs, it should be either “GWAS” or “IProd”, corresponding to the GWAS summary statistics or the inner product mentioned above. In the provided example case we read in the IProd summary statistics from the target minority data and it contains 5 columns: the “CHR” column is the chromosome name must be from 1 to 22; the “BP” column is the corresponding SNPs position in base pair; “A1” column is the effect allele and “A2” column is the reference allele; the “IProd” column contains the marginal genotype-trait inner product; alternatively, we can also read in the GWAS summary statistics from the target minority data and it contains 7 columns: the “CHR” column is the chromosome name must be from 1 to 22; the “BP” column is the corresponding SNPs position in base pair; “A1” column is the effect allele and “A2” column is the reference allele; “Sign” is the marginal association direction for each SNPs (the sign of the beta coefficients); “N” column is the sample size used for each SNPs from GWAS study; “P” column is the p-value of the T test from GWAS.</p>
-<p>Second, we read in the prior majority summary statistics into R. As discussed, there are three options of summary statistics to be used for minority populations, below we present the three options separately and note that more than 1 prior majority data can be incorporated in the BRIGHTs model.</p>
-<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<pre><code><span><span class="co">##   CHR      BP A1 A2        Corr</span></span>
+<span><span class="co">## 1   1  937250  G  C  0.03749631</span></span>
+<span><span class="co">## 2   1 1047374  A  T  0.22858076</span></span>
+<span><span class="co">## 3   1 1177211  C  G  0.04725401</span></span>
+<span><span class="co">## 4   1 1319926  T  C -0.10450216</span></span>
+<span><span class="co">## 5   1 1618598  T  G  0.08373729</span></span>
+<span><span class="co">## 6   1 1814354  T  C  0.08919654</span></span></code></pre>
+<p>We require the correlation summary statistics from the target minority data to contain 5 columns ordered exactly as above: the “CHR” column is the chromosome name and must be from 1 to 22; the “BP” column is the corresponding SNPs position in base pair; “A1” column is the effect allele and “A2” column is the alternative allele; the “Corr” column contains the SNP-wise genotype-trait correlation.</p>
+<p>The ultimate target summary statistics BRIGHTs use for model fitting is the SNP-wise genotype-trait correlation. When GWAS summary statistics are provided, the package automatically convert them to the standardized version of SNP-wise genotype-trait correlation. The mathematical details are provided in the Appendix under “Retrieve r from GWAS”.</p>
+</div>
+<div class="section level5">
+<h5 id="prior-majority-input">Prior majority input<a class="anchor" aria-label="anchor" href="#prior-majority-input"></a>
+</h5>
+<p>As discussed, there are three options of summary statistics to be used for minority population, below we present the three options separately and note that only 1 of the summary statistics is required. We use <code>Pind</code> to indicate the prior summary data type being provided to BRIGHTs, it should be either “GWAS”, “Corr” or “Coef”, corresponding to the GWAS summary statistics, the correlation or the PRS coefficients, respectively. We use <code>Pss</code> to store the summary statistics in data.frame format, which must match with the <code>Pind</code> indicator. We use <code>PN</code> to indicate the prior data sample size, it is only required when “GWAS” or “Corr” type of prior data is provided.</p>
+<p>The first option of summary-level data for prior population is the GWAS summary statistics.</p>
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">### Read prior majority GWAS summary statistics file more than 1 prior majority data can be read in###</span></span>
-<span></span>
-<span><span class="va">Pind</span><span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"GWAS"</span><span class="op">)</span></span>
-<span><span class="va">Pss</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.table</a></span><span class="op">(</span><span class="st">"~/Desktop/research/Kevin He/PRS/Rewrite_Lassosum/example/EUR.GWAS"</span>,header <span class="op">=</span> <span class="cn">T</span><span class="op">)</span></span>
+<span><span class="va">PN</span> <span class="op">&lt;-</span> <span class="fl">11514</span></span>
+<span><span class="va">Pind</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"GWAS"</span><span class="op">)</span></span>
+<span><span class="va">Pss</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.table</a></span><span class="op">(</span><span class="st">"~/Desktop/research/Kevin He/PRS/Rewrite_Lassosum/example_2/EUR.GWAS"</span>,header <span class="op">=</span> <span class="cn">T</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">Pss</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">##   CHR     BP A1 A2 Sign     N       P</span></span>
-<span><span class="co">## 1   1 753405  A  C    1 11514 0.07215</span></span>
-<span><span class="co">## 2   1 754192  G  A    1 11514 0.10150</span></span>
-<span><span class="co">## 3   1 757640  A  G    1 11514 0.10570</span></span>
-<span><span class="co">## 4   1 758626  T  C    1 11514 0.09299</span></span>
-<span><span class="co">## 5   1 769223  G  C   -1 11514 0.09536</span></span>
-<span><span class="co">## 6   1 777122  T  A    1 11514 0.05061</span></span></code></pre>
-<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
+<pre><code><span><span class="co">##   CHR      BP A1 A2 Sign     N       P</span></span>
+<span><span class="co">## 1   1  937250  G  C   -1 11514 0.64630</span></span>
+<span><span class="co">## 2   1 1047374  A  T    1 11514 0.31640</span></span>
+<span><span class="co">## 3   1 1177211  C  G   -1 11514 0.31500</span></span>
+<span><span class="co">## 4   1 1319926  T  C   -1 11514 0.07907</span></span>
+<span><span class="co">## 5   1 1618598  T  G   -1 11514 0.38920</span></span>
+<span><span class="co">## 6   1 1814354  T  C    1 11514 0.65630</span></span></code></pre>
+<p>We require the GWAS summary statistics from the prior data to contain 7 columns ordered exactly as above: the “CHR” column is the chromosome name and must be from 1 to 22; the “BP” column is the corresponding SNPs position in base pair; “A1” column is the effect allele and “A2” column is the alternative allele; “Sign” is the marginal association direction for each SNPs (the sign of the beta coefficients); “N” column is the sample size used for each SNPs from GWAS study; “P” column is the p-value of the t-test from GWAS.</p>
+<p>The second option of summary-level data for prior population is the SNP-wise correlation of single SNPs and traits.</p>
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">### Read prior majority marginal genotype-trait inner product more than 1 prior majority data can be read in###</span></span>
-<span></span>
-<span><span class="va">Pind</span><span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"IProd"</span><span class="op">)</span></span>
-<span><span class="va">Pss</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.table</a></span><span class="op">(</span><span class="st">"~/Desktop/research/Kevin He/PRS/Rewrite_Lassosum/example/EUR.IProd"</span><span class="op">)</span></span>
+<span><span class="va">PN</span> <span class="op">&lt;-</span> <span class="fl">11514</span></span>
+<span><span class="va">Pind</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Corr"</span><span class="op">)</span></span>
+<span><span class="va">Pss</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.table</a></span><span class="op">(</span><span class="st">"~/Desktop/research/Kevin He/PRS/Rewrite_Lassosum/example_2/EUR.Corr"</span>,header <span class="op">=</span> <span class="cn">T</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">Pss</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">##    V1     V2 V3 V4                  V5</span></span>
-<span><span class="co">## 1 CHR     BP A1 A2               IProd</span></span>
-<span><span class="co">## 2   1 753405  A  C   0.016758471388529</span></span>
-<span><span class="co">## 3   1 754192  G  A  0.0152624107131228</span></span>
-<span><span class="co">## 4   1 757640  A  G  0.0150779150412605</span></span>
-<span><span class="co">## 5   1 758626  T  C  0.0156557286728815</span></span>
-<span><span class="co">## 6   1 769223  G  C -0.0155433917010181</span></span></code></pre>
-<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
+<pre><code><span><span class="co">##   CHR      BP A1 A2         Corr</span></span>
+<span><span class="co">## 1   1  937250  G  C -0.004277185</span></span>
+<span><span class="co">## 2   1 1047374  A  T  0.009337738</span></span>
+<span><span class="co">## 3   1 1177211  C  G -0.009364789</span></span>
+<span><span class="co">## 4   1 1319926  T  C -0.016366512</span></span>
+<span><span class="co">## 5   1 1618598  T  G -0.008025370</span></span>
+<span><span class="co">## 6   1 1814354  T  C  0.004147810</span></span></code></pre>
+<p>We require the correlation summary statistics from the prior data to contain 5 columns ordered exactly as above: the “CHR” column is the chromosome name and must be from 1 to 22; the “BP” column is the corresponding SNPs position in base pair; “A1” column is the effect allele and “A2” column is the alternative allele; the “Corr” column contains the marginal genotype-trait correlation.</p>
+<p>The third option of summary-level data for prior majority population is the PRS coefficients from a joint model.</p>
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">### Read prior majority GWAS summary statistics file, marginal genotype-trait inner product, or joint coefficient estimates, more than 1 prior majority data can be read in###</span></span>
 <span></span>
-<span><span class="va">Pind</span><span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Coef"</span><span class="op">)</span></span>
-<span><span class="va">Pss</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.table</a></span><span class="op">(</span><span class="st">"~/Desktop/research/Kevin He/PRS/Rewrite_Lassosum/example/EUR.Coef"</span>,header <span class="op">=</span> <span class="cn">T</span><span class="op">)</span></span>
+<span><span class="va">Pind</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Coef"</span><span class="op">)</span></span>
+<span><span class="va">Pss</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.table</a></span><span class="op">(</span><span class="st">"~/Desktop/research/Kevin He/PRS/Rewrite_Lassosum/example_2/EUR.Coef"</span>,header <span class="op">=</span> <span class="cn">T</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">Pss</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">##   CHR     BP A1 A2        Coef</span></span>
-<span><span class="co">## 1   1 753405  A  C 0.000000000</span></span>
-<span><span class="co">## 2   1 754192  G  A 0.000000000</span></span>
-<span><span class="co">## 3   1 757640  A  G 0.000000000</span></span>
-<span><span class="co">## 4   1 758626  T  C 0.000000000</span></span>
-<span><span class="co">## 5   1 769223  G  C 0.000000000</span></span>
-<span><span class="co">## 6   1 777122  T  A 0.001384477</span></span></code></pre>
-<p>We use Pind to indicate the data type being provided to BRIGHTs, it should be either “GWAS”, “IProd”, or “Coef”, corresponding to the GWAS summary statistics, the inner product, or the joint coefficient estimates respectively. In the provided example case we read in the IProd summary statistics from the prior data and it contains 5 columns: the “CHR” column is the chromosome name must be from 1 to 22; the “BP” column is the corresponding SNPs position in base pair; “A1” column is the effect allele and “A2” column is the reference allele; the “IProd” column contains the marginal genotype-trait inner product; alternatively, we can also read in the GWAS summary statistics from the prior data and it contains 7 columns: the “CHR” column is the chromosome name must be from 1 to 22; the “BP” column is the corresponding SNPs position in base pair; “A1” column is the effect allele and “A2” column is the reference allele; “Sign” is the marginal association direction for each SNPs (the sign of the beta coefficients); “N” column is the sample size used for each SNPs from GWAS study; “P” column is the p-value of the T test from GWAS; In addition, we can also read in the joint coefficient estimates summary statistics from the prior majority data and it contains 5 columns: the “CHR” column is the chromosome name must be from 1 to 22; the “BP” column is the corresponding SNPs position in base pair; “A1” column is the effect allele and “A2” column is the reference allele; “Coef” column is the coefficient estimate from joint models.</p>
-<p>BRIGHTs also need to account for Linkage Disequilibrium (LD) via a reference panel (1000 genome project as default). The reference panel is assumed to be in PLINK 1 <a href="https://www.cog-genomics.org/plink/1.9/input#bed" class="external-link">format</a>. For reading in the reference LD information, if <code>ref</code> names are provided as “EUR” (European ancestry), “AFR” (African ancestry), “EAS” (East Asian ancestry), “SAS” (South Asian ancestry) ,or “AMR” (America admixed ancestry), then the default 1000 genome project reference panels will be used; otherwise <code>ref</code> needs to be provided as a directory to the PLINK1 format files (.bim, .bed, .fam). If PLINK1 files are provided then the user also needs to provide the LDblocks to use for the block structures in calculating LD, it also should be provided as “EUR” (European ancestry), “AFR” (African ancestry), “EAS” (East Asian ancestry), “SAS” (South Asian ancestry) ,or “AMR” (America admixed ancestry).</p>
-<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co">### Specify the PLINK file stub of the reference panel or "EUR", "AFR", "EAS", "SAS" ,or "AMR" ###</span></span>
-<span><span class="va">Tref</span> <span class="op">&lt;-</span> <span class="st">"~/Desktop/research/Kevin He/PRS/Rewrite_Lassosum/example/SAS1"</span></span>
-<span><span class="va">Pref</span> <span class="op">&lt;-</span> <span class="st">"~/Desktop/research/Kevin He/PRS/Rewrite_Lassosum/example/EUR"</span></span>
+<pre><code><span><span class="co">##   CHR      BP A1 A2         Coef</span></span>
+<span><span class="co">## 1   1  937250  G  C  0.000000000</span></span>
+<span><span class="co">## 2   1 1047374  A  T  0.000000000</span></span>
+<span><span class="co">## 3   1 1177211  C  G  0.000000000</span></span>
+<span><span class="co">## 4   1 1319926  T  C -0.000878137</span></span>
+<span><span class="co">## 5   1 1618598  T  G  0.000000000</span></span>
+<span><span class="co">## 6   1 1814354  T  C  0.000000000</span></span></code></pre>
+<p>We require the PRS coefficient summary statistics from the prior data to contain 5 columns ordered exactly as above: the “CHR” column is the chromosome name and must be from 1 to 22; the “BP” column is the corresponding SNPs position in base pair; “A1” column is the effect allele and “A2” column is the alternative allele; the “Coef” column contains the beta coefficients from a joint model.</p>
+<p>The ultimate prior summary statistics BRIGHTs use for model fitting is the PRS coefficients. When GWAS summary statistics or SNP-wise correlations are provided, the package automatically compute the PRS coefficients through BRIGHTs with <span class="math inline">\(\eta=0\)</span> (equivalent to LASSOsum PRS), and select tuning parameter <span class="math inline">\(\lambda\)</span> by AIC criterion. The mathematical details are provided in the Appendix under “BRIGHT.S”.</p>
+</div>
+<div class="section level5">
+<h5 id="ld-reference">LD reference<a class="anchor" aria-label="anchor" href="#ld-reference"></a>
+</h5>
+<p>BRIGHTs also need to account for Linkage Disequilibrium (LD) via a reference panel (1000 genomes project as default). The reference panel is assumed to be in PLINK 1 binary <a href="https://www.cog-genomics.org/plink/1.9/input#bed" class="external-link">format</a>. <code>Tref</code> is used for reading in the reference LD information for target population, if <code>Tref</code> are provided as “EUR.hg19” (European ancestry with hg19 build), “AFR.hg19” (African ancestry with hg19 build), “EAS.hg19” (East Asian ancestry with hg19 build), “SAS.hg19” (South Asian ancestry with hg19 build) , “AMR.hg19” (America admixed ancestry with hg19 build), or “EUR.hg38” (European ancestry with hg38 build), “AFR.hg38” (African ancestry with hg38 build), “EAS.hg38” (East Asian ancestry with hg38 build), “SAS.hg38” (South Asian ancestry with hg38 build), “AMR.hg38” (America admixed ancestry with hg38 build), then the default 1000 genome project reference panels with corresponding build will be used. Otherwise, <code>Tref</code> needs to be provided as a directory to the PLINK1 binary format files (.bim, .bed, .fam). If PLINK1 files are provided then the user also needs to provide the LDblocks in <code>TLDblocks</code> to use for the block structures in calculating LD, it also should be provided as “EUR.hg19” (European ancestry with hg19 build), “AFR.hg19” (African ancestry with hg19 build), “EAS.hg19” (East Asian ancestry with hg19 build), “SAS.hg19” (South Asian ancestry with hg19 build) , “AMR.hg19” (America admixed ancestry with hg19 build), or “EUR.hg38” (European ancestry with hg38 build), “AFR.hg38” (African ancestry with hg38 build), “EAS.hg38” (East Asian ancestry with hg38 build), “SAS.hg38” (South Asian ancestry with hg38 build), “AMR.hg38” (America admixed ancestry with hg38 build).</p>
+<p>When GWAS summary statistics or SNP-wise correlation are entered for prior data, the package will automatically perform BRIGHTs with <span class="math inline">\(\eta=0\)</span> on the prior summary data to construct the PRS coefficients. Therefore, LD reference for prior population is also required. <code>Pref</code> is used for reading in the reference LD information for prior population, the usage of <code>Pref</code> is exactly the same as <code>Tref</code> mentioned above. Similarly, when Plink1 binary files are provided for <code>Pref</code>, <code>PLDblocks</code> are also required to indicate the LDblocks to use for prior data.</p>
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co">### Specify the PLINK file stub of the reference panel or "EUR.hg19", "AFR.hg19", "EAS.hg19", "SAS.hg19", "AMR.hg19", "EUR.hg38", "AFR.hg38", "EAS.hg38", "SAS.hg38", "AMR.hg38" ###</span></span>
+<span><span class="va">Tref</span> <span class="op">&lt;-</span> <span class="st">"~/Desktop/research/Kevin He/PRS/Rewrite_Lassosum/example_2/SAS1_train"</span></span>
+<span><span class="va">Pref</span> <span class="op">&lt;-</span> <span class="st">"~/Desktop/research/Kevin He/PRS/Rewrite_Lassosum/example_2/EUR"</span> <span class="co">#Pref is only required if the Pind is "GWAS" or "Corr"</span></span>
 <span></span>
 <span><span class="co">### Read LD region file, only required if ref.bfile is provided as PLINK1 format ###</span></span>
-<span><span class="va">LDblocks</span> <span class="op">&lt;-</span> <span class="st">"SAS"</span> <span class="co"># This will use LD regions as defined in Berisa and Pickrell (2015) for the South Asian population and the hg19 genome build.</span></span>
+<span><span class="va">TLDblocks</span> <span class="op">&lt;-</span> <span class="st">"SAS.hg19"</span> <span class="co"># This will use LD regions as defined in Berisa and Pickrell (2015) for the South Asian population and the hg19 genome build.</span></span>
+<span><span class="va">PLDblocks</span> <span class="op">&lt;-</span> <span class="st">"EUR.hg19"</span> <span class="co"># This will use LD regions as defined in Berisa and Pickrell (2015) for the European population and the hg19 genome build. PLDblocks is only required if the Pind is "GWAS" or "Corr".</span></span>
 <span><span class="co"># Other alternatives available. Type ?BRIGHTs for more details. </span></span></code></pre></div>
 <p>Reference: <a href="https://academic.oup.com/bioinformatics/article/32/2/283/1743626/Approximately-independent-linkage-disequilibrium" class="external-link">Berisa and Pickrell (2015)</a></p>
-<p>Then, a preprocessing step is required to remove the SNPs that are not in the reference panel from all data, convert target data into marginal SNPs-trait inner product, convert prior data into joint coefficient estimates, and match the effect alleles between the reference panel and data.</p>
-<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">dat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PreprocessS.html">PreprocessS</a></span><span class="op">(</span><span class="va">Tss</span>, <span class="va">Tind</span>, <span class="va">Tref</span>, <span class="va">Pss</span>, <span class="va">Pind</span>, <span class="va">Pref</span>, <span class="va">LDblocks</span><span class="op">)</span></span></code></pre></div>
-<p>Finally, BRIGHTs can be run by using standard pipeline with LASSO penalty on quantitative traits:</p>
-<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/BRIGHTs.html">BRIGHTs</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">dat</span>, type.trait<span class="op">=</span><span class="st">"quantitative"</span>, penalty<span class="op">=</span><span class="st">"LASSO"</span><span class="op">)</span></span></code></pre></div>
+</div>
+</div>
+<div class="section level4">
+<h4 id="preprocessing-and-model-fitting">Preprocessing and model fitting<a class="anchor" aria-label="anchor" href="#preprocessing-and-model-fitting"></a>
+</h4>
+<p>A preprocessing step is required to remove the SNPs that are not in the reference panel from both target and prior summary data, convert target data into marginal SNPs-trait inner product, convert prior data into joint PRS coefficient estimates (By using BRIGHTs method with eta=0), and match the positions and alleles between the LD reference panel, target summary data, and prior summary data.</p>
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">dat</span><span class="op">=</span><span class="fu"><a href="../reference/PreprocessS.html">PreprocessS</a></span><span class="op">(</span><span class="va">Tss</span>, <span class="va">Tind</span>, <span class="va">Tref</span>, <span class="va">Pss</span>, <span class="va">Pind</span>, <span class="va">Pref</span>, TLDblocks<span class="op">=</span><span class="va">TLDblocks</span>, PLDblocks<span class="op">=</span><span class="va">PLDblocks</span>,TN<span class="op">=</span><span class="va">TN</span>,PN<span class="op">=</span><span class="va">PN</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## Using user specified LD</span></span>
+<span><span class="co">## 1 source of prior information identified</span></span>
+<span><span class="co">## 100 SNPs passed filtering for target</span></span>
+<span><span class="co">## 100 SNPs passed filtering for prior</span></span>
+<span><span class="co">## "Coef" not found for prior data fitting BRIGHTs with eta=0 for prior</span></span>
+<span><span class="co">## data and using AIC to select hyper-parameters</span></span>
+<span><span class="co">## 100 SNPs passed filtering for Prior LASSOsum</span></span></code></pre>
+<pre><code><span><span class="co">## Extracting number of samples and rownames from EUR.fam...</span></span></code></pre>
+<pre><code><span><span class="co">## Extracting number of variants and colnames from EUR.bim...</span></span></code></pre>
+<pre><code><span><span class="co">## Best lambda based on AIC is 0.015</span></span></code></pre>
+<p>Then, BRIGHTs can be run by using standard pipeline with LASSO penalty and identity link function:</p>
+<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/BRIGHTs.html">BRIGHTs</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">dat</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## Extracting number of samples and rownames from SAS1_train.fam...</span></span></code></pre>
+<pre><code><span><span class="co">## Extracting number of variants and colnames from SAS1_train.bim...</span></span></code></pre>
+<pre><code><span><span class="co">## Best eta based on AIC is 0.1</span></span>
+<span><span class="co">## Best lambda based on AIC is 0.107</span></span></code></pre>
+<p><code>out</code> is a list object containing all the information from the fitting of BRIGHT.</p>
 </div>
 <div class="section level4">
 <h4 id="hyperparameter-fine-tuning">Hyperparameter fine-tuning<a class="anchor" aria-label="anchor" href="#hyperparameter-fine-tuning"></a>
 </h4>
-<p><code>out</code> contains a sequence of models corresponding to different hyperparameters, <span class="math inline">\(\lambda\)</span> and <span class="math inline">\(\eta\)</span> pairs. Users would prefer to select the best performance model for the purpose of constructing PRS. Due to only summary statistics being available for the target minority populations, the widely used cross-validation is not applicable for hyper-parameter fine-tuning. Here our package provide two functions for using either individual-level or summary-level validation data to fine-tune hyperparameters.</p>
+<p><code>out</code> contains a sequence of models corresponding to different hyperparameters, <span class="math inline">\(\lambda\)</span> and <span class="math inline">\(\eta\)</span> pairs. Users would prefer to select the best performance model for the purpose of constructing PRS. Due to only summary statistics being available for the target minority populations, the widely used cross-validation is not applicable for hyper-parameter fine-tuning. Here our package provide three options for using either AIC, individual-level or summary-level validation data to fine-tune hyperparameters.</p>
 <div class="section level5">
-<h5 id="hyperparameter-fine-tuning-with-individual-level-validation-data-1">Hyperparameter fine-tuning with individual-level validation data<a class="anchor" aria-label="anchor" href="#hyperparameter-fine-tuning-with-individual-level-validation-data-1"></a>
+<h5 id="aic">AIC<a class="anchor" aria-label="anchor" href="#aic"></a>
+</h5>
+<p>We provide the variable selection result based on Akaike information criterion (AIC) by default without the use of validation datasets.</p>
+<p>The AIC change with respect to the hyperparameters, <span class="math inline">\(\eta\)</span> and <span class="math inline">\(\lambda\)</span>, can be visualized by using the following function:</p>
+<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Plot AIC</span></span>
+<span><span class="fu">Eta_curve.plot</span><span class="op">(</span><span class="va">out</span>,valid.type <span class="op">=</span> <span class="st">"AIC"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="BRIGHT_files/figure-html/unnamed-chunk-14-1.png" width="960"> These plots present the AIC (consistent estimate of the true risk, the smaller the better) measuring model performance for target minority model (squares) and BRIGHT model (lines with circles) with varying <span class="math inline">\(\eta\)</span> values and <span class="math inline">\(\lambda\)</span> values. The <span class="math inline">\(\eta\)</span> parameter controls the relative importance of prior information, while <span class="math inline">\(\lambda\)</span> controls the number of selected markers. The <span class="math inline">\(\eta\)</span>-curve highlights the implications of integrating varying degrees of prior information into the construction of the PRS on the target population. As a result, it effectively portrays the levels of heterogeneity between datasets and provides guidance on the optimal degree of prior information incorporation. The <span class="math inline">\(\lambda\)</span>-curve helps the user to visualize the model performance associated with different numbers of makers selected and provides guidance on selecting optimal number of variables.</p>
+</div>
+<div class="section level5">
+<h5 id="hyperparameter-fine-tuning-with-individual-level-validation-data">Hyperparameter fine-tuning with individual-level validation data<a class="anchor" aria-label="anchor" href="#hyperparameter-fine-tuning-with-individual-level-validation-data"></a>
 </h5>
 <p>In this subsection, we present the use of <code>Valid.Ind</code> to choose the best performance model when individual-level validation data is available.</p>
-<p>We first read in the individual-level validation data, including the plink genotype directory as well as the phenotypes.</p>
-<pre><code><span><span class="co">## [1] "~/Desktop/research/Kevin He/PRS/Rewrite_Lassosum/example/SAS2"</span></span></code></pre>
-<pre><code><span><span class="co">##   V1     V2         V3</span></span>
-<span><span class="co">## 1  0 711676   9.415242</span></span>
-<span><span class="co">## 2  0 711677  20.729158</span></span>
-<span><span class="co">## 3  0 711679   8.834436</span></span>
-<span><span class="co">## 4  0 711680   8.004271</span></span>
-<span><span class="co">## 5  0 711681 -11.331491</span></span>
-<span><span class="co">## 6  0 711682  -2.485393</span></span></code></pre>
-<p>Then use the provided <code>Valid.Ind()</code> function to perform model validation.</p>
+<p>We read in the individual-level validation data, including the Plink1 genotype directory (binary format) as well as the phenotypes. The first two columns of the phenotype data frame should match with the sample IDs in the Plink1 binary .fam file and the third columns of the phenotypes column should contain the phenotype values.</p>
 <div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Read in validation individual-level data</span></span>
+<span><span class="va">Valipheno</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.table</a></span><span class="op">(</span><span class="st">"~/Desktop/research/Kevin He/PRS/Rewrite_Lassosum/example_2/SAS2_phe.fam"</span><span class="op">)</span></span>
+<span><span class="va">Valigeno</span> <span class="op">&lt;-</span> <span class="st">"~/Desktop/research/Kevin He/PRS/Rewrite_Lassosum/example_2/SAS2"</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">Valigeno</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## [1] "~/Desktop/research/Kevin He/PRS/Rewrite_Lassosum/example_2/SAS2"</span></span></code></pre>
+<div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">Valipheno</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">##   V1     V2         V3</span></span>
+<span><span class="co">## 1  0 711676 -1.9734284</span></span>
+<span><span class="co">## 2  0 711677  2.9197713</span></span>
+<span><span class="co">## 3  0 711679 -0.8409030</span></span>
+<span><span class="co">## 4  0 711680 -0.3243112</span></span>
+<span><span class="co">## 5  0 711681 -1.2262724</span></span>
+<span><span class="co">## 6  0 711682  1.0080495</span></span></code></pre>
+<p>Then, the provided <code>Valid.Ind()</code> function can be used to perform model validation.</p>
+<div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Perform validation with individual-level validation data</span></span>
-<span><span class="va">Val</span> <span class="op">&lt;-</span> <span class="fu">Valid.Ind</span><span class="op">(</span><span class="va">out</span>, <span class="va">Valipheno</span>, <span class="va">Valigeno</span><span class="op">)</span></span></code></pre></div>
-<p>Then validation plots can be generated by using Contour.plot, MSPE_R2.plot and Sol_path_valid.plot functions provided by the package.</p>
-<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
+<span><span class="va">Val</span> <span class="op">&lt;-</span> <span class="fu">Valid.Ind</span><span class="op">(</span><span class="va">out</span>,<span class="va">Valipheno</span>,<span class="va">Valigeno</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## Extracting number of samples and rownames from SAS2.fam...</span></span></code></pre>
+<pre><code><span><span class="co">## Extracting number of variants and colnames from SAS2.bim...</span></span></code></pre>
+<pre><code><span><span class="co">## [1] "Best eta based on R2 is 1.438"</span></span>
+<span><span class="co">## [1] "Best lambda based on R2 is 0.284"</span></span>
+<span><span class="co">## [1] "Best eta based on MSPE is 2.336"</span></span>
+<span><span class="co">## [1] "Best lambda based on MSPE is 0.081"</span></span>
+<span><span class="co">## [1] "Best eta based on AIC is 0.1"</span></span>
+<span><span class="co">## [1] "Best lambda based on AIC is 0.107"</span></span></code></pre>
+<p>Validation plots can be generated by using <code>Contour.plot</code>, <code>Eta_curve.plot</code> and <code>Solution.path</code> functions provided by the package.</p>
+<div class="sourceCode" id="cb42"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Plot Contour plots</span></span>
 <span><span class="fu">Contour.plot</span><span class="op">(</span><span class="va">Val</span><span class="op">)</span></span></code></pre></div>
 <p><embed src="./R2.pdf" style="width:100.0%" height="700"></embed><embed src="./MSPE.pdf" style="width:100.0%" height="700"></embed></p>
-<p>Contour plots are used to select the best performing hyperparameter, <span class="math inline">\(\eta\)</span> and <span class="math inline">\(\lambda\)</span>, pairs with either <span class="math inline">\(R^2\)</span> or <span class="math inline">\(MSPE\)</span> criteria.</p>
-<div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Plot MSPE and R2 plot</span></span>
-<span><span class="fu">MSPE_R2.plot</span><span class="op">(</span><span class="va">Val</span><span class="op">)</span></span></code></pre></div>
-<p><img src="BRIGHT_files/figure-html/unnamed-chunk-16-1.png" width="960"> The plots generated by “MSPE_R2.plot” presents the mean squared prediction error (MSPE) and <span class="math inline">\(R^2\)</span>, measuring calibration and discrimination, for local (squares), prior (triangle), and BRIGHT (lines with circles) with varying <span class="math inline">\(\eta\)</span> values and <span class="math inline">\(\lambda\)</span> values. These plots help the user to visualize the local model’s small sample size and prior model’s heterogeneity effect on their recalibration and discrimination performance. The BRIGHT performance associated with varying <span class="math inline">\(\eta\)</span> and <span class="math inline">\(\lambda\)</span> values helps to decide how much information should be borrowed from the prior majority data and how many covariates should be chosen in order to achieve optimal performance for BRIGHT.</p>
-<p>Then the coefficients from the best performance model can be visualized in the following solution path plots by using function <code>Sol_path_valid.plot</code>:</p>
-<div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
+<p>Contour plots are used to select the best performing hyperparameter pairs, <span class="math inline">\(\eta\)</span> and <span class="math inline">\(\lambda\)</span>, with either <span class="math inline">\(R^2\)</span> or predictive deviance (PD) criteria.</p>
+<div class="sourceCode" id="cb43"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Plot PD and R2 plot</span></span>
+<span><span class="fu">Eta_curve.plot</span><span class="op">(</span><span class="va">Val</span>,valid.type <span class="op">=</span> <span class="st">"Ind"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="BRIGHT_files/figure-html/unnamed-chunk-17-1.png" width="960"> The plots generated by “Eta_curve.plot” presents the PD (mean squared prediction error [MSPE] in the case of continuous traits) and <span class="math inline">\(R^2\)</span>, measuring calibration and discrimination, for local (squares), prior (triangle), and BRIGHT (lines with circles) with varying <span class="math inline">\(\eta\)</span> values and <span class="math inline">\(\lambda\)</span> values. The <span class="math inline">\(\eta\)</span>-curve highlights the implications of integrating varying degrees of prior information into the construction of the PRS on the target population. As a result, it effectively portrays the levels of heterogeneity between datasets and provides guidance on the optimal degree of prior information incorporation. The <span class="math inline">\(\lambda\)</span>-curve helps the user to visualize the model performance associated with different numbers of makers selected and provides guidance on selecting optimal number of variables.</p>
+<p>The coefficients from the best performance model can be visualized in the following solution path plots by using function <code>Solution.path</code>:</p>
+<div class="sourceCode" id="cb44"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Plot solution path containing either best selected eta or best selected lambda</span></span>
-<span><span class="fu">Sol_path_valid.plot</span><span class="op">(</span><span class="va">Val</span>,<span class="va">out</span>,highlight<span class="op">=</span><span class="va">Ground_truth</span>,criteria<span class="op">=</span><span class="st">"R2"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">Solution.path</span><span class="op">(</span><span class="va">Val</span>,<span class="va">out</span>,criteria<span class="op">=</span><span class="st">"R2"</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## [1] "***"</span></span></code></pre>
-<p><img src="BRIGHT_files/figure-html/unnamed-chunk-17-1.png" width="960"> After selecting the criteria, either “R2” or “MSPE”, for model fine-tuning, the solution paths for <span class="math inline">\(-log(\lambda)\)</span> and <span class="math inline">\(\eta\)</span> are plot for the best <span class="math inline">\(\eta\)</span> and <span class="math inline">\(\lambda\)</span>, respectively. Each line corresponds to a covariate (SNPs). The left plot shows the solution path of effect sizes over the change of <span class="math inline">\(-log(\lambda)\)</span> for a given <span class="math inline">\(\eta\)</span> (<span class="math inline">\(\eta=0\)</span> in the above case); the right plot shows the solution path of effect sizes over the change of <span class="math inline">\(\eta\)</span> for a given <span class="math inline">\(\lambda\)</span> (<span class="math inline">\(\lambda=0.353\)</span> in the above case).</p>
+<p><img src="BRIGHT_files/figure-html/unnamed-chunk-18-1.png" width="960"> After selecting the criteria, either “R2” or “PD”, for model fine-tuning, the solution paths for <span class="math inline">\(-log(\lambda)\)</span> and <span class="math inline">\(\eta\)</span> are plot for the best <span class="math inline">\(\eta\)</span> and <span class="math inline">\(\lambda\)</span>, respectively. Each line corresponds to a covariate (SNPs). The left plot shows the solution path of effect sizes over the change of <span class="math inline">\(-log(\lambda)\)</span> for the best performing <span class="math inline">\(\eta\)</span>; the right plot shows the solution path of effect sizes over the change of <span class="math inline">\(\eta\)</span> for the best performing <span class="math inline">\(\lambda\)</span>.</p>
 </div>
 <div class="section level5">
 <h5 id="hyperparameter-fine-tuning-with-summary-level-validation-data">Hyperparameter fine-tuning with summary-level validation data<a class="anchor" aria-label="anchor" href="#hyperparameter-fine-tuning-with-summary-level-validation-data"></a>
 </h5>
-<p>However, due to Datashield constraints individual-level validation dataset can be hard to access. Therefore, we provide an alternative validation criteria, approximated MSPE (AMSPE), which only requires summary-level information from validation data. We first read in and present the summary level validation data as well as the Reference LD required for this approximation.</p>
-<pre><code><span><span class="co">## [1] "~/Desktop/research/Kevin He/PRS/Rewrite_Lassosum/example/SAS2"</span></span></code></pre>
-<pre><code><span><span class="co">##   CHR     BP A1 A2       IProd</span></span>
-<span><span class="co">## 1   1 753405  A  C -0.02135060</span></span>
-<span><span class="co">## 2   1 754192  G  A -0.02378837</span></span>
-<span><span class="co">## 3   1 757640  A  G -0.02433380</span></span>
-<span><span class="co">## 4   1 758626  T  C -0.02810998</span></span>
-<span><span class="co">## 5   1 769223  G  C  0.01584162</span></span>
-<span><span class="co">## 6   1 777122  T  A -0.01851673</span></span></code></pre>
-<p>AMSPE is then calculated by executing the <code>Val.Sum</code> function.</p>
-<div class="sourceCode" id="cb41"><pre class="downlit sourceCode r">
+<p>However, due to Datashield constraints individual-level validation dataset can be hard to access. Therefore, we provide an alternative validation criteria, approximated PD (APD), which only requires summary-level information from validation data. We first read in and present the summary level validation data as well as the Reference LD required for this approximation.</p>
+<pre><code><span><span class="co">## [1] "~/Desktop/research/Kevin He/PRS/Rewrite_Lassosum/example_2/SAS1_LD"</span></span></code></pre>
+<pre><code><span><span class="co">##   CHR      BP A1 A2         Corr</span></span>
+<span><span class="co">## 1   1  937250  G  C  0.019967064</span></span>
+<span><span class="co">## 2   1 1047374  A  T  0.012912183</span></span>
+<span><span class="co">## 3   1 1177211  C  G -0.001751321</span></span>
+<span><span class="co">## 4   1 1319926  T  C  0.026017634</span></span>
+<span><span class="co">## 5   1 1618598  T  G -0.027845738</span></span>
+<span><span class="co">## 6   1 1814354  T  C  0.022575661</span></span></code></pre>
+<p>APD is then calculated by executing the <code>Val.Sum</code> function.</p>
+<div class="sourceCode" id="cb48"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Perform validation with summary-level validation data</span></span>
-<span><span class="va">Val.Sum</span> <span class="op">&lt;-</span> <span class="fu">Valid.Sum</span><span class="op">(</span><span class="va">out</span>, <span class="va">ValiIProd</span>, <span class="va">ValiRef</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## Extracting number of samples and rownames from SAS2.fam...</span></span></code></pre>
-<pre><code><span><span class="co">## Extracting number of variants and colnames from SAS2.bim...</span></span></code></pre>
-<pre><code><span><span class="co">## [1] "Best eta based on AMSPE is 0.886"</span></span>
-<span><span class="co">## [1] "Best lambda based on AMSPE is 0.082"</span></span></code></pre>
-<p>Similar to the individual-level validation approach, we can visualize the validation process by plotting the AMSPE with regards to each hyper-parameter and the coefficients by plotting the solution paths.</p>
-<div class="sourceCode" id="cb45"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Plot AMSPE plot</span></span>
-<span><span class="fu">AMSPE.plot</span><span class="op">(</span><span class="va">Val.Sum</span><span class="op">)</span></span></code></pre></div>
-<p><img src="BRIGHT_files/figure-html/unnamed-chunk-20-1.png" width="960"></p>
-<div class="sourceCode" id="cb46"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Plot solution path containing either best selected eta or best selected lambda</span></span>
-<span><span class="fu">Sol_path_valid.plot</span><span class="op">(</span><span class="va">Val.Sum</span>,<span class="va">out</span>,highlight<span class="op">=</span><span class="va">Ground_truth</span>,criteria<span class="op">=</span><span class="st">"AMSPE"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">Val.Sum</span> <span class="op">&lt;-</span> <span class="fu">Valid.Sum</span><span class="op">(</span><span class="va">out</span>, <span class="va">ValiCorr</span>, <span class="va">ValiRef</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## Extracting number of samples and rownames from SAS1_LD.fam...</span></span></code></pre>
+<pre><code><span><span class="co">## Extracting number of variants and colnames from SAS1_LD.bim...</span></span></code></pre>
+<pre><code><span><span class="co">## [1] "Best eta based on AMSPE is 2.336"</span></span>
+<span><span class="co">## [1] "Best lambda based on AMSPE is 0.081"</span></span>
+<span><span class="co">## [1] "Best eta based on AIC is 0.1"</span></span>
+<span><span class="co">## [1] "Best lambda based on AIC is 0.107"</span></span></code></pre>
+<p>Similar to the individual-level validation approach, we can visualize the validation process by plotting the APD with regards to each hyper-parameter and the coefficients by plotting the solution paths.</p>
+<div class="sourceCode" id="cb52"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Plot APD plot</span></span>
+<span><span class="fu">Eta_curve.plot</span><span class="op">(</span><span class="va">Val.Sum</span>,valid.type <span class="op">=</span> <span class="st">"Sum"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="BRIGHT_files/figure-html/unnamed-chunk-21-1.png" width="960"></p>
+<div class="sourceCode" id="cb53"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Plot solution path containing either best selected eta or best selected lambda</span></span>
+<span><span class="fu">Solution.path</span><span class="op">(</span><span class="va">Val.Sum</span>,<span class="va">out</span>,criteria<span class="op">=</span><span class="st">"APD"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="BRIGHT_files/figure-html/unnamed-chunk-22-1.png" width="960"></p>
 </div>
 </div>
 <div class="section level4">
@@ -416,31 +509,35 @@ BRIGHTi utilize individual-level data from target minority population and summer
 </h4>
 <p>Finally, with the existence of individual-level testing data, we also provide functions to automatically test the performance of the BRIGHT model with comparison to using either data source only.</p>
 <p>We present the required format of the individual-level testing data.</p>
-<div class="sourceCode" id="cb47"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co">#Individual level validation data is available, Valipheno is the PLINK1 .fam format phenotype file, and Valigeno is the directory to the PLINK1 .bed file. </span></span>
+<div class="sourceCode" id="cb54"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Read in testing individual-level data</span></span>
+<span><span class="va">Testpheno</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.table</a></span><span class="op">(</span><span class="st">"~/Desktop/research/Kevin He/PRS/Rewrite_Lassosum/example_2/SAS2_phe_test.fam"</span><span class="op">)</span></span>
+<span><span class="va">Testgeno</span> <span class="op">&lt;-</span> <span class="st">"~/Desktop/research/Kevin He/PRS/Rewrite_Lassosum/example_2/SAS2"</span></span>
+<span></span>
+<span><span class="co">#Individual level validation data is available, Valipheno is the PLINK1 .fam format phenotype file, and Valigeno is the directory to the PLINK1 .bed file. </span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">Testpheno</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##   V1     V2         V3</span></span>
-<span><span class="co">## 1  0 711676   9.415242</span></span>
-<span><span class="co">## 2  0 711677  20.729158</span></span>
-<span><span class="co">## 3  0 711679   8.834436</span></span>
-<span><span class="co">## 4  0 711680   8.004271</span></span>
-<span><span class="co">## 5  0 711681 -11.331491</span></span>
-<span><span class="co">## 6  0 711682  -2.485393</span></span></code></pre>
-<div class="sourceCode" id="cb49"><pre class="downlit sourceCode r">
+<span><span class="co">## 1  0 711676  0.3209276</span></span>
+<span><span class="co">## 2  0 711677  3.6426240</span></span>
+<span><span class="co">## 3  0 711679  2.4628109</span></span>
+<span><span class="co">## 4  0 711680  0.1057334</span></span>
+<span><span class="co">## 5  0 711681 -1.5422909</span></span>
+<span><span class="co">## 6  0 711682 -0.3581878</span></span></code></pre>
+<div class="sourceCode" id="cb56"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">Testgeno</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## [1] "~/Desktop/research/Kevin He/PRS/Rewrite_Lassosum/example/SAS2"</span></span></code></pre>
+<pre><code><span><span class="co">## [1] "~/Desktop/research/Kevin He/PRS/Rewrite_Lassosum/example_2/SAS2"</span></span></code></pre>
 <p>Then, model testing can be automatically achieved by executing function <code>Test.Ind</code> function.</p>
-<div class="sourceCode" id="cb51"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb58"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Perform validation with individual-level validation data</span></span>
 <span><span class="va">Tst</span> <span class="op">&lt;-</span> <span class="fu">Test.Ind</span><span class="op">(</span><span class="va">Val</span>, <span class="va">Testpheno</span>, <span class="va">Testgeno</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## Extracting number of samples and rownames from SAS2.fam...</span></span></code></pre>
 <pre><code><span><span class="co">## Extracting number of variants and colnames from SAS2.bim...</span></span></code></pre>
 <p>We provide two plotting functions below for easier visualization of testing results:</p>
-<div class="sourceCode" id="cb54"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb61"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Plot density plot</span></span>
 <span><span class="fu">Density.plot</span><span class="op">(</span><span class="va">Tst</span>,Pct<span class="op">=</span><span class="fl">0.9</span>,criteria <span class="op">=</span> <span class="st">"R2"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="BRIGHT_files/figure-html/unnamed-chunk-25-1.png" width="960"> The plots generated by “Density.plot” presents the distribution of continuous traits in test data stratified by a percentile cut-off (Pct) of the local, prior and BRIGHT PRS. These plots further visualize the discrimination power of each PRS model. In the plots, we compare the median distance between the upper and lower percentile PRS stratification of the observed outcome distribution, and show the distance in the title of the plots.</p>
-<div class="sourceCode" id="cb55"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb62"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Plot ROC plot</span></span>
 <span><span class="fu">ROC.plot</span><span class="op">(</span><span class="va">Tst</span>,Pct<span class="op">=</span><span class="fl">0.9</span>,criteria <span class="op">=</span> <span class="st">"R2"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="BRIGHT_files/figure-html/unnamed-chunk-26-1.png" width="480"> The plots generated by “ROC.plot” presents the receiver operating characteristic (ROC) curve as well as the area under curve (AUC) measuring the prediction performance of local, prior, and BRIGHT PRS for a given threshold of the continuous traits (Pct).</p>
@@ -450,30 +547,30 @@ BRIGHTi utilize individual-level data from target minority population and summer
 <h3 id="binary-traits">Binary traits<a class="anchor" aria-label="anchor" href="#binary-traits"></a>
 </h3>
 <div class="section level4">
-<h4 id="data-format-1">Data format<a class="anchor" aria-label="anchor" href="#data-format-1"></a>
+<h4 id="data-format">Data format<a class="anchor" aria-label="anchor" href="#data-format"></a>
 </h4>
 <p>For binary traits, in addition to the GWAS summary statistics or marginal genotype-trait inner product, <span class="math inline">\(\frac{\boldsymbol X^\top\boldsymbol y}{n}\)</span>, BRIGHTs requires an estimate based on logistic LASSO regression, <span class="math inline">\(\boldsymbol{\hat b}\)</span>, and the marginal genotype-predicted traits inner product, <span class="math inline">\(\frac{\boldsymbol X^\top expit(\boldsymbol X \boldsymbol{\hat b})}{n}\)</span>, from the target minority population. From the prior majority populations coefficients estimated from joint models (e.g. logistic LASSO regression) is required for model fitting. We note that more than 1 prior majority data can be incorporated in the BRIGHTs model.</p>
 <p>First we read the minority summary statistics and majority summary statistics into R, and provide the <code>ref</code> names of the reference panel. If <code>ref</code> names are provided as “EUR”, “AFR”, “EAS”, “SAS” ,or “AMR”, then the default 1000 genome project reference panels will be used; otherwise <code>ref</code> needs to be provided as a directory to the plink1 format files (.bim, .bed, .fam).</p>
-<div class="sourceCode" id="cb56"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb63"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/UM-KevinHe/BRIGHT" class="external-link">BRIGHT</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-datatable.com" class="external-link">data.table</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co">### Read target minority GWAS summary statistics file or marginal genotype-trait inner product file###</span></span>
 <span></span>
 <span><span class="co"># Read in target GWAS</span></span>
-<span><span class="va">Tind</span><span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"GWAS"</span>,<span class="st">"LASSO"</span>,<span class="st">"IProdPred"</span><span class="op">)</span></span>
+<span><span class="va">Tind</span><span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"GWAS"</span>,<span class="st">"LASSO"</span>,<span class="st">"CorrPred"</span><span class="op">)</span></span>
 <span><span class="va">Tss1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://Rdatatable.gitlab.io/data.table/reference/fread.html" class="external-link">fread</a></span><span class="op">(</span><span class="st">"Target_GWAS.txt"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">Tss1</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Alternatively read in target marginal genotype-trait inner product</span></span>
-<span><span class="va">Tind</span><span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"IProd"</span>,<span class="st">"LASSO"</span>,<span class="st">"IProdPred"</span><span class="op">)</span></span>
-<span><span class="va">Tss</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://Rdatatable.gitlab.io/data.table/reference/fread.html" class="external-link">fread</a></span><span class="op">(</span><span class="st">"Target_IProd.txt"</span><span class="op">)</span></span>
+<span><span class="va">Tind</span><span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Corr"</span>,<span class="st">"LASSO"</span>,<span class="st">"CorrPred"</span><span class="op">)</span></span>
+<span><span class="va">Tss</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://Rdatatable.gitlab.io/data.table/reference/fread.html" class="external-link">fread</a></span><span class="op">(</span><span class="st">"Target_Corr.txt"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">Tss</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co">### Read target minority LASSO estimates file and marginal genotype-predicted outcome inner product file###</span></span>
 <span><span class="va">bhat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://Rdatatable.gitlab.io/data.table/reference/fread.html" class="external-link">fread</a></span><span class="op">(</span><span class="st">"Target_LASSO.txt"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">bhat</span><span class="op">)</span></span>
-<span><span class="va">rhat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://Rdatatable.gitlab.io/data.table/reference/fread.html" class="external-link">fread</a></span><span class="op">(</span><span class="st">"Target_IProdPred.txt"</span><span class="op">)</span></span>
+<span><span class="va">rhat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://Rdatatable.gitlab.io/data.table/reference/fread.html" class="external-link">fread</a></span><span class="op">(</span><span class="st">"Target_CorrPred.txt"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">bhat</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">Tss</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">"1"</span> <span class="op">=</span> <span class="va">Tss1</span>, <span class="st">"2"</span> <span class="op">=</span> <span class="va">bhat</span>, <span class="st">"3"</span> <span class="op">=</span> <span class="va">rhat</span><span class="op">)</span> <span class="co"># The order of list Tss need to be matched with Tind</span></span>
@@ -496,10 +593,10 @@ BRIGHTi utilize individual-level data from target minority population and summer
 <span><span class="va">LDblocks</span> <span class="op">&lt;-</span> <span class="st">"AFR.hg19"</span> <span class="co"># This will use LD regions as defined in Berisa and Pickrell (2015) for the African population and the hg19 genome build.</span></span>
 <span><span class="co"># Other alternatives available. Type ?BRIGHTs for more details. </span></span></code></pre></div>
 <p>Then, a preprocessing step is required to remove the SNPs that are not in the reference panel from all data, convert target data into marginal SNPs-trait inner product, convert prior data into joint coefficient estimates, and match the effect alleles between the reference panel and data.</p>
-<div class="sourceCode" id="cb57"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb64"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">dat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/PreprocessS.html">PreprocessS</a></span><span class="op">(</span>Tss <span class="op">=</span> <span class="va">Tss</span>, Tind <span class="op">=</span> <span class="va">Tind</span>, Pss <span class="op">=</span> <span class="va">Pss</span>, Pind <span class="op">=</span> <span class="va">Pind</span>, ref.bfile<span class="op">=</span><span class="va">ref.bfile</span>, LDblocks<span class="op">=</span><span class="va">LDblocks</span><span class="op">)</span></span></code></pre></div>
 <p>Running BRIGHTs using standard pipeline with LASSO penalty on quantitative traits:</p>
-<div class="sourceCode" id="cb58"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb65"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/BRIGHTs.html">BRIGHTs</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">dat</span>, type.trait<span class="op">=</span><span class="st">"quantitative"</span>, penalty<span class="op">=</span><span class="st">"LASSO"</span><span class="op">)</span></span></code></pre></div>
 <p>This procedure requires additional and quite stringent summary statistics from both target and prior data, in genetics studies its quite common to treat binary outcome as continuous and perform continuous models on the data; therefore, in the case where the above additonal summary statistics are not available, the BRIGHTS with quantitative traits procedure can also be used to analyze the binary data.</p>
 </div>
@@ -510,11 +607,11 @@ BRIGHTi utilize individual-level data from target minority population and summer
 </h2>
 <p>Below we discuss the required data and implementation tutorials.</p>
 <div class="section level3">
-<h3 id="data-format-2">Data format<a class="anchor" aria-label="anchor" href="#data-format-2"></a>
+<h3 id="data-format-1">Data format<a class="anchor" aria-label="anchor" href="#data-format-1"></a>
 </h3>
 <p>BRIGHTi requires the individual-level genotype and phenotype from the target minority population, while from the prior majority populations either GWAS summary statistics, marginal genotype-trait inner product, or coefficients estimated from joint models (e.g. PRS or LASSO regression) can be used for model fitting. We note that more than 1 prior majority data can be incorporated in the BRIGHTi model.</p>
 <p>First we read the minority genotype data from plink1 files and phenotype data from text files and majority summary statistics into R.</p>
-<div class="sourceCode" id="cb59"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb66"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/UM-KevinHe/BRIGHT" class="external-link">BRIGHT</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-datatable.com" class="external-link">data.table</a></span><span class="op">)</span></span>
 <span></span>
@@ -528,26 +625,26 @@ BRIGHTi utilize individual-level data from target minority population and summer
 <span></span>
 <span><span class="co">### Read prior majority GWAS summary statistics file, marginal genotype-trait inner product, or joint coefficient estimates, more than 1 prior majority data can be read in###</span></span>
 <span></span>
-<span><span class="va">Pind</span><span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"GWAS"</span>,<span class="st">"IProd"</span>,<span class="st">"Coef"</span><span class="op">)</span></span>
+<span><span class="va">Pind</span><span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"GWAS"</span>,<span class="st">"Corr"</span>,<span class="st">"Coef"</span><span class="op">)</span></span>
 <span><span class="va">Pss1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://Rdatatable.gitlab.io/data.table/reference/fread.html" class="external-link">fread</a></span><span class="op">(</span><span class="st">"Prior_GWAS1.txt"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">Pss1</span><span class="op">)</span></span>
-<span><span class="va">Pss2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://Rdatatable.gitlab.io/data.table/reference/fread.html" class="external-link">fread</a></span><span class="op">(</span><span class="st">"Prior_IProd2.txt"</span><span class="op">)</span></span>
+<span><span class="va">Pss2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://Rdatatable.gitlab.io/data.table/reference/fread.html" class="external-link">fread</a></span><span class="op">(</span><span class="st">"Prior_Corr2.txt"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">Pss2</span><span class="op">)</span></span>
 <span><span class="va">Pss3</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://Rdatatable.gitlab.io/data.table/reference/fread.html" class="external-link">fread</a></span><span class="op">(</span><span class="st">"Prior_Coef3.txt"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">Pss3</span><span class="op">)</span></span>
 <span><span class="va">Pss</span><span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">"1"</span><span class="op">=</span><span class="va">Pss1</span>,<span class="st">"2"</span><span class="op">=</span><span class="va">Pss2</span>,<span class="st">"3"</span><span class="op">=</span><span class="va">Pss3</span><span class="op">)</span> <span class="co"># The order of list Pss need to be matched with Pind</span></span></code></pre></div>
 <p>Then, a preprocessing step is required to remove the SNPs that are not in the target minority genotype files from prior majority data, convert prior data into joint coefficient estimates, and match the effect alleles between the minority genotype and prior data.</p>
-<div class="sourceCode" id="cb60"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb67"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">dat</span> <span class="op">&lt;-</span> <span class="fu">PreprocessI</span><span class="op">(</span>Tpheno <span class="op">=</span> <span class="va">Tpheno</span>, Tgeno <span class="op">=</span> <span class="va">Tgeno</span>, Pss <span class="op">=</span> <span class="va">Pss</span>, Pind <span class="op">=</span> <span class="va">Pind</span><span class="op">)</span></span></code></pre></div>
 <p>Running BRIGHTi using standard pipeline with LASSO penalty on different types of traits including “quantitative”, “qualitative” and “count”:</p>
-<div class="sourceCode" id="cb61"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb68"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/BRIGHTi.html">BRIGHTi</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">dat</span>, type.trait<span class="op">=</span><span class="st">"quantitative"</span>, penalty<span class="op">=</span><span class="st">"LASSO"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="hyperparameter-fine-tuning-with-cross-validation">Hyperparameter fine-tuning with cross-validation<a class="anchor" aria-label="anchor" href="#hyperparameter-fine-tuning-with-cross-validation"></a>
 </h3>
 <p>With individual-level target minority data, cross-validation is achievable in BRIGHTi through <code>BRIGHTi.cv()</code> to avoid independent validation datasets.</p>
-<div class="sourceCode" id="cb62"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb69"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu">BRIGHTi.cv</span><span class="op">(</span>data <span class="op">=</span> <span class="va">dat</span>, type.trait<span class="op">=</span><span class="st">"quantitative"</span>, penalty<span class="op">=</span><span class="st">"LASSO"</span><span class="op">)</span></span></code></pre></div>
 <p>We note that hyperparameter-fine tuning through individual-level or summary-level validation data is still available for BRIGHTi models, please refer to BRIGHTs hyperparameter fine tunning section for more details.</p>
 </div>
@@ -555,11 +652,60 @@ BRIGHTi utilize individual-level data from target minority population and summer
 <div class="section level2">
 <h2 id="appendix">Appendix<a class="anchor" aria-label="anchor" href="#appendix"></a>
 </h2>
-<p>To integrate summary-level or individual-level target minority data and summary-level prior majority data, while adjusting for the potential disparities between prior majority and target minority populations, BRIGHT solves the following penalized objective function, <span class="math display">\[\begin{align}
-Q_{BRIGHT}(\boldsymbol\beta) =&amp; B_{\widetilde{\boldsymbol\Sigma}}(\boldsymbol{\hat\beta}||\boldsymbol\beta) + \eta B_{\widetilde{\boldsymbol\Sigma}}(\boldsymbol{\check\beta}||\boldsymbol\beta) + p_{\lambda}(\boldsymbol\beta),\label{eq: BRIGHT}
-\end{align}\]</span> where <span class="math inline">\(\boldsymbol{\hat\beta}\)</span> and <span class="math inline">\(\boldsymbol{\check\beta}\)</span> are the estimated coefficients obtained from published studies based on target minority and prior majority populations, respectively; <span class="math inline">\(\widetilde{\boldsymbol\Sigma}\)</span> is the regularized block-structured LD estimation  from publicly available minority genotypes (e.g. 1000 genome project) or user specified Plink genotype files. <span class="math inline">\(B_{\widetilde{\boldsymbol\Sigma}}(\boldsymbol{\hat\beta}||\boldsymbol\beta)\)</span> (<span class="math inline">\(B_{\widetilde{\boldsymbol\Sigma}}(\boldsymbol{\check\beta}||\boldsymbol\beta)\)</span>) is the Bregman-divergence between <span class="math inline">\(\boldsymbol{\hat\beta}\)</span> (<span class="math inline">\(\boldsymbol{\check\beta}\)</span>) and <span class="math inline">\(\boldsymbol{\beta}\)</span>, measuring the discrepancy between the working model and the target minority model (prior majority model). In addition, <span class="math inline">\(\eta\)</span> is the weight balancing the importance of the minority data over the prior information to account for the population heterogeneity; when <span class="math inline">\(\eta=0\)</span>, BRIGHT will reduce to the penalized regression on the target data; when <span class="math inline">\(\eta\rightarrow\infty\)</span>, BRIGHTi will reduce to the penalized prior information. <span class="math inline">\(p_{\lambda}(\beta)\)</span> is a general penalty including (group) LASSO, (group) elastic net, (group) MCP, and (group) SCAD to achieve sparsity and fine mapping in the genotype effect size estimation. ## BRIGHTs with quantitative traits For quantitative traits, we set <span class="math inline">\(B_{\widetilde{\boldsymbol\Sigma}}(\boldsymbol{\hat\beta}||\boldsymbol\beta)=(\boldsymbol{\hat\beta}-\boldsymbol{\beta})^\top\widetilde{\boldsymbol\Sigma}(\boldsymbol{\hat\beta}-\boldsymbol{\beta})/n\)</span>, <span class="math inline">\(B_{\widetilde{\boldsymbol\Sigma}}(\boldsymbol{\check\beta}||\boldsymbol\beta)=(\boldsymbol{\check\beta}-\boldsymbol{\beta})^\top\widetilde{\boldsymbol\Sigma}(\boldsymbol{\check\beta}-\boldsymbol{\beta})/n\)</span> and <span class="math inline">\(\boldsymbol{\hat\beta}=\widetilde{\boldsymbol\Sigma}^{-1}\boldsymbol r\)</span> where <span class="math inline">\(\boldsymbol r=\frac{\boldsymbol y^\top\boldsymbol X}{n}\)</span> is the marginal SNPs-trait inner product from target minority population, where <span class="math inline">\(\boldsymbol X\)</span> and <span class="math inline">\(\boldsymbol y\)</span> are the target genotype matrix and outcome vector respectively. A standardized version, <span class="math inline">\(\boldsymbol r^*=\frac{\boldsymbol y^{*\top}\boldsymbol X^*}{n}\)</span>, can be recovered from GWAS summary statistics with <span class="math inline">\(\boldsymbol X^*\)</span> and <span class="math inline">\(\boldsymbol y^*\)</span> being the standardized genotype and phenotype . The above definition of <span class="math inline">\(B_{\widetilde{\boldsymbol\Sigma}}(\boldsymbol{\hat\beta}||\boldsymbol\beta)\)</span> and <span class="math inline">\(\boldsymbol{\hat\beta}\)</span> ensures <span class="math inline">\(B_{\widetilde{\boldsymbol\Sigma}}(\boldsymbol{\hat\beta}||\boldsymbol\beta)\)</span> to be a valid approximation of the OLS loss through <span class="math inline">\(\widetilde{\boldsymbol\Sigma}\approx\widehat{\boldsymbol\Sigma}\)</span> , which is widely deemed to be true in genetics studies . We note, in this scenario, <span class="math inline">\(\boldsymbol{\hat\beta}\)</span> is only presented for illustration purposes, the actual implementation does not require the inversion or invertibility of <span class="math inline">\(\widetilde{\boldsymbol\Sigma}\)</span>. The objective function in this case can be reduced to <span class="math display">\[\begin{align}
-Q_{BRIGHTs}(\boldsymbol\beta)&amp;\propto\frac{1}{2}\boldsymbol{\beta}^\top \widetilde{\boldsymbol\Sigma}\boldsymbol{\beta}-\boldsymbol{\beta}^\top\boldsymbol{r}+\eta \left ( \frac{1}{2}\boldsymbol{\beta}^\top \widetilde{\boldsymbol\Sigma}\boldsymbol{\beta}-\boldsymbol{\beta}^\top\widetilde{\boldsymbol\Sigma}\boldsymbol{\check\beta}\right )+p_{\lambda}(\boldsymbol\beta). \label{eq: GWAS objective function}
-\end{align}\]</span> The above objective function, (), ignoring the penalty term, is of quadratic forms concerning <span class="math inline">\(\boldsymbol\beta\)</span>; therefore, in this package, we efficiently implement the optimization by group coordinate descent algorithm  and warm start and active set technique and the computation cost does not exceed penalized linear regression. Furthermore, the BRIGHTs method will reduce to LASSOsum  when <span class="math inline">\(\eta=0\)</span> and <span class="math inline">\(p_{\lambda}(\boldsymbol\beta)\)</span> is chosen as LASSO penalty.</p>
+<div class="section level3">
+<h3 id="model-details">Model details<a class="anchor" aria-label="anchor" href="#model-details"></a>
+</h3>
+<p>We introduce <span class="math inline">\(\boldsymbol X\)</span>, <span class="math inline">\(\boldsymbol y\)</span>, and <span class="math inline">\(n\)</span> to be the genotype, phenotype, and sample size from the target minority population and <span class="math inline">\(\boldsymbol{\check\beta}\)</span> to be the joint coefficient estimates from the published studies for the prior majority population.</p>
+</div>
+<div class="section level3">
+<h3 id="bright-i">BRIGHT.I<a class="anchor" aria-label="anchor" href="#bright-i"></a>
+</h3>
+<p>BRIGHT.I with an identity link function, for quantitative traits, binary traits or count traits, implements the penalized objective function below, <span class="math display">\[\begin{align}
+Q_{BRIGHT.I}(\boldsymbol\beta) =&amp; (\boldsymbol y-\boldsymbol X\boldsymbol{\beta})^\top(\boldsymbol y-\boldsymbol X\boldsymbol{\beta})/n \nonumber\\
+&amp;+\eta (\boldsymbol{\check\beta}-\boldsymbol{\beta})^\top\widehat{\boldsymbol\Sigma}(\boldsymbol{\check\beta}-\boldsymbol{\beta})+p_{\lambda}(\boldsymbol\beta) + C,\label{eq: BRIGHTi quan}\tag{S1}
+\end{align}\]</span> where <span class="math inline">\(\widehat{\boldsymbol\Sigma}=\boldsymbol{X}^\top\boldsymbol{X}/n\)</span> and <span class="math inline">\(C\)</span> is a term that does not depend on <span class="math inline">\(\boldsymbol{\beta}\)</span>. The first term, <span class="math inline">\((\boldsymbol y-\boldsymbol X\boldsymbol{\beta})^\top(\boldsymbol y-\boldsymbol X\boldsymbol{\beta})/n\)</span>, is the OLS loss function measuring the discrepancy between the working model and the target minority data; the second term <span class="math inline">\((\boldsymbol{\check\beta}-\boldsymbol{\beta})^\top\widehat{\boldsymbol\Sigma}(\boldsymbol{\check\beta}-\boldsymbol{\beta})\)</span>, is a Mahalanobis distance, a special case of the Bregman-divergence, measuring the discrepancy between the working model and the prior information.</p>
+<p>BRIGHT.I with a logit link function for Bernoulli outcomes or a log link for Poisson outcomes implements the following objective function, <span class="math display">\[\begin{align}
+Q_{BRIGHT.I}(\boldsymbol\beta) = &amp;-\sum_{i=1}^n \{y_i\boldsymbol{X}_i^\top \boldsymbol\beta+b(\boldsymbol{X}_i^\top \boldsymbol\beta)\}\nonumber\\
+&amp;-\eta \sum_{i=1}^n \{\boldsymbol{X}_i^\top \boldsymbol{\check\beta}\boldsymbol{X}_i^\top \boldsymbol\beta+b(\boldsymbol{X}_i^\top \boldsymbol\beta)\}+p_{\lambda}(\boldsymbol\beta)+C,\label{eq: BRIGHTi qual}\tag{S2}
+\end{align}\]</span> where <span class="math inline">\(C\)</span> is a term that does not depend on <span class="math inline">\(\boldsymbol{\beta}\)</span> and <span class="math inline">\(b(\boldsymbol{X}_i^\top \boldsymbol\beta)=-\log\{1+\exp(\boldsymbol{X}_i^\top \boldsymbol\beta)\}\)</span> or <span class="math inline">\(b(\boldsymbol{X}_i^\top \boldsymbol\beta)=-exp(\boldsymbol{X}_i^\top \boldsymbol\beta)\)</span> corresponds to the binary or count traits with canonical link functions, respectively. The first term, <span class="math inline">\(-\sum_{i=1}^n \{y_i\boldsymbol{X}_i^\top \boldsymbol\beta+b(\boldsymbol{X}_i^\top \boldsymbol\beta)\}\)</span>, is the negative log-likelihood measuring the discrepancy between the working model and the target minority data; the second term, <span class="math inline">\(\sum_{i=1}^n \{\boldsymbol{X}_i^\top \boldsymbol{\check\beta}\boldsymbol{X}_i^\top \boldsymbol\beta+b(\boldsymbol{X}_i^\top \boldsymbol\beta)\}\)</span>, is a Kullback-Leibler distance , a special case of the Bregman-divergence, measuring the discrepancy between the working model and the prior information.</p>
+</div>
+<div class="section level3">
+<h3 id="bright-s">BRIGHT.S<a class="anchor" aria-label="anchor" href="#bright-s"></a>
+</h3>
+<p>We copy BRIGHT.S objective function as below, <span class="math display">\[\begin{align}
+Q_{BRIGHT.S}(\boldsymbol\beta) =&amp; B_{\widetilde{\boldsymbol\Sigma}}(\boldsymbol{\hat\beta}||\boldsymbol\beta) + \eta B_{\widetilde{\boldsymbol\Sigma}}(\boldsymbol{\check\beta}||\boldsymbol\beta) + p_{\lambda}(\boldsymbol\beta).\label{eq: BRIGHTs}\tag{2}
+\end{align}\]</span></p>
+<p>As shown in , BRIGHTs with an identity link function for quantitative, binary or count traits, can be reduced to <span class="math display">\[\begin{align}
+Q_{BRIGHT.S}(\boldsymbol\beta)= &amp;\boldsymbol{\beta}^\top \widetilde{\boldsymbol\Sigma}\boldsymbol{\beta}-2\boldsymbol{\beta}^\top\boldsymbol{r}\nonumber\\
+&amp;+\eta \left ( \boldsymbol{\beta}^\top \widetilde{\boldsymbol\Sigma}\boldsymbol{\beta}-2\boldsymbol{\beta}^\top\widetilde{\boldsymbol\Sigma}\boldsymbol{\check\beta}\right )+p_{\lambda}(\boldsymbol\beta)+C,\label{eq: BRIGHTs quan}\tag{S3}
+\end{align}\]</span> where <span class="math inline">\(r\)</span> is the SNPs-trait correlation and <span class="math inline">\(C\)</span> is constant with regard to <span class="math inline">\(\boldsymbol{\beta}\)</span>. %We note, in this scenario, <span class="math inline">\(\boldsymbol{\hat\beta}\)</span> is only presented for illustration purposes, the actual implementation does not require the inversion or invertibility of <span class="math inline">\(\widetilde{\boldsymbol\Sigma}\)</span>. Furthermore, the BRIGHT.S method will reduce to LASSOsum  when <span class="math inline">\(\eta=0\)</span> and <span class="math inline">\(p_{\lambda}(\boldsymbol\beta)\)</span> is chosen as LASSO penalty.</p>
+<p>With a logit link function for Bernoulli outcomes, a debiased LASSO estimator, <span class="math inline">\(\boldsymbol{\hat\beta}=\boldsymbol{\hat b}+\widehat{\boldsymbol\Theta}(\boldsymbol r - \boldsymbol{\hat r})\)</span>, ensures a valid approximation of <span class="math inline">\(B_{\widetilde{\boldsymbol\Sigma}}(\boldsymbol{\hat\beta}||\boldsymbol\beta)\)</span> to the negative log-likelihood of logistic regression , where <span class="math inline">\(\boldsymbol{\hat b}\)</span> is the published LASSO estimator from the minority study, <span class="math inline">\(\widehat{\boldsymbol\Theta}\)</span> is a regularized inverse of the observed information matrix, and <span class="math inline">\(\boldsymbol{\hat r}=\frac{expit(\boldsymbol X\boldsymbol{\hat b})^\top\boldsymbol X}{n}\)</span> is the marginal marker-predicted outcome inner product, where <span class="math inline">\(expit(\cdot)\)</span> is the inverse of logit function. Then, the objective function in (2) is reduced to <span class="math display">\[\begin{align}
+Q_{BRIGHT.S}(\boldsymbol\beta)=&amp;(\boldsymbol{\beta}-\boldsymbol{\hat b})^\top
+\boldsymbol{\widetilde\Sigma}
+(\boldsymbol{\beta}-\boldsymbol{\hat b}) +2(\boldsymbol r -\boldsymbol{\hat r})^\top(\boldsymbol{\beta}-\boldsymbol{\hat b})\nonumber\\
+&amp;+\eta  \left ( \boldsymbol{\beta}^\top \widetilde{\boldsymbol\Sigma}\boldsymbol{\beta}-2\boldsymbol{\beta}^\top\widetilde{\boldsymbol\Sigma}\boldsymbol{\check\beta}\right )+p_{\lambda}(\boldsymbol\beta)+C,
+\label{eq: BRIGHTs qual}\tag{S4}
+\end{align}\]</span> where <span class="math inline">\(C\)</span> is constant with regard to <span class="math inline">\(\boldsymbol{\beta}\)</span>. We note the actual implementation does not require the debiasing of the LASSO estimator or obtaining <span class="math inline">\(\widehat{\boldsymbol\Theta}\)</span>, only <span class="math inline">\(\boldsymbol{\hat b}\)</span> and <span class="math inline">\(\boldsymbol{\hat r}\)</span> are required in addition to <span class="math inline">\(\widetilde{\boldsymbol\Sigma}\)</span>, <span class="math inline">\(\boldsymbol r\)</span> and <span class="math inline">\(\boldsymbol{\tilde\beta}\)</span>.</p>
+</div>
+<div class="section level3">
+<h3 id="lassosum-review">LASSOsum review<a class="anchor" aria-label="anchor" href="#lassosum-review"></a>
+</h3>
+<p>LASSOsum implements the objective function below, <span class="math display">\[\begin{align}
+Q_{LASSOsum}(\boldsymbol\beta)= &amp;\boldsymbol{\beta}^\top [(1-s)\widetilde{\boldsymbol\Sigma}+sI]\boldsymbol{\beta}-2\boldsymbol{\beta}^\top\boldsymbol{r}+||\boldsymbol\beta||_1,\label{eq: BRIGHTs quan}\tag{S5}
+\end{align}\]</span></p>
+<p>When <span class="math inline">\(\eta=0\)</span> and <span class="math inline">\(p_{\lambda}(\boldsymbol\beta)=(1-s)||\boldsymbol\beta||_2+||\boldsymbol\beta||_1\)</span>, the BRIGHTs objective function in (S3) is reduced to LASSOsum objective function.</p>
+</div>
+<div class="section level3">
+<h3 id="retrieve-r-from-gwas">Retrieve r from GWAS<a class="anchor" aria-label="anchor" href="#retrieve-r-from-gwas"></a>
+</h3>
+<p>GWAS aim to find marginally significant SNPs associated with the trait of interest. GWAS summary statistics usually include data sample size, coefficient estimates, t-statistics and p-values of marginal single SNP-trait association t-tests from simple linear regressions (SLR), <span class="math display">\[\boldsymbol y=a_j+\boldsymbol{X}_{\cdot j} b_j+\epsilon.\]</span> Therefore, the standardized <span class="math inline">\(\boldsymbol r\)</span>, <span class="math inline">\(\boldsymbol r'\)</span>, can be retrieved from the t-statistics and data sample size, <span class="math display">\[r_j'=\frac{t_j}{\sqrt{t_j^2+n-2}},\]</span> where <span class="math inline">\(t_j\)</span> is the t-statistic for SNP <span class="math inline">\(j\)</span>. In the case where t-statistics are not directly recorded in the GWAS summary statistics, they can also be retrieved from sample size, association direction, <span class="math inline">\(\boldsymbol{S}\)</span>, and p-values <span class="math inline">\(\boldsymbol{P}\)</span>, <span class="math display">\[t_j=S_j\times Q_t(P_j/2,n-2),\]</span> where <span class="math inline">\(Q_t(P_j/2,n-2)\)</span> is the upper <span class="math inline">\(P_j/2\)</span> quantile of t-distribution with degree of freedom <span class="math inline">\(n-2\)</span> and <span class="math inline">\(j\)</span> is the SNP index.</p>
+<p>In the case, where only the GWAS summary statistic information is available, only the standardized <span class="math inline">\(\boldsymbol r_j'\)</span> can be retrieved for model fitting. As a result, the BRIGHT model can only be implemented on the standardized genotype matrix and standardized outcome, which is sufficient for risk classification but cannot predict the outcome in the original scale. If researchers can also get access to the de-identified mean and variance estimate of each genotype, <span class="math inline">\(\boldsymbol{\overline X}_{\cdot j}\)</span> and <span class="math inline">\(\widehat{Var}(\boldsymbol{X}_{\cdot j})\)</span>, and outcome, <span class="math inline">\(\boldsymbol{\overline{y}}\)</span> and <span class="math inline">\(\widehat{Var}(\boldsymbol y)\)</span>, the original <span class="math inline">\(\boldsymbol r_j:=\boldsymbol{X}_{\cdot j}^\top\boldsymbol y/n\)</span> can be retrieved from the following equation: <span class="math display">\[\boldsymbol r_j=(n-1)\boldsymbol r_j'\sqrt{\widehat{Var}(\boldsymbol{X}_{\cdot j})\widehat{Var}(\boldsymbol y)}+n\boldsymbol{\overline X}_{\cdot j}\boldsymbol{\overline{y}}.\]</span> Then the original unstandardized BRIGHT model can be fitted.</p>
+</div>
+<div class="section level3">
+<h3 id="ld-construction">LD construction<a class="anchor" aria-label="anchor" href="#ld-construction"></a>
+</h3>
+<p>Minority reference LD is required in the model fitting of BRIGHT.S with either continuous or binary outcomes. However, the full LD matrix imposes computation and estimation issues due to its <span class="math inline">\(p\times p\)</span> scale. In the package we implement the LD based on the block structure information from . We provide default pre-calculated block-structured LDs for different ancestry based on the preprocessed 1000 Genomes Project cohorts . The preprocessing of 1000 Genomes Project cohorts includes subsetting HapMap3 SNPs  and filtering SNPs, which have minor allele frequency (MAF) larger than 0.05 and missing rate below 0.01. As a result, 471,965 SNPs remained after preprocessing. We provide both standardized/unstandardized and hg19/hg38 versions of LD reference from 1000 Genomes Projects cohorts. In addition, both standardized and unstandardized LD can be automatically constructed by utilizing user-specified genotype data in Plink binary format (.bed, .bim and .fam) . We note for user-specified LD construction, it is user’s responsibility to preprocess the genotype data and provide the build that matches the summary statistics.</p>
+</div>
 </div>
   </div>
 

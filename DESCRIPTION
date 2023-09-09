@@ -8,13 +8,15 @@ Date: 2022-11-23
 Author: Qinmengge Li, Matthew Patrick, Jian Kang, Alex Tsoi, Kevin He
 Maintainer: Qinmengge Li <liqinmg@umich.edu>
 Description: `BRIGHT` is a group of methods for using individual-level data, published genotype-trait summary statistics (GWAS), or combined data types from different ethnic populations to improve the recalibration, discrimination, and prediction accuracy on the target minority cohort. We implemented group LASSO, Elastic Net, MCP and SCAD penalties for marker fine mapping.
+Depends: R (>= 3.3.0)
 License: GPL (>= 2)
 Imports: Rcpp (>= 1.0.8),
          Matrix,
          mvtnorm,
-         BEDMatrix,
+         BEDMatrix (>= 2.0.3),
          grpreg,
          pROC,
          ggplot2
 LinkingTo: Rcpp, RcppEigen
 RoxygenNote: 7.1.1
+LazyData: true

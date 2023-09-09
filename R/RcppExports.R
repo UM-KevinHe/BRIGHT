@@ -10,9 +10,9 @@
 #'@return A scalar of the computed second norm of x.
 #'@examples
 #' x <- t(t(rnorm(100)))
-#' norm(x,length(x))
-norm <- function(x, p) {
-    .Call(`_BRIGHT_norm`, x, p)
+#' Norm(x,length(x))
+Norm <- function(x, p) {
+    .Call(`_BRIGHT_Norm`, x, p)
 }
 
 #' Soft-thresholding

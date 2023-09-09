@@ -11,15 +11,15 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
-// norm
-double norm(Eigen::MatrixXd x, int p);
-RcppExport SEXP _BRIGHT_norm(SEXP xSEXP, SEXP pSEXP) {
+// Norm
+double Norm(Eigen::MatrixXd x, int p);
+RcppExport SEXP _BRIGHT_Norm(SEXP xSEXP, SEXP pSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< Eigen::MatrixXd >::type x(xSEXP);
     Rcpp::traits::input_parameter< int >::type p(pSEXP);
-    rcpp_result_gen = Rcpp::wrap(norm(x, p));
+    rcpp_result_gen = Rcpp::wrap(Norm(x, p));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -168,10 +168,12 @@ BEGIN_RCPP
 END_RCPP
 }
 
+RcppExport SEXP maxgrad(SEXP, SEXP, SEXP, SEXP);
+RcppExport SEXP maxprod(SEXP, SEXP, SEXP, SEXP);
 RcppExport SEXP standardize(SEXP);
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_BRIGHT_norm", (DL_FUNC) &_BRIGHT_norm, 2},
+    {"_BRIGHT_Norm", (DL_FUNC) &_BRIGHT_Norm, 2},
     {"_BRIGHT_S", (DL_FUNC) &_BRIGHT_S, 2},
     {"_BRIGHT_Ff", (DL_FUNC) &_BRIGHT_Ff, 4},
     {"_BRIGHT_Fs", (DL_FUNC) &_BRIGHT_Fs, 4},
@@ -180,6 +182,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_BRIGHT_gd_gaussian", (DL_FUNC) &_BRIGHT_gd_gaussian, 16},
     {"_BRIGHT_MaxLambda", (DL_FUNC) &_BRIGHT_MaxLambda, 12},
     {"_BRIGHT_gdfit_gaussian", (DL_FUNC) &_BRIGHT_gdfit_gaussian, 18},
+    {"maxgrad",     (DL_FUNC) &maxgrad,     4},
+    {"maxprod",     (DL_FUNC) &maxprod,     4},
     {"standardize", (DL_FUNC) &standardize, 1},
     {NULL, NULL, 0}
 };

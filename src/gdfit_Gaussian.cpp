@@ -13,9 +13,9 @@ using namespace Rcpp;
 //'@return A scalar of the computed second norm of x.
 //'@examples
 //' x <- t(t(rnorm(100)))
-//' norm(x,length(x))
+//' Norm(x,length(x))
 // [[Rcpp::export]]
-double norm(Eigen::MatrixXd x, int p) {
+double Norm(Eigen::MatrixXd x, int p) {
   double x_norm = 0;
   for (int j=0; j<p; j++) x_norm = x_norm + x(j,0)*x(j,0);
   x_norm = sqrt(x_norm);
@@ -224,8 +224,8 @@ int Sigma_LD(Eigen::MatrixXd& X, Eigen::SparseMatrix<double>& Sig, Eigen::Matrix
   for(int k=0;k<lblk-1;k++){
     Eigen::MatrixXd mat=(X.block(0,blk(k,0),N,blk(k+1,0)-blk(k,0)).transpose()*X.block(0,blk(k,0),N,blk(k+1,0)-blk(k,0)))/N;
       for(int i=blk(k,0);i<blk(k+1,0);i++){
-      Rcout << i;
-      Rcout << "\n";
+      //Rcout << i;
+      //Rcout << "\n";
       TL.push_back(T(i,i,1.0));
       for(int j=i+1;j<blk(k+1,0);j++){
         double tmp=S(mat(i-blk(k,0),j-blk(k,0)),tau);
@@ -321,7 +321,7 @@ void gd_gaussian(Eigen::MatrixXd & a, Eigen::MatrixXd & b, Eigen::SparseMatrix<d
 
   z = (XtY.block(K1(g,0),0,Kg,1)+eta*Xtbt.block(K1(g,0),0,Kg,1))/(1+eta)-(Sig.middleCols(K1(g,0),Kg).transpose()*b.block(0,l,P,1))+b.block(K1(g,0),l,Kg,1);
 
-  double z_norm = norm(z, Kg);
+  double z_norm = Norm(z, Kg);
   
   if (NumericVector::is_na(z_norm)){
       Rcout << K1(g,0);
@@ -445,7 +445,7 @@ List MaxLambda(Eigen::MatrixXd XtY, Eigen::MatrixXd tilde_beta, Eigen::MatrixXd 
     for (int j=K1(g,0); j<K1(g+1,0); j++) {
       z(j-K1(g,0),0) = (XtY(j,0)+eta*Xtbt(j,0))/(1+eta)-(Sig.col(j).transpose()*b)(0,0)+b(j,0);
     }
-    Lamb(g,0) = norm(z, Kg)*(1+eta)/alpha/m(g,0);
+    Lamb(g,0) = Norm(z, Kg)*(1+eta)/alpha/m(g,0);
   }
   List result;
   //result["Sig"]=Sig;
@@ -527,8 +527,8 @@ List gdfit_gaussian(Eigen::MatrixXd XtY, Eigen::MatrixXd tilde_beta, Eigen::Matr
   }
   
   for (int l=lstart; l<L; l++) {
-    Rcout << l;
-    Rcout << "l\n";
+    //Rcout << l;
+    //Rcout << "l\n";
     R_CheckUserInterrupt();
     if (l != 0) {
       a=b.block(0,l-1,P,1);
