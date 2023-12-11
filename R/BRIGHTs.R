@@ -1,6 +1,6 @@
 #' BRIGHT estimation procedure for summary level data
 #'
-#' Fit BRIGHT estimation procedure for summary level data with grouped penalties over a grid of values of the regularization parameter lambda.
+#' Fit BRIGHT estimation procedure for summary level data (BRIGHTs) with grouped penalties (LASSO, elastic net, MCP, SCAD) over a grid of values of the regularization parameter lambda and the prior data weight eta.
 #'
 #' For more information about the penalties and their properties, please
 #' consult the references below, many of which contain discussion, case
@@ -11,8 +11,8 @@
 #' parameter of the MCP penalty is denoted 'gamma'.  Note, however, that in
 #' Breheny and Huang (2009), \code{gamma} is denoted 'a'.
 #' 
-#' The objective function for \code{BRIGHTi} optimization is defined to be
-#' \deqn{Q(\beta)=r\beta+\beta\Sigma\beta/2+(\beta'-\beta)\Sigma(\beta'-\beta)/2n+p(\beta),}  where the first two terms on the right hand side (RHS) are
+#' The objective function for \code{BRIGHTs} optimization is defined to be
+#' \deqn{Q(\beta)=r\beta+\beta\Sigma\beta/2+(\beta'-\beta)\Sigma(\beta'-\beta)/2+p(\beta),}  where the first two terms on the right hand side (RHS) are
 #' a approximation of the OLS loss; the second term on the RHS is the Bregman-divergence; the third term on the RHS is the penalty.
 #' 
 #' The algorithms employed by \code{BRIGHT} are stable and generally converge
@@ -41,19 +41,16 @@
 #' 
 #' \code{BRIGHT} requires groups to be non-overlapping.
 #'
-#'@param XtY a numeric verticle vector of the marginal correlation between genotype and outcome, can be recovered from GWAS summary statistics by function p2cor().
-#'@param Beta_prior a numeric verticle vector of the prior information; in the case where prior information is a subspace of XtY, set the complement set to be zero.
-#'@param X a numeric matrix of reference genotypes, default is from 1000 genome project.
-#'@param lambda a numeric verticle vector of the LASSO penalty weights; it must be sorted with a decreasing order.
-#'@param K1 a numeric verticle vector of the grouping of SNPs for group penalties; SNPs within K1[i,i+1] are grouped together.
+#'@param data a list of preprocessed data from \code{PreprocessS()}. For details please refer to the \code{PreprocessS()} section.
 #'@param m a numeric verticle vector of the multiplicative factor to adjust for the number of SNPs in each group, the default is the square root of number of elements in each group.
-#'@param blk a numeric verticle vector indicating the grouping of SNPs in each block, can be generated through LD() function.
-#'@param K0 a integer scalar for the number of SNPs/covariates that is not penalized.
-#'@param penalty a integer scalar for chosing the penalties; 1 corresponds to LASSO, 2 corresponds to MCP, 3 corresponds to SCAD.
-#' @param tau tuning parameter for the group exponential lasso; defaults to
-#' 1/3.
+#'@param group a vector describing the grouping of the coefficients. For greatest efficiency and least ambiguity (see details), it is best if group is a factor or vector of consecutive integers, although unordered groups and character vectors are also allowed. If there are coefficients to be included in the model without being penalized, assign them to group 0 (or "0").
+#'@param penalty a integer scalar for chosing the penalties; 1 corresponds to elastic net (with alpha=0 to be LASSO); 2 corresponds to MCP; 3 corresponds to SCAD.
+#'@param tau tuning parameter for the group exponential lasso; defaults to 1/3.
 #'@param eta a numeric scalar of the weights for incorporating prior information.
-#' @param alpha \code{grpreg} allows for both a group penalty and an L2 (ridge)
+#'@param lambda a numeric verticle vector of the LASSO penalty weights; it must be sorted with a decreasing order.
+#'@param nlambda a integer scaler of the number of lambdas to be generated automatically (must be provided when lambda is not specified).
+#'@param lambda.min a numeric scaler of the minimum lambda to for automatic generation (must be provided when lambda is not specified). 
+#' @param alpha \code{BRIGHT} allows for both a group penalty and an L2 (ridge)
 #' penalty; \code{alpha} controls the proportional weight of the regularization
 #' parameters of these two penalties.  The group penalties' regularization
 #' parameter is \code{lambda*alpha}, while the regularization parameter of the
@@ -76,8 +73,12 @@
 #'@return iter, the number of total iterations needed for the model to converge with each lambda; 
 #'@return df total degree of freedom of the converged model with each lambda;
 #'@return dev, the approximated deviance associated with each lambda.
-BRIGHTs=function(data,m=NA,group=NA,penalty=1,tau=0,eta=c(0,exp(seq(log(0.1),log(10),length.out=20))),lambda=NA,nlambda=100,lambda.min=0.001,alpha=1, gamma=0,eps=0.0000001,max_iter=1000000, dfmax=5000, gmax=5000, user=T){
+BRIGHTs = function(data, m = NA, group = NA, penalty = 1, tau = 1/3, eta = c(0,exp(seq(log(0.1),log(10), length.out = 20))),
+                   lambda = NA, nlambda = 100, lambda.min = 0.001, alpha = 1, gamma = 0, eps = 0.0000001, max_iter = 1000000,
+                   dfmax = 5000 , gmax = 5000, user = T){
+  # Load Berisa LD
   data("Berisa.LD")
+  #Check data quality
   if(is.null(data$Tss$Corr)){
     stop("target summary statistics (Tss) not found or not in the format of Inner product, please generate dat through PreprocessS")
   }
@@ -88,6 +89,7 @@ BRIGHTs=function(data,m=NA,group=NA,penalty=1,tau=0,eta=c(0,exp(seq(log(0.1),log
     stop("target LDblocks not found with no default")
   }
   
+  #Initialize parameters when not given
   p=nrow(data$Tss)
   
   if(is.na(group)[1]){
@@ -182,9 +184,11 @@ BRIGHTs=function(data,m=NA,group=NA,penalty=1,tau=0,eta=c(0,exp(seq(log(0.1),log
   
   if(length(eta_vec)==1){
     writeLines(strwrap(paste("Best lambda based on AIC is",round(Best_lambda_AIC,digits = 3))))
+    writeLines(strwrap(paste("Best coefficient number based on AIC is",sum(Beta_BRIGHT_AIC != 0))))
   }else{
     writeLines(strwrap(paste("Best eta based on AIC is",round(Best_eta_AIC,digits = 3))))
     writeLines(strwrap(paste("Best lambda based on AIC is",round(Best_lambda_AIC,digits = 3))))
+    writeLines(strwrap(paste("Best coefficient number based on AIC is",sum(Beta_BRIGHT_AIC != 0))))
   }
   
   out[["AIC"]]=AIC
