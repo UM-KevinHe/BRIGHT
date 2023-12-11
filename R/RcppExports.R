@@ -150,3 +150,58 @@ gdfit_gaussian <- function(XtY, tilde_beta, X, lambda, K1, m, blk, K0, penalty, 
     .Call(`_BRIGHT_gdfit_gaussian`, XtY, tilde_beta, X, lambda, K1, m, blk, K0, penalty, tau, eta, alpha, gamma, eps, max_iter, dfmax, gmax, user)
 }
 
+gd_gaussiani <- function(a, b, K1, X, Yt, df, l, P, g, penalty, lam1, lam2, gamma, eta, maxChange) {
+    invisible(.Call(`_BRIGHT_gd_gaussiani`, a, b, K1, X, Yt, df, l, P, g, penalty, lam1, lam2, gamma, eta, maxChange))
+}
+
+#' Maximum Lambda selection
+#'
+#' Calculate the maximum lambda, which corresponding to penalizing all coefficients to be zero
+#'
+#'@param XtY a numeric verticle vector of the marginal correlation between genotype and outcome, can be recovered from GWAS summary statistics by function p2cor().
+#'@param tilde_beta a numeric verticle vector of the prior information; in the case where prior information is a subspace of XtY, set the complement set to be zero.
+#'@param X a numeric matrix of reference genotypes, default is from 1000 genome project.
+#'@param lambda a numeric verticle vector of the LASSO penalty weights; it must be sorted with a decreasing order.
+#'@param K1 a numeric verticle vector of the grouping of SNPs for group penalties; SNPs within K1[i,i+1] are grouped together.
+#'@param m a numeric verticle vector of the multiplicative factor to adjust for the number of SNPs in each group, the default is the square root of number of elements in each group.
+#'@param blk a numeric verticle vector indicating the grouping of SNPs in each block, can be generated through LD() function.
+#'@param K0 a integer scalar for the number of SNPs/covariates that is not penalized.
+#'@param tau a numeric scalar represents the element-wise soft-thresholding parameter for generating the LD.
+#'@param eta a numeric scalar of the weights for incorporating prior information.
+#'@param alpha a numeric scalar of the ridge penalty weights; alpha=1 corresponds to no ridge penalty.
+#'@param eps a numeric scalar for the convergence criteria.
+#'@param max_iter an integer scalar for the maximum iterations before the algorithm stops.
+MaxLambdai <- function(Y, tilde_beta, X, K1, m, K0, tau, eta, alpha, eps, max_iter) {
+    .Call(`_BRIGHT_MaxLambdai`, Y, tilde_beta, X, K1, m, K0, tau, eta, alpha, eps, max_iter)
+}
+
+#' BRIGHT estimation procedure
+#'
+#' Gradient-descent algorithm for optimizing the BRIGHT estimation procedure
+#'
+#'@param XtY a numeric verticle vector of the marginal correlation between genotype and outcome, can be recovered from GWAS summary statistics by function p2cor().
+#'@param tilde_beta a numeric verticle vector of the prior information; in the case where prior information is a subspace of XtY, set the complement set to be zero.
+#'@param X a numeric matrix of reference genotypes, default is from 1000 genome project.
+#'@param lambda a numeric verticle vector of the LASSO penalty weights; it must be sorted with a decreasing order.
+#'@param K1 a numeric verticle vector of the grouping of SNPs for group penalties; SNPs within K1[i,i+1] are grouped together.
+#'@param m a numeric verticle vector of the multiplicative factor to adjust for the number of SNPs in each group, the default is the square root of number of elements in each group.
+#'@param blk a numeric verticle vector indicating the grouping of SNPs in each block, can be generated through LD() function.
+#'@param K0 a integer scalar for the number of SNPs/covariates that is not penalized.
+#'@param penalty a integer scalar for chosing the penalties; 1 corresponds to LASSO, 2 corresponds to MCP, 3 corresponds to SCAD.
+#'@param tau a numeric scalar represents the element-wise soft-thresholding parameter for generating the LD.
+#'@param eta a numeric scalar of the weights for incorporating prior information.
+#'@param alpha a numeric scalar of the ridge penalty weights; alpha=1 corresponds to no ridge penalty.
+#'@param gamma a numeric scalar of the third parameter in firm and SCAD thresholding functions.
+#'@param eps a numeric scalar for the convergence criteria.
+#'@param max_iter an integer scalar for the maximum iterations before the algorithm stops.
+#'@param dfmax an integer scalar for the maximum number of SNPs been selected before the algorithm stops.
+#'@param gmax an integer scalar for the maximum number of groups been selected before the algorithm stops.
+#'@param user a logical scalar for indicating whether lambda is user specified; if user=TRUE, then the iteration will start from the largest lambda, otherwise the iteration will start from the second largest lambda.
+#'@return Write a list of results; beta, the coefficient estimate from BRIGHT; 
+#'@return iter, the number of total iterations needed for the model to converge with each lambda; 
+#'@return df total degree of freedom of the converged model with each lambda;
+#'@return dev, the approximated deviance associated with each lambda.
+gdfit_gaussiani <- function(Y, X, tilde_beta, lambda, K1, m, K0, penalty, tau, eta, alpha, gamma, eps, max_iter, dfmax, gmax, user) {
+    .Call(`_BRIGHT_gdfit_gaussiani`, Y, X, tilde_beta, lambda, K1, m, K0, penalty, tau, eta, alpha, gamma, eps, max_iter, dfmax, gmax, user)
+}
+

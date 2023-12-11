@@ -637,3 +637,355 @@ List gdfit_gaussian(Eigen::MatrixXd XtY, Eigen::MatrixXd tilde_beta, Eigen::Matr
   result["dev2"]=dev2;
   return(result);
 }
+
+
+//Individual level fitting
+
+// [[Rcpp::export]]
+void gd_gaussiani(Eigen::MatrixXd & a, Eigen::MatrixXd & b, Eigen::MatrixXd & K1,
+                  Eigen::MatrixXd & X, Eigen::MatrixXd & Yt, Eigen::MatrixXd & df,
+                  int & l, int & P, int & g, int & penalty, double & lam1, double & lam2,
+                  double & gamma, double & eta, double & maxChange) {
+  
+  int N = X.rows();
+  int Kg = K1(g+1,0) - K1(g,0);
+  // Calculate z
+  Eigen::MatrixXd z(Kg,1);
+  z.setZero(Kg,1);
+  //for (int j=K1(g,0); j<K1(g+1,0); j++) {
+  //  z(j-K1(g,0),0) = (XtY(j,0)+eta*Xtbt(j,0))/(1+eta)-(Sig.col(j).transpose()*b.block(0,l,P,1))(0,0)+b(j,l);
+  
+  /*
+   double tmp=(Sig.col(K1(g,0)).transpose()*b.block(0,l,P,1))(0,0)+b(K1(g,0),l);
+   if (NumericVector::is_na(tmp)){
+   Rcout << j;
+   Rcout << "j\n";
+   Rcout << "first part\n";
+   Rcout << Sig.col(j).transpose();
+   Rcout << "\nfirst part end\n";
+   Rcout << "Second part\n";
+   Rcout << b.block(0,l,P,1).transpose();
+   Rcout << "\nSecond part end\n";
+   Rcout << "Third part\n";
+   Rcout << b(j,l);
+   Rcout << "\nThird part end\n";
+   }
+   */
+  
+  //}
+  z = (X.block(0,K1(g,0),N,Kg).transpose()*(Yt-X*b.block(0,l,P,1))+b.block(K1(g,0),l,Kg,1))/N;
+  double z_norm = Norm(z, Kg);
+  
+  if (NumericVector::is_na(z_norm)){
+    Rcout << K1(g,0);
+    Rcout << "K1(g,0)\n";
+  }
+  
+  
+  // Update b
+  double len;
+  if (penalty==1) len = S(z_norm, lam1) / (1+lam2);
+  if (penalty==2) len = Ff(z_norm, lam1, lam2, gamma);
+  if (penalty==3) len = Fs(z_norm, lam1, lam2, gamma);
+  if (len != 0 || a(K1(g,0),0) != 0) {
+    // If necessary, update beta and r
+    for (int j=K1(g,0); j<K1(g+1,0); j++) {
+      b(j,l) = len * z(j-K1(g,0),0) / z_norm;
+      double shift = b(j,l)-a(j,0);
+      /*Rcout << "shift\n";
+       Rcout << shift;
+       Rcout << "shift_end\n";
+       if(fabs(shift)>10){
+       Rcout << "len\n";
+       Rcout << len;
+       Rcout << "len_end\n";
+       Rcout << "z\n";
+       Rcout << z(j-K1(g,0),0);
+       Rcout << "z_end\n";
+       Rcout << "z_norm\n";
+       Rcout << z_norm;
+       Rcout << "z_norm_end\n";
+       }*/
+      
+      if (fabs(shift) > maxChange) maxChange = fabs(shift);
+    }
+  }
+  // Update df
+  if (len > 0) df(l,0) += Kg * len / z_norm;
+  
+}
+
+/*
+ // [[Rcpp::export]]
+ Eigen::SparseMatrix<double> Sigma_test(Eigen::MatrixXd& X, double tau, int P, int N){
+ Eigen::SparseMatrix<double> Sig(P,P);
+ Sig.reserve(Eigen::VectorXi::Constant(P,1000));
+ Sigma(X, Sig, tau, P, N);
+ return(Sig.col(1));
+ }
+ */
+
+//' Maximum Lambda selection
+//'
+//' Calculate the maximum lambda, which corresponding to penalizing all coefficients to be zero
+//'
+//'@param XtY a numeric verticle vector of the marginal correlation between genotype and outcome, can be recovered from GWAS summary statistics by function p2cor().
+//'@param tilde_beta a numeric verticle vector of the prior information; in the case where prior information is a subspace of XtY, set the complement set to be zero.
+//'@param X a numeric matrix of reference genotypes, default is from 1000 genome project.
+//'@param lambda a numeric verticle vector of the LASSO penalty weights; it must be sorted with a decreasing order.
+//'@param K1 a numeric verticle vector of the grouping of SNPs for group penalties; SNPs within K1[i,i+1] are grouped together.
+//'@param m a numeric verticle vector of the multiplicative factor to adjust for the number of SNPs in each group, the default is the square root of number of elements in each group.
+//'@param blk a numeric verticle vector indicating the grouping of SNPs in each block, can be generated through LD() function.
+//'@param K0 a integer scalar for the number of SNPs/covariates that is not penalized.
+//'@param tau a numeric scalar represents the element-wise soft-thresholding parameter for generating the LD.
+//'@param eta a numeric scalar of the weights for incorporating prior information.
+//'@param alpha a numeric scalar of the ridge penalty weights; alpha=1 corresponds to no ridge penalty.
+//'@param eps a numeric scalar for the convergence criteria.
+//'@param max_iter an integer scalar for the maximum iterations before the algorithm stops.
+// [[Rcpp::export]]
+List MaxLambdai(Eigen::MatrixXd Y, Eigen::MatrixXd tilde_beta, Eigen::MatrixXd &X,
+                Eigen::MatrixXd K1, Eigen::MatrixXd m,int K0, double tau,
+                double eta, double alpha, double eps,int max_iter){
+  // Lengths/dimensions
+  int G = K1.rows() - 1;
+  int P = X.cols();
+  int N = X.rows();
+  
+  //Outcome
+  Eigen::MatrixXd Lamb(G,1);
+  Lamb.setZero(G,1);
+  
+  // Intermediate quantities
+  Eigen::MatrixXd Xtbt(N,1);
+  Xtbt.setZero(N,1);
+  Eigen::MatrixXd Yt(N,1);
+  Yt.setZero(N,1);
+  Eigen::MatrixXd a(P,1);
+  a.setZero(P,1);
+  Eigen::MatrixXd b(P,1);
+  b.setZero(P,1);
+  int tot_iter = 0;
+  double shift=0, maxChange=0, len=0;
+  
+  // Initialization
+  Xtbt=X*tilde_beta;
+  Yt=(Y+eta*Xtbt)/(1+eta);
+  
+  while (tot_iter < max_iter) {
+    
+    tot_iter++;
+    maxChange=0;
+    
+    // Update unpenalized covariates
+    for (int j=0; j<K0; j++) {
+      shift = (X.block(0,j,N,1).transpose()*(Yt-(X*b.block(0,0,P,1))))(0,0)/N;
+      if (fabs(shift) > maxChange) maxChange = fabs(shift);
+      b(j,0) = shift + a(j,0);
+    }
+    
+    // Check convergence
+    a=b;
+    if (maxChange <= eps) break;
+  }
+  
+  for (int g=0; g<G; g++){
+    
+    int Kg = K1(g+1,0) - K1(g,0);
+    // Calculate z
+    Eigen::MatrixXd z(Kg,1);
+    z.setZero(Kg,1);
+    
+    z = (X.block(0,K1(g,0),N,Kg).transpose()*(Yt-X*b.block(0,0,P,1))+b.block(K1(g,0),0,Kg,1))/N;
+    
+    Lamb(g,0) = Norm(z, Kg)*(1+eta)/alpha/m(g,0);
+  }
+  List result;
+  //result["Sig"]=Sig;
+  result["lambda.max"]=Lamb.maxCoeff();
+  return(result);
+}
+
+//' BRIGHT estimation procedure
+//'
+//' Gradient-descent algorithm for optimizing the BRIGHT estimation procedure
+//'
+//'@param XtY a numeric verticle vector of the marginal correlation between genotype and outcome, can be recovered from GWAS summary statistics by function p2cor().
+//'@param tilde_beta a numeric verticle vector of the prior information; in the case where prior information is a subspace of XtY, set the complement set to be zero.
+//'@param X a numeric matrix of reference genotypes, default is from 1000 genome project.
+//'@param lambda a numeric verticle vector of the LASSO penalty weights; it must be sorted with a decreasing order.
+//'@param K1 a numeric verticle vector of the grouping of SNPs for group penalties; SNPs within K1[i,i+1] are grouped together.
+//'@param m a numeric verticle vector of the multiplicative factor to adjust for the number of SNPs in each group, the default is the square root of number of elements in each group.
+//'@param blk a numeric verticle vector indicating the grouping of SNPs in each block, can be generated through LD() function.
+//'@param K0 a integer scalar for the number of SNPs/covariates that is not penalized.
+//'@param penalty a integer scalar for chosing the penalties; 1 corresponds to LASSO, 2 corresponds to MCP, 3 corresponds to SCAD.
+//'@param tau a numeric scalar represents the element-wise soft-thresholding parameter for generating the LD.
+//'@param eta a numeric scalar of the weights for incorporating prior information.
+//'@param alpha a numeric scalar of the ridge penalty weights; alpha=1 corresponds to no ridge penalty.
+//'@param gamma a numeric scalar of the third parameter in firm and SCAD thresholding functions.
+//'@param eps a numeric scalar for the convergence criteria.
+//'@param max_iter an integer scalar for the maximum iterations before the algorithm stops.
+//'@param dfmax an integer scalar for the maximum number of SNPs been selected before the algorithm stops.
+//'@param gmax an integer scalar for the maximum number of groups been selected before the algorithm stops.
+//'@param user a logical scalar for indicating whether lambda is user specified; if user=TRUE, then the iteration will start from the largest lambda, otherwise the iteration will start from the second largest lambda.
+//'@return Write a list of results; beta, the coefficient estimate from BRIGHT; 
+//'@return iter, the number of total iterations needed for the model to converge with each lambda; 
+//'@return df total degree of freedom of the converged model with each lambda;
+//'@return dev, the approximated deviance associated with each lambda.
+// [[Rcpp::export]]
+List gdfit_gaussiani(Eigen::MatrixXd Y, Eigen::MatrixXd &X, Eigen::MatrixXd tilde_beta, Eigen::MatrixXd lambda, 
+                     Eigen::MatrixXd K1, Eigen::MatrixXd m, int K0, int penalty, double tau,
+                     double eta, double alpha, double gamma, double eps,int max_iter, int dfmax, int gmax, bool user) {
+  
+  // Lengths/dimensions
+  int L = lambda.rows();
+  int G = K1.rows() - 1;
+  int P = X.cols();
+  int N = X.rows();
+  
+  //Outcome
+  List result;
+  Eigen::MatrixXd b(P,L);
+  b.setZero(P,L);
+  Eigen::MatrixXd iter(L,1);
+  iter.setZero(L,1);
+  Eigen::MatrixXd df(L,1);
+  df.setZero(L,1);
+  Eigen::MatrixXd dev(L,1);
+  dev.setZero(L,1);
+  Eigen::MatrixXd dev2(L,1);
+  dev2.setZero(L,1);
+  
+  // Intermediate quantities
+  Eigen::MatrixXd Xtbt(N,1);
+  Xtbt.setZero(N,1);
+  Eigen::MatrixXd Yt(N,1);
+  Yt.setZero(N,1);
+  Eigen::MatrixXd a(P,1);
+  a.setZero(P,1);
+  Eigen::MatrixXd e(G,1);
+  e.setZero(G,1);
+  int lstart=0, ng=0, nv=0, violations=0, tot_iter = 0;
+  double shift=0, l1=0, l2=0, maxChange=0, maxChange2=0;
+  
+  // Initialization
+  Xtbt=X*tilde_beta;
+  Yt=(Y+eta*Xtbt)/(1+eta);
+  
+  if (user) {
+    lstart = 0;
+  } else {
+    lstart = 1;
+  }
+  
+  for (int l=lstart; l<L; l++) {
+    Rcout << l;
+    Rcout << "l\n";
+    R_CheckUserInterrupt();
+    if (l != 0) {
+      a=b.block(0,l-1,P,1);
+      
+      // Check dfmax, gmax
+      // predecide how many groups or parameters we want to select
+      ng = 0;
+      nv = 0;
+      for (int g=0; g<G; g++) {
+        if (a(K1(g,0),0) != 0) {
+          ng++;
+          nv = nv + (K1(g+1,0)-K1(g,0));
+        }
+      }
+      if (ng > gmax || nv > dfmax || tot_iter == max_iter) {
+        for (int ll=l; ll<L; ll++) iter(ll,0) = NA_INTEGER;
+        Rcout<<"\nbreak through gmax and dfmax\n";
+        Rcout<<ng;
+        Rcout<<"\n";
+        Rcout<<nv;
+        Rcout<<"\n";
+        Rcout<<gmax;
+        Rcout<<"\n";
+        Rcout<<dfmax;
+        Rcout<<"\n";
+        Rcout<<tot_iter;
+        Rcout<<"\n";
+        Rcout<<max_iter;
+        break;
+      }
+    }
+    
+    while (tot_iter < max_iter) {
+      while (tot_iter < max_iter) {
+        iter(l,0)++;
+        tot_iter++;
+        df(l,0)=0;
+        maxChange=0;
+        
+        // Update unpenalized covariates
+        for (int j=0; j<K0; j++) {
+          shift = (X.block(0,j,N,1).transpose()*(Yt-(X*b.block(0,l,P,1))))(0,0)/N;
+          if (fabs(shift) > maxChange) maxChange = fabs(shift);
+          b(j,l) = shift + a(j,0);
+          df(l,0) += 1;
+        }
+        
+        // Update penalized groups
+        for (int g=0; g<G; g++) {
+          if(e(g,0)==1){
+            l1 = lambda(l,0) * m(g,0) * alpha/(1+eta);
+            l2 = lambda(l,0) * m(g,0) * (1-alpha)/(1+eta);
+            gd_gaussiani(a, b, K1, X, Yt, df, l, P, g, penalty, l1, l2, gamma, eta, maxChange);
+          }
+        }
+        
+        // Check convergence
+        a=b.block(0,l,P,1);
+        if(maxChange==maxChange2) break;
+        maxChange2=maxChange;
+        //dev(l,0)=(1+eta)/2*(a.transpose()*Sig*a)(0,0)-(a.transpose()*(XtY+eta*Xtbt))(0,0);
+        if (maxChange <= eps) break;
+        
+      }
+      
+      // Scan for violations
+      violations = 0;
+      
+      for (int g=0; g<G; g++){
+        if (e(g,0)==0) {
+          l1 = lambda(l,0) * m(g,0) * alpha/(1+eta);
+          l2 = lambda(l,0) * m(g,0) * (1-alpha)/(1+eta);
+          gd_gaussiani(a, b, K1, X, Yt, df, l, P, g, penalty, l1, l2, gamma, eta, maxChange);
+          
+          if (b(K1(g,0),l) != 0) {
+            //Rcout << g;
+            //Rcout << "added to active set\n";
+            e(g,0) = 1;
+            violations++;
+          }
+        }
+      }
+      
+      if (violations==0){
+        a=b.block(0,l,P,1);
+        dev(l,0)=((Yt-X*a).transpose()*(Yt-X*a))(0,0)/N;
+        dev2(l,0)=((Y-X*a).transpose()*(Y-X*a))(0,0)/N;
+        //Rcout << (1+eta)/2*(a.transpose()*Sig*a)(0,0);
+        //Rcout << "\n";
+        //Rcout<<"active set done\n";
+        //Rcout<<dev(l,0);
+        //Rcout<<"Done\n";
+        break;
+      }
+      a=b.block(0,l,P,1);
+      //dev(l,0)=(1+eta)/2*(a.transpose()*Sig*a)(0,0)-(a.transpose()*(XtY+eta*Xtbt))(0,0);
+      //Rcout<<"active set done\n";
+    }
+    
+  }
+  result["Beta"]=b;
+  result["iter"]=iter;
+  result["df"]=df;
+  //result["Sig"]=Sig;
+  result["dev"]=dev;
+  result["dev2"]=dev2;
+  return(result);
+}
+

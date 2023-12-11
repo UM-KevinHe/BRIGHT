@@ -126,12 +126,103 @@
 #' \item Breheny P. (2015) The group exponential lasso for bi-level variable
 #' selection. *Biometrics*, **71**: 731-740. \doi{10.1111/biom.12300}
 #' }
-BRIGHTi.cv=function(X_plink,Y,group=1:ncol(X),Beta_prior,penalty="grLasso",family="gaussian",eta,lambda,lambda.min,tau=1/3,alpha=1, gamma=ifelse(penalty == "grSCAD", 4, 3),eps=0.0000001,max_iter=1000000, dfmax=5000, gmax=5000){
-  KG=read.table(paste(X_plink,".bim",sep=""))
-  gene_bed = BEDMatrix(paste(X_plink,".bed",sep=""))
+
+BRIGHTi.cv=function(data,seed=1,fold=5,m=NA,group=NA,Beta_prior,penalty=1,family="gaussian",eta=c(0,exp(seq(log(0.1),log(10),length.out=20))),lambda=NA,lambda.min=0.001,nlambda=100,tau=1/3,alpha=1, gamma=ifelse(penalty == 1, 4, 3),eps=0.01,max_iter=1000000, dfmax=5000, gmax=5000,user=T){
+  set.seed(seed)
+  KG=data$KG
+  gene_bed = BEDMatrix(data$geno_dir)
   gene_bed=as.matrix(gene_bed)
+  Y=data$Tpheno[,3]
   
-  rst_BRIGHTi=grpreg(X=gene_bed,y=Y,group=group,penalty = penalty,family = family,lambda = lambda,lambda.min = lambda.min,alpha=alpha,eps=eps,max.iter = max_iter,dfmax = dfmax,gmax = gmax,tau = tau,gamma = gamma)
+  TN=length(Y)
   
-  return(rst_BRIGHTi)
+  ord=sample(1:TN,TN,replace=F)
+  gene_bed=gene_bed[ord,]
+  Y=Y[ord]
+  
+  p=ncol(gene_bed)
+  
+  if(is.na(group)[1]){
+    group=1:p
+  }
+  if(is.na(sum(m))){
+    m=sqrt(table(group[group!=0]))
+  }
+  
+  if(is.null(data$Pss$Coef)){
+    warning("dat$Pss$Coef not found avoiding the usage of prior data")
+    Beta_prior=rep(0,p)
+    eta=0
+  }else{
+    Beta_prior=data$Pss$Coef
+  }
+  
+  #yy <- newY(Y, family)
+  yy <- (Y-mean(Y))/sd(Y)
+  XG <- newXG(gene_bed, group, m, 1, FALSE)
+  K <- as.integer(table(XG$g))
+  K0 <- as.integer(if (min(XG$g)==0) K[1] else 0)
+  K1 <- as.integer(if (min(XG$g)==0) cumsum(K) else c(0, cumsum(K)))
+  yy=t(t(yy))
+  if(is.na(lambda)){
+    #lambda <- exp(seq(from=log(max(as.vector(cov(yy,XG$X)))),to=log(lambda.min),length.out=nlambda))
+    Lmd=MaxLambdai(yy, tilde_beta=t(t(Beta_prior)), XG$X, t(t(K1)), m=t(t(rep(1,p))), K0, tau=tau, eta=0, alpha=alpha, eps=eps,max_iter=max_iter)
+    lambda.max=Lmd$lambda.max
+    lambda <- exp(seq(log(lambda.max), log(lambda.min*lambda.max), length=nlambda))  
+  }
+  
+  
+  if(eta[1]!=0){
+    eta_vec=c(0,eta)
+  }else{
+    eta_vec=eta
+  }
+  out=list()
+  AIC=c()
+  out[["lambda"]]=lambda
+  out[["eta_vec"]]=eta_vec
+  
+  folds <- cut(seq(1,TN),breaks=fold,labels=FALSE)
+  
+  for (cv in 1:fold) {
+    testIndexes <- which(folds==cv,arr.ind=TRUE)
+    X_test=XG$X[testIndexes,]
+    y_test=yy[testIndexes]
+    X_train=XG$X[-testIndexes,]
+    y_train=yy[-testIndexes]
+  }
+  
+  for(eta in eta_vec){
+    rst_BRIGHTi=gdfit_gaussiani(yy, XG$X, t(t(Beta_prior)), t(t(lambda)), t(t(K1)), m=t(t(m)), K0, penalty, tau,eta, alpha, gamma,eps,max_iter, dfmax, gmax, user)
+    AIC=cbind(AIC,2*(rst_BRIGHTi$dev2*nrow(XG$X)+colSums(as.matrix(rst_BRIGHTi$Beta)!=0)/(1+eta)))
+    out[[as.character(eta)]]=rst_BRIGHTi
+  }
+  dinom=dim(AIC)[1]
+  ind=which.min(AIC)
+  rw=ind%%dinom
+  cl=ind%/%dinom+1
+  if(rw==0){
+    rw=dinom
+    cl=cl-1
+  }
+  Best_eta_AIC=eta_vec[cl]
+  Best_lambda_AIC=out[["lambda"]][rw]
+  Beta_BRIGHT_AIC=out[[as.character(Best_eta_AIC)]]$Beta[,rw]
+  Beta_local_AIC=out[[as.character(0)]]$Beta[,which.min(AIC[,1])]
+  
+  if(length(eta_vec)==1){
+    writeLines(strwrap(paste("Best lambda based on AIC is",round(Best_lambda_AIC,digits = 3))))
+  }else{
+    writeLines(strwrap(paste("Best eta based on AIC is",round(Best_eta_AIC,digits = 3))))
+    writeLines(strwrap(paste("Best lambda based on AIC is",round(Best_lambda_AIC,digits = 3))))
+  }
+  
+  out[["AIC"]]=AIC
+  out[["Best_eta_AIC"]]=Best_eta_AIC
+  out[["Best_lambda_AIC"]]=Best_lambda_AIC
+  out[["Beta_BRIGHT_AIC"]]=Beta_BRIGHT_AIC
+  out[["Beta_local_AIC"]]=Beta_local_AIC
+  
+  return(out)
 }
+
