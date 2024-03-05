@@ -501,8 +501,6 @@ List gdfit_gaussian(Eigen::MatrixXd XtY, Eigen::MatrixXd tilde_beta, Eigen::Spar
   dev2.setZero(L,1);
  
   // Intermediate quantities
-  Eigen::SparseMatrix<double, 0> Sig(P,P);
-  Sig.reserve(Eigen::VectorXi::Constant(P,3000));
   Eigen::MatrixXd Xtbt(P,1);
   Xtbt.setZero(P,1);
   Eigen::MatrixXd a(P,1);
