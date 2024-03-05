@@ -213,9 +213,11 @@ int Sigma_LD(Eigen::MatrixXd& X, Eigen::SparseMatrix<double>& Sig, Eigen::Matrix
 //'@param N an integer scalar for the row dimension (sample size) of X.
 //'@return Write the calculated sparse LD matrix to the memory location provided in Sig.
 // [[Rcpp::export]]
-int Sigma_LD(Eigen::MatrixXd& X, Eigen::SparseMatrix<double>& Sig, Eigen::MatrixXi& blk, double tau, int P, int N){
+Eigen::SparseMatrix<double> Sigma_LD(Eigen::MatrixXd& X, Eigen::MatrixXi& blk, double tau, int P, int N){
   int lblk=blk.rows();
   
+  Eigen::SparseMatrix<double, 0> Sig(P,P);
+  Sig.reserve(Eigen::VectorXi::Constant(P,3000));
   
   typedef Eigen::Triplet<double> T;
   std::vector< T > TL;
@@ -237,7 +239,7 @@ int Sigma_LD(Eigen::MatrixXd& X, Eigen::SparseMatrix<double>& Sig, Eigen::Matrix
     }
   }
   Sig.setFromTriplets(TL.begin(), TL.end());
-  return(0);
+  return(Sig);
 }
 
 
@@ -390,21 +392,18 @@ Eigen::SparseMatrix<double> Sigma_test(Eigen::MatrixXd& X, double tau, int P, in
 //'@param eps a numeric scalar for the convergence criteria.
 //'@param max_iter an integer scalar for the maximum iterations before the algorithm stops.
 // [[Rcpp::export]]
-List MaxLambda(Eigen::MatrixXd XtY, Eigen::MatrixXd tilde_beta, Eigen::MatrixXd &X,
+List MaxLambda(Eigen::MatrixXd XtY, Eigen::MatrixXd tilde_beta, Eigen::SparseMatrix<double>& Sig,
                  Eigen::MatrixXd K1, Eigen::MatrixXd m, Eigen::MatrixXi& blk,int K0, double tau,
                  double eta, double alpha, double eps,int max_iter){
   // Lengths/dimensions
   int G = K1.rows() - 1;
-  int P = X.cols();
-  int N = X.rows();
+  int P = Sig.cols();
   
   //Outcome
   Eigen::MatrixXd Lamb(G,1);
   Lamb.setZero(G,1);
   
   // Intermediate quantities
-  Eigen::SparseMatrix<double, 0> Sig(P,P);
-  Sig.reserve(Eigen::VectorXi::Constant(P,3000));
   Eigen::MatrixXd Xtbt(P,1);
   Xtbt.setZero(P,1);
   Eigen::MatrixXd a(P,1);
@@ -415,7 +414,6 @@ List MaxLambda(Eigen::MatrixXd XtY, Eigen::MatrixXd tilde_beta, Eigen::MatrixXd 
   double shift=0, maxChange=0, len=0;
   
   // Initialization
-  Sigma_LD(X, Sig, blk, tau, P, N);
   Xtbt=Sig*tilde_beta;
   
   while (tot_iter < max_iter) {
@@ -480,15 +478,14 @@ List MaxLambda(Eigen::MatrixXd XtY, Eigen::MatrixXd tilde_beta, Eigen::MatrixXd 
 //'@return df total degree of freedom of the converged model with each lambda;
 //'@return dev, the approximated deviance associated with each lambda.
 // [[Rcpp::export]]
-List gdfit_gaussian(Eigen::MatrixXd XtY, Eigen::MatrixXd tilde_beta, Eigen::MatrixXd &X, Eigen::MatrixXd lambda, 
+List gdfit_gaussian(Eigen::MatrixXd XtY, Eigen::MatrixXd tilde_beta, Eigen::SparseMatrix<double>& Sig, Eigen::MatrixXd lambda, 
                     Eigen::MatrixXd K1, Eigen::MatrixXd m, Eigen::MatrixXi& blk, int K0, int penalty, double tau,
                     double eta, double alpha, double gamma, double eps,int max_iter, int dfmax, int gmax, bool user) {
   
   // Lengths/dimensions
   int L = lambda.rows();
   int G = K1.rows() - 1;
-  int P = X.cols();
-  int N = X.rows();
+  int P = Sig.cols();
   
   //Outcome
   List result;
@@ -516,8 +513,6 @@ List gdfit_gaussian(Eigen::MatrixXd XtY, Eigen::MatrixXd tilde_beta, Eigen::Matr
   double shift=0, l1=0, l2=0, maxChange=0, maxChange2=0;
   
   // Initialization
-
-  Sigma_LD(X, Sig, blk, tau, P, N);
   Xtbt=Sig*tilde_beta;
   
   if (user) {
