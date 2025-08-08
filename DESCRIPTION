@@ -2,8 +2,7 @@ Package: BRIGHT
 Type: Package
 Title: Bregman-divergence based transfer-learning with application to trans-ethnic polygenic risk score
 Version: 1.0
-URL: https://github.com/UM-KevinHe/BRIGHT
-    https://um-kevinhe.github.io/BRIGHT/
+URL: https://github.com/UM-KevinHe/BRIGHT https://um-kevinhe.github.io/BRIGHT/, https://um-kevinhe.github.io/BRIGHT/
 Date: 2022-11-23
 Author: Qinmengge Li, Matthew Patrick, Jian Kang, Alex Tsoi, Kevin He
 Maintainer: Qinmengge Li <liqinmg@umich.edu>
