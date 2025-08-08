@@ -17,6 +17,9 @@ Imports: Rcpp (>= 1.0.8),
          grpreg,
          pROC,
          ggplot2
-LinkingTo: Rcpp, RcppEigen
+LinkingTo: 
+    cpp11,
+    Rcpp,
+    RcppEigen
 RoxygenNote: 7.1.1
 LazyData: true

@@ -288,7 +288,7 @@ int Sigma_ST(Eigen::MatrixXd& X, Eigen::SparseMatrix<double>& Sig, Eigen::Matrix
 */
 
 // [[Rcpp::export]]
-void gd_gaussian(Eigen::MatrixXd & a, Eigen::MatrixXd & b, Eigen::SparseMatrix<double> & Sig, Eigen::MatrixXd & K1,
+void gd_gaussian(Eigen::MatrixXd & a, Eigen::MatrixXd & b, Eigen::SparseMatrix<double> & Sig, Eigen::MatrixXi & K1,
                  Eigen::MatrixXd & Xtbt, Eigen::MatrixXd & XtY, Eigen::MatrixXd & df,
                  int & l, int & P, int & g, int & penalty, double & lam1, double & lam2,
                  double & gamma, double & eta, double & maxChange) {
@@ -391,7 +391,7 @@ Eigen::SparseMatrix<double> Sigma_test(Eigen::MatrixXd& X, double tau, int P, in
 //'@param max_iter an integer scalar for the maximum iterations before the algorithm stops.
 // [[Rcpp::export]]
 List MaxLambda(Eigen::MatrixXd XtY, Eigen::MatrixXd tilde_beta, Eigen::MatrixXd &X,
-                 Eigen::MatrixXd K1, Eigen::MatrixXd m, Eigen::MatrixXi& blk,int K0, double tau,
+                 Eigen::MatrixXi K1, Eigen::MatrixXd m, Eigen::MatrixXi& blk,int K0, double tau,
                  double eta, double alpha, double eps,int max_iter){
   // Lengths/dimensions
   int G = K1.rows() - 1;
@@ -481,7 +481,7 @@ List MaxLambda(Eigen::MatrixXd XtY, Eigen::MatrixXd tilde_beta, Eigen::MatrixXd 
 //'@return dev, the approximated deviance associated with each lambda.
 // [[Rcpp::export]]
 List gdfit_gaussian(Eigen::MatrixXd XtY, Eigen::MatrixXd tilde_beta, Eigen::MatrixXd &X, Eigen::MatrixXd lambda, 
-                    Eigen::MatrixXd K1, Eigen::MatrixXd m, Eigen::MatrixXi& blk, int K0, int penalty, double tau,
+                    Eigen::MatrixXi K1, Eigen::MatrixXd m, Eigen::MatrixXi& blk, int K0, int penalty, double tau,
                     double eta, double alpha, double gamma, double eps,int max_iter, int dfmax, int gmax, bool user) {
   
   // Lengths/dimensions
@@ -642,7 +642,7 @@ List gdfit_gaussian(Eigen::MatrixXd XtY, Eigen::MatrixXd tilde_beta, Eigen::Matr
 //Individual level fitting
 
 // [[Rcpp::export]]
-void gd_gaussiani(Eigen::MatrixXd & a, Eigen::MatrixXd & b, Eigen::MatrixXd & K1,
+void gd_gaussiani(Eigen::MatrixXd & a, Eigen::MatrixXd & b, Eigen::MatrixXi & K1,
                   Eigen::MatrixXd & X, Eigen::MatrixXd & Yt, Eigen::MatrixXd & df,
                   int & l, int & P, int & g, int & penalty, double & lam1, double & lam2,
                   double & gamma, double & eta, double & maxChange) {
@@ -744,7 +744,7 @@ void gd_gaussiani(Eigen::MatrixXd & a, Eigen::MatrixXd & b, Eigen::MatrixXd & K1
 //'@param max_iter an integer scalar for the maximum iterations before the algorithm stops.
 // [[Rcpp::export]]
 List MaxLambdai(Eigen::MatrixXd Y, Eigen::MatrixXd tilde_beta, Eigen::MatrixXd &X,
-                Eigen::MatrixXd K1, Eigen::MatrixXd m,int K0, double tau,
+                Eigen::MatrixXi K1, Eigen::MatrixXd m,int K0, double tau,
                 double eta, double alpha, double eps,int max_iter){
   // Lengths/dimensions
   int G = K1.rows() - 1;
@@ -833,7 +833,7 @@ List MaxLambdai(Eigen::MatrixXd Y, Eigen::MatrixXd tilde_beta, Eigen::MatrixXd &
 //'@return dev, the approximated deviance associated with each lambda.
 // [[Rcpp::export]]
 List gdfit_gaussiani(Eigen::MatrixXd Y, Eigen::MatrixXd &X, Eigen::MatrixXd tilde_beta, Eigen::MatrixXd lambda, 
-                     Eigen::MatrixXd K1, Eigen::MatrixXd m, int K0, int penalty, double tau,
+                     Eigen::MatrixXi K1, Eigen::MatrixXd m, int K0, int penalty, double tau,
                      double eta, double alpha, double gamma, double eps,int max_iter, int dfmax, int gmax, bool user) {
   
   // Lengths/dimensions

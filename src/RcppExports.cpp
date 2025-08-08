@@ -93,14 +93,14 @@ BEGIN_RCPP
 END_RCPP
 }
 // gd_gaussian
-void gd_gaussian(Eigen::MatrixXd& a, Eigen::MatrixXd& b, Eigen::SparseMatrix<double>& Sig, Eigen::MatrixXd& K1, Eigen::MatrixXd& Xtbt, Eigen::MatrixXd& XtY, Eigen::MatrixXd& df, int& l, int& P, int& g, int& penalty, double& lam1, double& lam2, double& gamma, double& eta, double& maxChange);
+void gd_gaussian(Eigen::MatrixXd& a, Eigen::MatrixXd& b, Eigen::SparseMatrix<double>& Sig, Eigen::MatrixXi& K1, Eigen::MatrixXd& Xtbt, Eigen::MatrixXd& XtY, Eigen::MatrixXd& df, int& l, int& P, int& g, int& penalty, double& lam1, double& lam2, double& gamma, double& eta, double& maxChange);
 RcppExport SEXP _BRIGHT_gd_gaussian(SEXP aSEXP, SEXP bSEXP, SEXP SigSEXP, SEXP K1SEXP, SEXP XtbtSEXP, SEXP XtYSEXP, SEXP dfSEXP, SEXP lSEXP, SEXP PSEXP, SEXP gSEXP, SEXP penaltySEXP, SEXP lam1SEXP, SEXP lam2SEXP, SEXP gammaSEXP, SEXP etaSEXP, SEXP maxChangeSEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< Eigen::MatrixXd& >::type a(aSEXP);
     Rcpp::traits::input_parameter< Eigen::MatrixXd& >::type b(bSEXP);
     Rcpp::traits::input_parameter< Eigen::SparseMatrix<double>& >::type Sig(SigSEXP);
-    Rcpp::traits::input_parameter< Eigen::MatrixXd& >::type K1(K1SEXP);
+    Rcpp::traits::input_parameter< Eigen::MatrixXi& >::type K1(K1SEXP);
     Rcpp::traits::input_parameter< Eigen::MatrixXd& >::type Xtbt(XtbtSEXP);
     Rcpp::traits::input_parameter< Eigen::MatrixXd& >::type XtY(XtYSEXP);
     Rcpp::traits::input_parameter< Eigen::MatrixXd& >::type df(dfSEXP);
@@ -118,7 +118,7 @@ BEGIN_RCPP
 END_RCPP
 }
 // MaxLambda
-List MaxLambda(Eigen::MatrixXd XtY, Eigen::MatrixXd tilde_beta, Eigen::MatrixXd& X, Eigen::MatrixXd K1, Eigen::MatrixXd m, Eigen::MatrixXi& blk, int K0, double tau, double eta, double alpha, double eps, int max_iter);
+List MaxLambda(Eigen::MatrixXd XtY, Eigen::MatrixXd tilde_beta, Eigen::MatrixXd& X, Eigen::MatrixXi K1, Eigen::MatrixXd m, Eigen::MatrixXi& blk, int K0, double tau, double eta, double alpha, double eps, int max_iter);
 RcppExport SEXP _BRIGHT_MaxLambda(SEXP XtYSEXP, SEXP tilde_betaSEXP, SEXP XSEXP, SEXP K1SEXP, SEXP mSEXP, SEXP blkSEXP, SEXP K0SEXP, SEXP tauSEXP, SEXP etaSEXP, SEXP alphaSEXP, SEXP epsSEXP, SEXP max_iterSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
@@ -126,7 +126,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< Eigen::MatrixXd >::type XtY(XtYSEXP);
     Rcpp::traits::input_parameter< Eigen::MatrixXd >::type tilde_beta(tilde_betaSEXP);
     Rcpp::traits::input_parameter< Eigen::MatrixXd& >::type X(XSEXP);
-    Rcpp::traits::input_parameter< Eigen::MatrixXd >::type K1(K1SEXP);
+    Rcpp::traits::input_parameter< Eigen::MatrixXi >::type K1(K1SEXP);
     Rcpp::traits::input_parameter< Eigen::MatrixXd >::type m(mSEXP);
     Rcpp::traits::input_parameter< Eigen::MatrixXi& >::type blk(blkSEXP);
     Rcpp::traits::input_parameter< int >::type K0(K0SEXP);
@@ -140,7 +140,7 @@ BEGIN_RCPP
 END_RCPP
 }
 // gdfit_gaussian
-List gdfit_gaussian(Eigen::MatrixXd XtY, Eigen::MatrixXd tilde_beta, Eigen::MatrixXd& X, Eigen::MatrixXd lambda, Eigen::MatrixXd K1, Eigen::MatrixXd m, Eigen::MatrixXi& blk, int K0, int penalty, double tau, double eta, double alpha, double gamma, double eps, int max_iter, int dfmax, int gmax, bool user);
+List gdfit_gaussian(Eigen::MatrixXd XtY, Eigen::MatrixXd tilde_beta, Eigen::MatrixXd& X, Eigen::MatrixXd lambda, Eigen::MatrixXi K1, Eigen::MatrixXd m, Eigen::MatrixXi& blk, int K0, int penalty, double tau, double eta, double alpha, double gamma, double eps, int max_iter, int dfmax, int gmax, bool user);
 RcppExport SEXP _BRIGHT_gdfit_gaussian(SEXP XtYSEXP, SEXP tilde_betaSEXP, SEXP XSEXP, SEXP lambdaSEXP, SEXP K1SEXP, SEXP mSEXP, SEXP blkSEXP, SEXP K0SEXP, SEXP penaltySEXP, SEXP tauSEXP, SEXP etaSEXP, SEXP alphaSEXP, SEXP gammaSEXP, SEXP epsSEXP, SEXP max_iterSEXP, SEXP dfmaxSEXP, SEXP gmaxSEXP, SEXP userSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
@@ -149,7 +149,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< Eigen::MatrixXd >::type tilde_beta(tilde_betaSEXP);
     Rcpp::traits::input_parameter< Eigen::MatrixXd& >::type X(XSEXP);
     Rcpp::traits::input_parameter< Eigen::MatrixXd >::type lambda(lambdaSEXP);
-    Rcpp::traits::input_parameter< Eigen::MatrixXd >::type K1(K1SEXP);
+    Rcpp::traits::input_parameter< Eigen::MatrixXi >::type K1(K1SEXP);
     Rcpp::traits::input_parameter< Eigen::MatrixXd >::type m(mSEXP);
     Rcpp::traits::input_parameter< Eigen::MatrixXi& >::type blk(blkSEXP);
     Rcpp::traits::input_parameter< int >::type K0(K0SEXP);
@@ -168,13 +168,13 @@ BEGIN_RCPP
 END_RCPP
 }
 // gd_gaussiani
-void gd_gaussiani(Eigen::MatrixXd& a, Eigen::MatrixXd& b, Eigen::MatrixXd& K1, Eigen::MatrixXd& X, Eigen::MatrixXd& Yt, Eigen::MatrixXd& df, int& l, int& P, int& g, int& penalty, double& lam1, double& lam2, double& gamma, double& eta, double& maxChange);
+void gd_gaussiani(Eigen::MatrixXd& a, Eigen::MatrixXd& b, Eigen::MatrixXi& K1, Eigen::MatrixXd& X, Eigen::MatrixXd& Yt, Eigen::MatrixXd& df, int& l, int& P, int& g, int& penalty, double& lam1, double& lam2, double& gamma, double& eta, double& maxChange);
 RcppExport SEXP _BRIGHT_gd_gaussiani(SEXP aSEXP, SEXP bSEXP, SEXP K1SEXP, SEXP XSEXP, SEXP YtSEXP, SEXP dfSEXP, SEXP lSEXP, SEXP PSEXP, SEXP gSEXP, SEXP penaltySEXP, SEXP lam1SEXP, SEXP lam2SEXP, SEXP gammaSEXP, SEXP etaSEXP, SEXP maxChangeSEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< Eigen::MatrixXd& >::type a(aSEXP);
     Rcpp::traits::input_parameter< Eigen::MatrixXd& >::type b(bSEXP);
-    Rcpp::traits::input_parameter< Eigen::MatrixXd& >::type K1(K1SEXP);
+    Rcpp::traits::input_parameter< Eigen::MatrixXi& >::type K1(K1SEXP);
     Rcpp::traits::input_parameter< Eigen::MatrixXd& >::type X(XSEXP);
     Rcpp::traits::input_parameter< Eigen::MatrixXd& >::type Yt(YtSEXP);
     Rcpp::traits::input_parameter< Eigen::MatrixXd& >::type df(dfSEXP);
@@ -192,7 +192,7 @@ BEGIN_RCPP
 END_RCPP
 }
 // MaxLambdai
-List MaxLambdai(Eigen::MatrixXd Y, Eigen::MatrixXd tilde_beta, Eigen::MatrixXd& X, Eigen::MatrixXd K1, Eigen::MatrixXd m, int K0, double tau, double eta, double alpha, double eps, int max_iter);
+List MaxLambdai(Eigen::MatrixXd Y, Eigen::MatrixXd tilde_beta, Eigen::MatrixXd& X, Eigen::MatrixXi K1, Eigen::MatrixXd m, int K0, double tau, double eta, double alpha, double eps, int max_iter);
 RcppExport SEXP _BRIGHT_MaxLambdai(SEXP YSEXP, SEXP tilde_betaSEXP, SEXP XSEXP, SEXP K1SEXP, SEXP mSEXP, SEXP K0SEXP, SEXP tauSEXP, SEXP etaSEXP, SEXP alphaSEXP, SEXP epsSEXP, SEXP max_iterSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
@@ -200,7 +200,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< Eigen::MatrixXd >::type Y(YSEXP);
     Rcpp::traits::input_parameter< Eigen::MatrixXd >::type tilde_beta(tilde_betaSEXP);
     Rcpp::traits::input_parameter< Eigen::MatrixXd& >::type X(XSEXP);
-    Rcpp::traits::input_parameter< Eigen::MatrixXd >::type K1(K1SEXP);
+    Rcpp::traits::input_parameter< Eigen::MatrixXi >::type K1(K1SEXP);
     Rcpp::traits::input_parameter< Eigen::MatrixXd >::type m(mSEXP);
     Rcpp::traits::input_parameter< int >::type K0(K0SEXP);
     Rcpp::traits::input_parameter< double >::type tau(tauSEXP);
@@ -213,7 +213,7 @@ BEGIN_RCPP
 END_RCPP
 }
 // gdfit_gaussiani
-List gdfit_gaussiani(Eigen::MatrixXd Y, Eigen::MatrixXd& X, Eigen::MatrixXd tilde_beta, Eigen::MatrixXd lambda, Eigen::MatrixXd K1, Eigen::MatrixXd m, int K0, int penalty, double tau, double eta, double alpha, double gamma, double eps, int max_iter, int dfmax, int gmax, bool user);
+List gdfit_gaussiani(Eigen::MatrixXd Y, Eigen::MatrixXd& X, Eigen::MatrixXd tilde_beta, Eigen::MatrixXd lambda, Eigen::MatrixXi K1, Eigen::MatrixXd m, int K0, int penalty, double tau, double eta, double alpha, double gamma, double eps, int max_iter, int dfmax, int gmax, bool user);
 RcppExport SEXP _BRIGHT_gdfit_gaussiani(SEXP YSEXP, SEXP XSEXP, SEXP tilde_betaSEXP, SEXP lambdaSEXP, SEXP K1SEXP, SEXP mSEXP, SEXP K0SEXP, SEXP penaltySEXP, SEXP tauSEXP, SEXP etaSEXP, SEXP alphaSEXP, SEXP gammaSEXP, SEXP epsSEXP, SEXP max_iterSEXP, SEXP dfmaxSEXP, SEXP gmaxSEXP, SEXP userSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
@@ -222,7 +222,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< Eigen::MatrixXd& >::type X(XSEXP);
     Rcpp::traits::input_parameter< Eigen::MatrixXd >::type tilde_beta(tilde_betaSEXP);
     Rcpp::traits::input_parameter< Eigen::MatrixXd >::type lambda(lambdaSEXP);
-    Rcpp::traits::input_parameter< Eigen::MatrixXd >::type K1(K1SEXP);
+    Rcpp::traits::input_parameter< Eigen::MatrixXi >::type K1(K1SEXP);
     Rcpp::traits::input_parameter< Eigen::MatrixXd >::type m(mSEXP);
     Rcpp::traits::input_parameter< int >::type K0(K0SEXP);
     Rcpp::traits::input_parameter< int >::type penalty(penaltySEXP);
